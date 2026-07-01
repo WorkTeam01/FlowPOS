@@ -1,0 +1,54 @@
+/* ============================================
+   WEBFONTS - CONFIGURACIÓN COMPLETA
+   ============================================ */
+
+/* Font Awesome - Definiciones estándar */
+@font-face {
+    font-family: 'Font Awesome 6 Brands';
+    font-style: normal;
+    font-weight: 400;
+    font-display: block;
+    src: url("../lib/fontawesome/webfonts/fa-brands-400.woff2") format("woff2"),
+        url("../lib/fontawesome/webfonts/fa-brands-400.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: 'Font Awesome 6 Regular';
+    font-style: normal;
+    font-weight: 400;
+    font-display: block;
+    src: url("../lib/fontawesome/webfonts/fa-regular-400.woff2") format("woff2"),
+        url("../lib/fontawesome/webfonts/fa-regular-400.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: 'Font Awesome 6 Solid';
+    font-style: normal;
+    font-weight: 900;
+    font-display: block;
+    src: url("../lib/fontawesome/webfonts/fa-solid-900.woff2") format("woff2"),
+        url("../lib/fontawesome/webfonts/fa-solid-900.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: 'Font Awesome v4 Compatibility';
+    font-style: normal;
+    font-weight: 400;
+    font-display: block;
+    src: url("../lib/fontawesome/webfonts/fa-v4compatibility.woff2") format("woff2"),
+        url("../lib/fontawesome/webfonts/fa-v4compatibility.ttf") format("truetype");
+}
+
+/* Asignación de Font Awesome a clases específicas */
+.fab {
+    font-family: 'Font Awesome 6 Brands';
+}
+
+.far {
+    font-family: 'Font Awesome 6 Regular';
+}
+
+.fa,
+.fas {
+    font-family: 'Font Awesome 6 Solid';
+}
