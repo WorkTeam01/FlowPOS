@@ -1,4 +1,4 @@
-# PROMPTS.md — Sistema de Ventas
+# PROMPTS.md — FlowPOS
 
 > Plantillas de prompts para trabajar con este proyecto.
 > Úsalas como base — adapta los bloques `[Tarea]` y `[Contexto]` a lo que necesites en cada sesión.
@@ -40,7 +40,7 @@ Actúa como desarrollador PHP Senior especializado en arquitectura MVC
 sin framework y desarrollo web con PHP puro.
 
 [Contexto]
-Proyecto: Sistema de Ventas — PHP MVC personalizado sin router ni Composer.
+Proyecto: FlowPOS — PHP MVC personalizado sin router ni Composer.
 Stack: PHP 7.4+, MariaDB/MySQL, Apache mod_rewrite, JavaScript vanilla ES6+,
        Bootstrap 4 / AdminLTE 3, jQuery, DataTables, SweetAlert2, Select2, TCPDF.
 Sin framework, sin Composer — dependencias incluidas en libs/ y public/.
@@ -77,7 +77,7 @@ Actúa como desarrollador PHP Senior especializado en arquitectura MVC
 sin framework y desarrollo web con PHP puro.
 
 [Contexto]
-Proyecto: Sistema de Ventas — PHP MVC personalizado sin router ni Composer.
+Proyecto: FlowPOS — PHP MVC personalizado sin router ni Composer.
 Stack: PHP 7.4+, MariaDB/MySQL, Apache mod_rewrite, JavaScript vanilla ES6+,
        Bootstrap 4 / AdminLTE 3, jQuery, DataTables, SweetAlert2, Select2, TCPDF.
 Versionado: `APP_VERSION` en `.env` + `CHANGELOG.md`.
@@ -141,7 +141,7 @@ Actúa como desarrollador PHP Senior especializado en debugging
 de aplicaciones MVC y MySQL/MariaDB.
 
 [Contexto]
-Proyecto: Sistema de Ventas — PHP MVC personalizado sin router ni Composer.
+Proyecto: FlowPOS — PHP MVC personalizado sin router ni Composer.
 Stack: PHP 7.4+, PDO/MariaDB, jQuery, AdminLTE 3, JavaScript vanilla.
 Archivo donde ocurre el error: [ruta completa]
 Función/sección afectada: [nombre o descripción]
@@ -183,7 +183,7 @@ Actúa como Tech Lead PHP con experiencia en code review de sistemas MVC,
 seguridad web y buenas prácticas en PHP sin framework.
 
 [Contexto]
-Proyecto: Sistema de Ventas — PHP MVC personalizado sin router ni Composer.
+Proyecto: FlowPOS — PHP MVC personalizado sin router ni Composer.
 Cambio implementado: [descripción breve]
 Versionado: `APP_VERSION` en `.env` + `CHANGELOG.md`.
 
@@ -222,7 +222,7 @@ Actúa como arquitecto de software PHP con experiencia en sistemas MVC
 custom sin framework, diseño de base de datos y patrones de diseño.
 
 [Contexto]
-Proyecto: Sistema de Ventas — PHP MVC personalizado sin router ni Composer.
+Proyecto: FlowPOS — PHP MVC personalizado sin router ni Composer.
 Stack actual: PHP 7.4+, MariaDB, PDO Singleton (Conexion::getInstance()),
               session.php como hub de autenticación/autorización,
               AuthorizationService para permisos granulares,
@@ -267,7 +267,7 @@ Actúa como desarrollador PHP Senior especializado en arquitectura MVC
 sin framework, diseño de base de datos y seguridad web.
 
 [Contexto]
-Proyecto: Sistema de Ventas — PHP MVC personalizado sin router ni Composer.
+Proyecto: FlowPOS — PHP MVC personalizado sin router ni Composer.
 Stack: PHP 7.4+, MariaDB/MySQL, Apache mod_rewrite, JavaScript vanilla ES6+,
        Bootstrap 4 / AdminLTE 3, jQuery, DataTables, SweetAlert2, Select2, TCPDF.
 Versionado: `APP_VERSION` en `.env` + `CHANGELOG.md`.

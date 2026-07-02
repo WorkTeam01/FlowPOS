@@ -25,7 +25,7 @@ return [
     ],
     'app' => [
         'timezone' => $timezone,
-        'name' => env('APP_NAME', 'Sistema de Ventas'),
+        'name' => env('APP_NAME', 'FlowPOS'),
         'version' => env('APP_VERSION', '1.0.0'),
         'currency' => env('APP_CURRENCY', '$'),
         'url' => env('APP_URL'),

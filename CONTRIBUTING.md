@@ -25,13 +25,13 @@ Pasos recomendados:
 
 ```bash
 cp .env.example .env
-mysql -u root -e "CREATE DATABASE sistema_ventas CHARACTER SET utf8mb4;"
-mysql -u root sistema_ventas < schema.sql
-mysql -u root sistema_ventas < seed.sql
+mysql -u root -e "CREATE DATABASE flowpos CHARACTER SET utf8mb4;"
+mysql -u root flowpos < schema.sql
+mysql -u root flowpos < seed.sql
 sudo /opt/lampp/lampp start
 ```
 
-Luego abre `http://localhost/sistema-ventas/`.
+Luego abre `http://localhost/FlowPOS/`. 
 
 ## Alcance de contribuciones
 

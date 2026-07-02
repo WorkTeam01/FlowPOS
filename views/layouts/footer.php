@@ -1,6 +1,6 @@
 <?php
 $URL = $URL ?? ($GLOBALS['URL'] ?? '');
-$appName = $appName ?? ($GLOBALS['appName'] ?? 'Sistema de Ventas');
+$appName = $appName ?? ($GLOBALS['appName'] ?? 'FlowPOS');
 $appVersion = $appVersion ?? ($GLOBALS['appVersion'] ?? '1.0.0');
 ?>
 </div>
@@ -20,7 +20,7 @@ $appVersion = $appVersion ?? ($GLOBALS['appVersion'] ?? '1.0.0');
         <strong>Copyright &copy; <?= date('Y'); ?>
             <a href="#" class="text-decoration-none"><?= $appName ?></a>
         </strong>
-        - Sistema de Ventas
+        - FlowPOS
     </div>
 </footer>
 </div>

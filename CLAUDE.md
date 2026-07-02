@@ -13,7 +13,7 @@ Es una aplicación web PHP/MariaDB que corre sobre XAMPP (Apache + MariaDB). No 
 Asegurarse de que XAMPP esté corriendo con Apache y MariaDB, luego navegar a:
 
 ```
-http://localhost/sistema-ventas/
+http://localhost/FlowPOS/
 ```
 
 Iniciar/detener los servicios de XAMPP:
@@ -28,10 +28,10 @@ sudo /opt/lampp/lampp stop
 Importar el esquema (solo la primera vez o al resetear):
 
 ```bash
-mysql -u root sistema_ventas < schema.sql
+mysql -u root flowpos < schema.sql
 ```
 
-El nombre de la base de datos es `sistema_ventas` según lo configurado en `.env`.
+El nombre de la base de datos es `flowpos` según lo configurado en `.env`.
 
 Establecer permisos en los directorios de subida:
 
@@ -44,14 +44,14 @@ chmod 755 public/uploads/productos/ public/uploads/clientes/ public/uploads/usua
 Ajustar los valores en `.env` — `config/env.php` lo carga automáticamente:
 
 ```
-APP_NAME=Mi Sistema de Ventas
+APP_NAME=FlowPOS
 APP_VERSION=1.0.0
 APP_CURRENCY=Bs
 DB_HOST=localhost
-DB_NAME=sistema_ventas
+DB_NAME=flowpos
 DB_USER=root
 DB_PASS=
-APP_URL=http://localhost/sistema-ventas/
+APP_URL=http://localhost/FlowPOS/
 TIMEZONE=America/La_Paz
 DEBUG=true
 ```

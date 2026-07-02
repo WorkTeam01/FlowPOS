@@ -1,6 +1,6 @@
 <div align="center">
 
-# Sistema de Ventas
+# FlowPOS
 
 Aplicación web open source para gestión de ventas e inventario, construida con PHP, MariaDB y AdminLTE.
 
@@ -68,7 +68,7 @@ Gestión de catálogo, categorías, precios y control de stock.
 
 ```bash
 git clone <URL_DEL_REPOSITORIO>
-cd sistema-ventas
+cd FlowPOS
 ```
 
 ### 2. Configurar entorno
@@ -81,13 +81,13 @@ Variables principales:
 
 | Variable       | Descripción                      | Ejemplo                            |
 | -------------- | -------------------------------- | ---------------------------------- |
-| `APP_NAME`     | Nombre visible de la aplicación  | `Mi Sistema de Ventas`             |
+| `APP_NAME`     | Nombre visible de la aplicación  | `FlowPOS`             |
 | `APP_VERSION`  | Versión actual de la aplicación  | `1.0.0`                            |
 | `APP_CURRENCY` | Símbolo de moneda                | `Bs`, `$`, `€`, `S/`               |
-| `APP_URL`      | URL base (debe terminar con `/`) | `http://localhost/sistema-ventas/` |
+| `APP_URL`      | URL base (debe terminar con `/`) | `http://localhost/FlowPOS/` |
 | `TIMEZONE`     | Zona horaria PHP                 | `America/La_Paz`                   |
 | `DB_HOST`      | Host de base de datos            | `localhost`                        |
-| `DB_NAME`      | Nombre de base de datos          | `sistema_ventas`                   |
+| `DB_NAME`      | Nombre de base de datos          | `flowpos`                   |
 | `DB_USER`      | Usuario de base de datos         | `root`                             |
 | `DB_PASS`      | Contraseña de base de datos      | ``                                 |
 | `DEBUG`        | Modo debug (`true`/`false`)      | `false`                            |
@@ -95,14 +95,14 @@ Variables principales:
 ### 3. Crear base de datos e importar esquema
 
 ```bash
-mysql -u root -e "CREATE DATABASE sistema_ventas CHARACTER SET utf8mb4;"
-mysql -u root sistema_ventas < schema.sql
+mysql -u root -e "CREATE DATABASE flowpos CHARACTER SET utf8mb4;"
+mysql -u root flowpos < schema.sql
 ```
 
 ### 4. (Opcional) Cargar datos de ejemplo
 
 ```bash
-mysql -u root sistema_ventas < seed.sql
+mysql -u root flowpos < seed.sql
 ```
 
 Credenciales demo (si importaste `seed.sql`):
@@ -125,7 +125,7 @@ chmod 755 public/uploads/ public/uploads/productos/ public/uploads/clientes/ pub
 sudo /opt/lampp/lampp start
 ```
 
-Abrir: `http://localhost/sistema-ventas/`
+Abrir: `http://localhost/FlowPOS/`
 
 ## Modelo de acceso
 
@@ -140,7 +140,7 @@ Además del rol, la aplicación permite permisos granulares por usuario.
 ## Estructura del proyecto
 
 ```text
-sistema-ventas/
+FlowPOS/
 ├── index.php
 ├── schema.sql
 ├── seed.sql

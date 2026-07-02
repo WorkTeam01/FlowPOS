@@ -18,7 +18,7 @@ y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ### Added
 
-- Lanzamiento funcional base del sistema de ventas open source.
+- Lanzamiento funcional base del FlowPOS open source.
 - Módulo completo de **ventas** con detalle por ítems (`venta`, `detalleventa`) y registro de pagos mixtos (`pagoventa`: efectivo, tarjeta, QR y transferencia).
 - Módulo de **compras** para ingreso de mercadería (`compra`, `detallecompra`) con impacto en inventario.
 - Gestión de **inventario y catálogo**: productos, categorías, stock mínimo/máximo, precios de compra/venta y validaciones de consistencia.

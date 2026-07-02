@@ -55,7 +55,7 @@ try {
     $URL = $GLOBALS['URL'];
 
     // Identidad de la aplicación (configurable en .env)
-    $appName     = $_ENV['APP_NAME']     ?? getenv('APP_NAME')     ?: 'Sistema de Ventas';
+    $appName     = $_ENV['APP_NAME']     ?? getenv('APP_NAME')     ?: 'FlowPOS';
     $appVersion  = $_ENV['APP_VERSION']  ?? getenv('APP_VERSION')  ?: '1.0.0';
     $appCurrency = $_ENV['APP_CURRENCY'] ?? getenv('APP_CURRENCY') ?: '$';
     $GLOBALS['appName']     = $appName;
