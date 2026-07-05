@@ -12,6 +12,8 @@ if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQ
 // Verificar si el usuario está autenticado
 requireLogin();
 
+requireCSRF();
+
 header('Content-Type: application/json');
 
 // Instanciar el controlador

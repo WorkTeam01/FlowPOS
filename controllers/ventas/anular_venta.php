@@ -1,5 +1,21 @@
 <?php
 require_once __DIR__ . '/../../views/layouts/session.php';
+
+// Verificar si el usuario está autenticado
+requireLogin();
+
+// Verificar permisos sobre el módulo de ventas
+require_once __DIR__ . '/../../services/AuthorizationService.php';
+$authService = new AuthorizationService();
+if (!$authService->tienePermisoNombre($_SESSION['usuario_id'], 'ventas') && !$authService->esAdministrador($_SESSION['usuario_id'])) {
+    $_SESSION['mensaje'] = 'No tiene permisos para realizar esta acción.';
+    $_SESSION['icono'] = 'error';
+    header('Location: ' . $URL . 'index.php');
+    exit;
+}
+
+requireCSRF();
+
 require_once __DIR__ . '/VentaController.php';
 
 // Instanciar el controlador de ventas
@@ -7,10 +23,10 @@ $controller = new VentaController();
 
 $id_venta = null;
 
-// Validar método GET y parámetros
-if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['id'])) {
+// Validar método POST y parámetros
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id'])) {
     // Filtrar y validar el ID
-    $id_venta = filter_var($_GET['id'], FILTER_VALIDATE_INT);
+    $id_venta = filter_var($_POST['id'], FILTER_VALIDATE_INT);
 
     // Verificar si el ID es válido
     if ($id_venta === false) {

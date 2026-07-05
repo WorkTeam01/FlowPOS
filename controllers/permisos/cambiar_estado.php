@@ -1,15 +1,31 @@
 <?php
 require_once __DIR__ . '/../../views/layouts/session.php';
+
+// Verificar si el usuario está autenticado
+requireLogin();
+
+// Verificar permisos sobre el módulo de permisos
+require_once __DIR__ . '/../../services/AuthorizationService.php';
+$authService = new AuthorizationService();
+if (!$authService->tienePermisoNombre($_SESSION['usuario_id'], 'permisos') && !$authService->esAdministrador($_SESSION['usuario_id'])) {
+    $_SESSION['mensaje'] = 'No tiene permisos para realizar esta acción.';
+    $_SESSION['icono'] = 'error';
+    header('Location: ' . $URL . 'index.php');
+    exit;
+}
+
+requireCSRF();
+
 require_once __DIR__ . '/PermisoController.php';
 
 // Instanciar el controlador de permisos
 $controller = new PermisoController();
 
-// Validar método GET y parámetros
-if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['id']) && isset($_GET['estado'])) {
+// Validar método POST y parámetros
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id']) && isset($_POST['estado'])) {
     // Filtrar y validar el ID y estado
-    $id = filter_var($_GET['id'], FILTER_VALIDATE_INT);
-    $estado = filter_var($_GET['estado'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 1]]);
+    $id = filter_var($_POST['id'], FILTER_VALIDATE_INT);
+    $estado = filter_var($_POST['estado'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 1]]);
 
     // Verificar si los valores son válidos
     if ($id === false || $estado === false) {

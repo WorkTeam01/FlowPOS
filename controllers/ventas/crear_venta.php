@@ -2,6 +2,21 @@
 // Incluir el archivo de sesión para tener acceso a la variable $URL
 require_once __DIR__ . '/../../views/layouts/session.php';
 
+// Verificar si el usuario está autenticado
+requireLogin();
+
+// Verificar permisos sobre el módulo de ventas
+require_once __DIR__ . '/../../services/AuthorizationService.php';
+$authService = new AuthorizationService();
+if (!$authService->tienePermisoNombre($_SESSION['usuario_id'], 'ventas') && !$authService->esAdministrador($_SESSION['usuario_id'])) {
+    $_SESSION['mensaje'] = 'No tiene permisos para realizar esta acción.';
+    $_SESSION['icono'] = 'error';
+    header('Location: ' . $URL . 'index.php');
+    exit;
+}
+
+requireCSRF();
+
 // Incluir el controlador de Ventas
 require_once __DIR__ . '/VentaController.php';
 

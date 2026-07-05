@@ -1,8 +1,6 @@
 <?php
-// Iniciar sesión si no está iniciada
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
+// Incluir el archivo de sesión (inicia sesión y provee las funciones CSRF)
+require_once __DIR__ . '/../../views/layouts/session.php';
 
 // Incluir el controlador
 require_once __DIR__ . '/PerfilController.php';
@@ -18,6 +16,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 if (!isset($_SESSION['usuario_id'])) {
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'message' => 'Usuario no autenticado']);
+    exit;
+}
+
+// Este endpoint siempre responde JSON; no depender de la heurística isAjaxRequest()
+if (!verifyCSRFToken(getRequestCSRFToken())) {
+    http_response_code(403);
+    header('Content-Type: application/json');
+    echo json_encode(['success' => false, 'message' => 'Tu sesión de formulario expiró. Vuelve a intentarlo, por favor.']);
     exit;
 }
 

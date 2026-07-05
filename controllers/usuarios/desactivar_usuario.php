@@ -1,5 +1,21 @@
 <?php
 require_once __DIR__ . '/../../views/layouts/session.php';
+
+// Verificar si el usuario está autenticado
+requireLogin();
+
+// Verificar permisos sobre el módulo de usuarios
+require_once __DIR__ . '/../../services/AuthorizationService.php';
+$authService = new AuthorizationService();
+if (!$authService->tienePermisoNombre($_SESSION['usuario_id'], 'usuarios') && !$authService->esAdministrador($_SESSION['usuario_id'])) {
+    $_SESSION['mensaje'] = 'No tiene permisos para realizar esta acción.';
+    $_SESSION['icono'] = 'error';
+    header('Location: ' . $URL . 'index.php');
+    exit;
+}
+
+requireCSRF();
+
 require_once __DIR__ . '/UsuarioController.php';
 
 // Instanciar el controlador
@@ -8,9 +24,9 @@ $controller = new UsuarioController();
 $id_usuario = null;
 $estado_actual = null;
 
-if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['id']) && isset($_GET['estado'])) {
-    $id_usuario = filter_var($_GET['id'], FILTER_VALIDATE_INT);
-    $estado_actual = filter_var($_GET['estado'], FILTER_VALIDATE_INT);
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id']) && isset($_POST['estado'])) {
+    $id_usuario = filter_var($_POST['id'], FILTER_VALIDATE_INT);
+    $estado_actual = filter_var($_POST['estado'], FILTER_VALIDATE_INT);
 
     if ($id_usuario === false || $estado_actual === false) {
         $_SESSION['mensaje'] = 'Datos inválidos para cambiar el estado del usuario.';
