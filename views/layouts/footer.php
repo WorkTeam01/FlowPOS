@@ -49,13 +49,13 @@ $appVersion = $appVersion ?? ($GLOBALS['appVersion'] ?? '1.0.0');
 <script src="<?= $URL; ?>public/js/plugins/datatables/buttons.print.min.js"></script>
 <script src="<?= $URL; ?>public/js/plugins/datatables/buttons.colVis.min.js"></script>
 <!-- Scripts principales de la aplicación -->
-<script src="<?= $URL; ?>public/js/core/common-utils.js"></script>
+<script src="<?= $URL; ?>public/js/core/common-utils.js?v=<?= urlencode($appVersion) ?>"></script>
 <!-- Moment.js para manejo de fechas -->
 <script src="<?= $URL; ?>public/js/plugins/moment/moment.min.js"></script>
 <!-- Scripts específicos por módulo -->
 <?php if (isset($module_scripts) && is_array($module_scripts)): ?>
     <?php foreach ($module_scripts as $script): ?>
-        <script src="<?= $URL; ?>public/js/modules/<?= $script; ?>.js"></script>
+        <script src="<?= $URL; ?>public/js/modules/<?= $script; ?>.js?v=<?= urlencode($appVersion) ?>"></script>
     <?php endforeach; ?>
 <?php endif; ?>
 
