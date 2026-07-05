@@ -146,6 +146,7 @@ include_once '../layouts/header.php';
                         <h3 class="card-title"><i class="fas fa-edit mr-2"></i>Formulario de Compra</h3>
                     </div>
                     <form action="<?= $URL; ?>controllers/compras/crear_compra.php" method="POST" id="form-compra" novalidate>
+                        <?= csrfField() ?>
                         <div class="card-body">
                             <div class="row">
                                 <!-- Usuario Responsable (no editable) -->

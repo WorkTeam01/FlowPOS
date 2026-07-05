@@ -262,10 +262,17 @@ $estadisticas = $controller->getEstadisticas();
                                                         </button>
                                                     <?php endif; ?>
 
-                                                    <a href="<?= $URL; ?>views/ventas/recibo.php?id=<?= $venta['idventa']; ?>"
-                                                        class="btn btn-secondary btn-sm" target="_blank" title="Imprimir comprobante">
-                                                        <i class="fas fa-print"></i>
-                                                    </a>
+                                                    <?php if ($venta['estado'] == 1) : ?>
+                                                        <a href="<?= $URL; ?>views/ventas/recibo.php?id=<?= $venta['idventa']; ?>"
+                                                            class="btn btn-secondary btn-sm" target="_blank" title="Imprimir comprobante">
+                                                            <i class="fas fa-print"></i>
+                                                        </a>
+                                                    <?php else : ?>
+                                                        <button type="button" class="btn btn-secondary btn-sm" disabled
+                                                            data-toggle="tooltip" title="No disponible para ventas anuladas">
+                                                            <i class="fas fa-print"></i>
+                                                        </button>
+                                                    <?php endif; ?>
                                                 </div>
                                             </td>
                                         </tr>
@@ -325,7 +332,9 @@ $estadisticas = $controller->getEstadisticas();
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        window.location.href = `<?= $URL; ?>controllers/ventas/anular_venta.php?id=${ventaId}`;
+                        submitCsrfForm('<?= $URL; ?>controllers/ventas/anular_venta.php', {
+                            id: ventaId
+                        });
                     }
                 });
             });

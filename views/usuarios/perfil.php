@@ -108,6 +108,7 @@ $module_scripts = ['usuarios/perfil-usuario'];
                             <!-- Tab Imagen de Perfil -->
                             <div class="active tab-pane" id="imagenPerfil">
                                 <form action="<?= $URL; ?>controllers/usuarios/procesar_actualizar_imagen_perfil.php" method="POST" enctype="multipart/form-data">
+                                    <?= csrfField() ?>
                                     <div class="row">
                                         <!-- Imagen -->
                                         <div class="col-md-6">

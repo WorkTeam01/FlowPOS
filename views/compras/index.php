@@ -166,8 +166,10 @@ $compras = $controller->index();
                 }).then((result) => {
                     if (result.isConfirmed) {
                         const baseUrl = '<?= $URL; ?>';
-                        // Agregamos un parámetro adicional para evitar caché
-                        window.location.href = `${baseUrl}controllers/compras/cambiar_estado_compra.php?id=${compraId}&accion=${accion}&t=${Date.now()}`;
+                        submitCsrfForm(`${baseUrl}controllers/compras/cambiar_estado_compra.php`, {
+                            id: compraId,
+                            accion: accion
+                        });
                     }
                 });
             });

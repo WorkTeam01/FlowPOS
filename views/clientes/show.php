@@ -366,7 +366,10 @@ include_once '../layouts/header.php';
         }).then((result) => {
             if (result.isConfirmed) {
                 // Usar la misma ruta que usa index.php
-                window.location.href = '<?= $URL; ?>controllers/clientes/desactivar_cliente.php?id=' + clienteId + '&estado=' + estadoActual;
+                submitCsrfForm('<?= $URL; ?>controllers/clientes/desactivar_cliente.php', {
+                    id: clienteId,
+                    estado: estadoActual
+                });
             }
         });
     }

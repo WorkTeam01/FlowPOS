@@ -71,6 +71,7 @@ if (!$usuario) {
                     <!-- /.card-header -->
                     <!-- form start -->
                     <form action="<?= $URL; ?>controllers/usuarios/actualizar_usuario.php" method="POST" enctype="multipart/form-data">
+                        <?= csrfField() ?>
                         <input type="hidden" name="idusuario" value="<?= $usuario['idusuario']; ?>">
                         <div class="card-body">
                             <!-- Información Personal -->

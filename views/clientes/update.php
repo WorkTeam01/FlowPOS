@@ -69,6 +69,7 @@ include_once '../layouts/header.php';
                     </div>
                     <!-- form start -->
                     <form action="<?= $URL; ?>controllers/clientes/actualizar_cliente.php" method="POST">
+                        <?= csrfField() ?>
                         <input type="hidden" name="idcliente" value="<?= $cliente['idcliente']; ?>">
                         <div class="card-body">
                             <!-- Información Personal -->

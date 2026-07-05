@@ -80,6 +80,7 @@ $categorias = $categoriaController->index(true);
                     <!-- /.card-header -->
                     <!-- form start -->
                     <form action="<?= $URL; ?>controllers/productos/actualizar_producto.php" method="POST" enctype="multipart/form-data" id="formEditarProducto">
+                        <?= csrfField() ?>
                         <input type="hidden" name="idproducto" value="<?= $producto['idproducto']; ?>">
                         <div class="card-body">
                             <!-- Instrucciones -->
@@ -780,8 +781,10 @@ $categorias = $categoriaController->index(true);
                 cancelButtonText: cancelButtonText
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Redirigir a la acción de cambio de estado
-                    window.location.href = `<?= $URL; ?>controllers/productos/desactivar_producto.php?id=${productoId}&estado=${estadoActual}`;
+                    submitCsrfForm('<?= $URL; ?>controllers/productos/desactivar_producto.php', {
+                        id: productoId,
+                        estado: estadoActual
+                    });
                 }
             });
         });

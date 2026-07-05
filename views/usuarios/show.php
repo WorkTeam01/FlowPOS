@@ -389,8 +389,10 @@ if (!$usuario) {
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Usar la misma ruta del controlador que usa index.php
-                window.location.href = '<?= $URL; ?>controllers/usuarios/desactivar_usuario.php?id=' + userId + '&estado=' + estadoActual;
+                submitCsrfForm('<?= $URL; ?>controllers/usuarios/desactivar_usuario.php', {
+                    id: userId,
+                    estado: estadoActual
+                });
             }
         });
     }

@@ -167,10 +167,11 @@ $usuarios = $controller->index();
                     cancelButtonText: cancelButtonText
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Construir la URL para la acción
-                        // Asegúrate que la variable URL de PHP esté disponible en JavaScript o constrúyela adecuadamente
-                        const baseUrl = '<?= $URL; ?>'; // Asumiendo que $URL está definida en PHP
-                        window.location.href = `${baseUrl}controllers/usuarios/desactivar_usuario.php?id=${usuarioId}&estado=${estadoActual}`;
+                        const baseUrl = '<?= $URL; ?>';
+                        submitCsrfForm(`${baseUrl}controllers/usuarios/desactivar_usuario.php`, {
+                            id: usuarioId,
+                            estado: estadoActual
+                        });
                     }
                 });
             });

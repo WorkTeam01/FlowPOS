@@ -155,7 +155,10 @@ $clientes = $controller->index();
                 }).then((result) => {
                     if (result.isConfirmed) {
                         const baseUrl = '<?= $URL; ?>';
-                        window.location.href = `${baseUrl}controllers/clientes/desactivar_cliente.php?id=${clienteId}&estado=${estadoActual}`;
+                        submitCsrfForm(`${baseUrl}controllers/clientes/desactivar_cliente.php`, {
+                            id: clienteId,
+                            estado: estadoActual
+                        });
                     }
                 });
             });

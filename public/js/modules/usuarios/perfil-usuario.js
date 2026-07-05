@@ -96,7 +96,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Preparar datos para enviar
+        const appUrl = document.querySelector('meta[name="app-url"]').content;
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
         const formData = new FormData(formCambiarPassword);
+        formData.append('csrf_token', csrfToken);
 
         // Deshabilitar botón
         const btnCambiarPassword = document.getElementById('btnCambiarPassword');
@@ -104,8 +107,9 @@ document.addEventListener('DOMContentLoaded', function () {
         btnCambiarPassword.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
 
         // Realizar solicitud AJAX
-        fetch('<?= $URL; ?>controllers/usuarios/ajax_cambiar_clave_perfil.php', {
+        fetch(`${appUrl}controllers/usuarios/ajax_cambiar_clave_perfil.php`, {
             method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
             body: formData
         })
             .then(response => response.json())

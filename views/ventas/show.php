@@ -362,7 +362,9 @@ include_once '../layouts/header.php';
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        window.location.href = `<?= $URL; ?>controllers/ventas/anular_venta.php?id=${ventaId}`;
+                        submitCsrfForm('<?= $URL; ?>controllers/ventas/anular_venta.php', {
+                            id: ventaId
+                        });
                     }
                 });
             });

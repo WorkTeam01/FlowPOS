@@ -280,7 +280,10 @@ $estado_icono = $compra['estado'] == 1 ? 'check-circle' : 'times-circle';
                             Swal.showLoading();
                         }
                     });
-                    window.location.href = `<?= $URL; ?>controllers/compras/cambiar_estado_compra.php?id=${id}&accion=${accion}`;
+                    submitCsrfForm('<?= $URL; ?>controllers/compras/cambiar_estado_compra.php', {
+                        id: id,
+                        accion: accion
+                    });
                 }
             });
         }

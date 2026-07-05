@@ -51,6 +51,7 @@ $clientes = $clienteController->index();
                         <h3 class="card-title">Formulario de Venta</h3>
                     </div>
                     <form action="<?= $URL; ?>controllers/ventas/crear_venta.php" method="POST" id="form-venta" novalidate>
+                        <?= csrfField() ?>
                         <input type="hidden" name="idusuario" value="<?= $_SESSION['usuario_id'] ?>">
                         <input type="hidden" name="totalventa" id="totalventa-hidden" value="0">
 

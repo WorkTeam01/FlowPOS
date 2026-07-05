@@ -49,6 +49,7 @@ include_once '../layouts/header.php';
                     </div>
                     <!-- form start -->
                     <form action="<?= $URL; ?>controllers/usuarios/crear_usuario.php" method="POST" enctype="multipart/form-data">
+                        <?= csrfField() ?>
                         <div class="card-body">
                             <!-- Información Personal -->
                             <div class="card card-outline card-info mb-3">

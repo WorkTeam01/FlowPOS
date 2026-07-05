@@ -359,7 +359,9 @@ $estadisticas = $controller->getEstadisticas();
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        window.location.href = `<?= $URL; ?>controllers/sesiones/cerrar_sesion.php?id=${sesionId}`;
+                        submitCsrfForm('<?= $URL; ?>controllers/sesiones/cerrar_sesion.php', {
+                            id: sesionId
+                        });
                     }
                 });
             });
@@ -383,7 +385,9 @@ $estadisticas = $controller->getEstadisticas();
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        window.location.href = `<?= $URL; ?>controllers/sesiones/cerrar_sesiones_usuario.php?id=${usuarioId}`;
+                        submitCsrfForm('<?= $URL; ?>controllers/sesiones/cerrar_sesiones_usuario.php', {
+                            id: usuarioId
+                        });
                     }
                 });
             });
