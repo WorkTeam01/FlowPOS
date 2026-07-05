@@ -75,7 +75,7 @@ class VentaController
         $datos = [
             'idcliente' => isset($post_data['idcliente']) ? (int)$post_data['idcliente'] : null,
             'idusuario' => isset($post_data['idusuario']) ? (int)$post_data['idusuario'] : 0,
-            'totalventa' => isset($post_data['totalventa']) ? (float)$post_data['totalventa'] : 0,
+            'totalventa' => 0, // Se recalcula server-side a partir de los detalles
             'fechaventa' => isset($post_data['fechaventa']) ? trim($post_data['fechaventa']) : date('Y-m-d'),
             'observacion' => isset($post_data['observacion']) ? trim($post_data['observacion']) : null,
             'estado' => 1, // Por defecto activa
@@ -85,16 +85,33 @@ class VentaController
 
         // Procesar detalles de la venta (productos)
         if (isset($post_data['productos']) && is_array($post_data['productos'])) {
+            require_once __DIR__ . '/../../models/Producto.php';
+            $productoModel = new Producto();
+
+            $total = 0;
+
             foreach ($post_data['productos'] as $key => $idProducto) {
                 if (!empty($idProducto)) {
+                    // El precio de venta se obtiene siempre del producto en base de datos,
+                    // nunca del formulario, para evitar que el cliente lo manipule.
+                    $producto = $productoModel->getById((int)$idProducto);
+                    $precioventa = $producto ? (float)$producto['precioventa'] : 0;
+
+                    $cantidad = isset($post_data['cantidades'][$key]) ? (int)$post_data['cantidades'][$key] : 1;
+                    $descuento = isset($post_data['descuentos'][$key]) ? (float)$post_data['descuentos'][$key] : 0.00;
+
                     $datos['detalles'][] = [
                         'idproducto' => (int)$idProducto,
-                        'cantidad' => isset($post_data['cantidades'][$key]) ? (int)$post_data['cantidades'][$key] : 1,
-                        'precioventa' => isset($post_data['precios'][$key]) ? (float)$post_data['precios'][$key] : 0,
-                        'descuento' => isset($post_data['descuentos'][$key]) ? (float)$post_data['descuentos'][$key] : 0.00
+                        'cantidad' => $cantidad,
+                        'precioventa' => $precioventa,
+                        'descuento' => $descuento
                     ];
+
+                    $total += ($cantidad * $precioventa) - $descuento;
                 }
             }
+
+            $datos['totalventa'] = $total;
         }
 
         // Procesar métodos de pago según el tipo de pago (único o mixto)

@@ -35,17 +35,23 @@ class ImagenService
     public function __construct($upload_dir)
     {
         $this->upload_dir = $upload_dir;
-        $this->allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg'];
+        // Mapa de tipo MIME real (detectado en el servidor) -> extensión segura a usar en disco
+        $this->allowed_types = [
+            'image/jpeg' => 'jpg',
+            'image/png'  => 'png',
+            'image/gif'  => 'gif',
+            'image/webp' => 'webp',
+        ];
 
         // Crear directorio si no existe
         if (!file_exists($this->upload_dir)) {
-            mkdir($this->upload_dir, 0777, true);
+            mkdir($this->upload_dir, 0755, true);
         }
     }
 
     /**
      * Procesa una imagen subida
-     * 
+     *
      * @param array $imagen Datos de la imagen subida
      * @return string|bool Nombre del archivo o false si hubo un error
      */
@@ -56,25 +62,32 @@ class ImagenService
             return false;
         }
 
-        // Verificar tipo de archivo
-        if (!in_array($imagen['type'], $this->allowed_types)) {
-            return false;
-        }
-
         // Verificar tamaño de archivo
         if ($imagen['size'] > $this->max_size) {
             return false;
         }
 
-        // Obtener información del archivo
-        $extension = pathinfo($imagen['name'], PATHINFO_EXTENSION);
-        $nombre_sin_extension = pathinfo($imagen['name'], PATHINFO_FILENAME);
+        // Detectar el tipo MIME real inspeccionando el contenido del archivo
+        // (el 'type' del $_FILES es reportado por el cliente y no es confiable).
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $tipo_real = finfo_file($finfo, $imagen['tmp_name']);
+        finfo_close($finfo);
 
-        // Sanitizar nombre del archivo
-        $nombre_sin_extension = preg_replace('/[^a-zA-Z0-9_-]/', '', $nombre_sin_extension);
+        if (!isset($this->allowed_types[$tipo_real])) {
+            return false;
+        }
+
+        // Verificar además que sea una imagen válida y no un archivo disfrazado
+        if (@getimagesize($imagen['tmp_name']) === false) {
+            return false;
+        }
+
+        // La extensión se determina únicamente por el tipo MIME real detectado,
+        // nunca por el nombre de archivo enviado por el cliente.
+        $extension = $this->allowed_types[$tipo_real];
 
         // Generar nombre único
-        $nombre_archivo = uniqid() . '_' . $nombre_sin_extension . '.' . $extension;
+        $nombre_archivo = uniqid('img_', true) . '.' . $extension;
 
         // Ruta completa
         $ruta_destino = $this->upload_dir . $nombre_archivo;
