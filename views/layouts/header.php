@@ -25,6 +25,9 @@ global $URL;
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <?= csrfMetaTag() ?>
+    <meta name="app-url" content="<?= $URL; ?>">
+
     <title><?= $appName ?></title>
 
     <!-- Google Font: Source Sans Pro -->
@@ -102,8 +105,8 @@ global $URL;
                         <li class="user-header">
                             <img src="<?= $URL; ?>public/uploads/usuarios/<?= $currentUser['imagen']; ?>" loading="eager" class="img-circle elevation-2" alt="User Image">
                             <p>
-                                <?= $currentUser['nombre']; ?>
-                                <small><?= $currentUser['cargo']; ?></small>
+                                <?= htmlspecialchars($currentUser['nombre'], ENT_QUOTES, 'UTF-8'); ?>
+                                <small><?= htmlspecialchars($currentUser['cargo'], ENT_QUOTES, 'UTF-8'); ?></small>
                             </p>
                         </li>
                         <!-- Menu Footer-->

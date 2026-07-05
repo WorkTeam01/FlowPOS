@@ -1,11 +1,23 @@
 /**
  * common-utils.js - Utilidades JavaScript básicas para el sistema
- * 
+ *
  * Este archivo contiene funciones simples para inicializar componentes
  * comunes en el sistema de Alojamiento Flores.
- * 
+ *
  * @version 1.0
  */
+
+// Enviar el token CSRF en todas las peticiones AJAX de jQuery (POST/PUT/DELETE)
+if (typeof $ !== 'undefined' && $.ajaxSetup) {
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    if (csrfMeta) {
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-Token': csrfMeta.content
+            }
+        });
+    }
+}
 
 /**
  * Inicializa Select2 en los elementos seleccionados sin modificar sus opciones
@@ -307,4 +319,30 @@ function ajaxRequest(url, method = 'GET', data = {}, successCallback, errorCallb
             }
         }
     });
+}
+
+/**
+ * Envía un formulario POST construido dinámicamente con el token CSRF incluido.
+ * Construye el DOM de forma segura (sin innerHTML) para evitar XSS.
+ *
+ * @param {string} action - URL de destino del formulario
+ * @param {object} fields - Pares nombre/valor a enviar como inputs ocultos
+ */
+function submitCsrfForm(action, fields) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = action;
+
+    const allFields = Object.assign({}, fields, { csrf_token: csrfToken });
+    Object.keys(allFields).forEach(function (name) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = allFields[name];
+        form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
 }

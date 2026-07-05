@@ -235,7 +235,7 @@ function generateCSRFToken()
  */
 function verifyCSRFToken($token)
 {
-    if (!isset($_SESSION['csrf_token']) || $token !== $_SESSION['csrf_token']) {
+    if (!isset($_SESSION['csrf_token']) || !is_string($token) || !hash_equals($_SESSION['csrf_token'], $token)) {
         return false;
     }
     return true;
@@ -248,4 +248,106 @@ function regenerateCSRFToken()
 {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     return $_SESSION['csrf_token'];
+}
+
+/**
+ * Generar el meta tag con el token CSRF para que el JS lo lea en peticiones AJAX
+ *
+ * @return string Tag <meta> con el token
+ */
+function csrfMetaTag()
+{
+    return '<meta name="csrf-token" content="' . htmlspecialchars(generateCSRFToken(), ENT_QUOTES, 'UTF-8') . '">';
+}
+
+/**
+ * Generar el input oculto con el token CSRF para incluir en formularios
+ *
+ * @return string Input oculto con el token
+ */
+function csrfField()
+{
+    return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars(generateCSRFToken(), ENT_QUOTES, 'UTF-8') . '">';
+}
+
+/**
+ * Obtener el token CSRF enviado en la petición actual (form o AJAX)
+ *
+ * @return string|null Token recibido o null si no viene ninguno
+ */
+function getRequestCSRFToken()
+{
+    if (isset($_POST['csrf_token'])) {
+        return $_POST['csrf_token'];
+    }
+    if (isset($_SERVER['HTTP_X_CSRF_TOKEN'])) {
+        return $_SERVER['HTTP_X_CSRF_TOKEN'];
+    }
+    return null;
+}
+
+/**
+ * Determinar si la petición actual es una llamada AJAX
+ *
+ * @return bool True si parece ser AJAX
+ */
+function isAjaxRequest()
+{
+    return (
+        (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+        || isset($_SERVER['HTTP_X_CSRF_TOKEN'])
+        || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)
+    );
+}
+
+/**
+ * Exigir un token CSRF válido en peticiones POST; corta la ejecución si falta o es inválido.
+ * No destruye la sesión activa del usuario.
+ */
+function requireCSRF()
+{
+    global $URL;
+
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+        return;
+    }
+
+    if (verifyCSRFToken(getRequestCSRFToken())) {
+        return;
+    }
+
+    $mensaje = 'Tu sesión de formulario expiró. Vuelve a intentarlo, por favor.';
+
+    if (isAjaxRequest()) {
+        http_response_code(403);
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success' => false,
+            'message' => $mensaje
+        ]);
+        exit;
+    }
+
+    $_SESSION['mensaje'] = $mensaje;
+    $_SESSION['icono'] = 'error';
+    header('Location: ' . getSafeRedirectBack($URL));
+    exit;
+}
+
+/**
+ * Obtener una URL segura a la cual volver tras un error (mismo origen que $URL),
+ * usando el referer de la petición si es válido, o $URL como respaldo.
+ *
+ * @param string $URL URL base de la aplicación
+ * @return string URL a la que redirigir
+ */
+function getSafeRedirectBack($URL)
+{
+    $referer = $_SERVER['HTTP_REFERER'] ?? '';
+
+    if ($referer !== '' && strpos($referer, $URL) === 0) {
+        return $referer;
+    }
+
+    return $URL . 'index.php';
 }
