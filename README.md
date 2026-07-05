@@ -159,6 +159,7 @@ FlowPOS/
 - Usa `DEBUG=false` fuera de desarrollo.
 - No publiques el archivo `.env`.
 - Si trabajas con datos reales, configura HTTPS y credenciales de BD robustas.
+- Todos los formularios y endpoints AJAX de escritura están protegidos con CSRF (token de sesión validado en servidor); ver `CHANGELOG.md` [1.0.1].
 
 ## Changelog
 

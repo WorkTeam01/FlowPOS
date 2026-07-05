@@ -74,7 +74,7 @@ La aplicación sigue un patrón MVC personalizado **sin router**. No hay un fron
 ### Flujo de una Solicitud
 
 1. **`index.php`** — punto de entrada autenticado; redirige a la vista de dashboard específica según el rol en `$_SESSION['usuario_cargo']`
-2. **`views/layouts/session.php`** — incluido en prácticamente todas las páginas; inicia la sesión PHP, carga `.env`, define `$URL` y provee las funciones de autenticación (`isAuthenticated()`, `requireLogin()`, `requireRole()`, `getCurrentUser()`, `generateCSRFToken()`, `verifyCSRFToken()`)
+2. **`views/layouts/session.php`** — incluido en prácticamente todas las páginas; inicia la sesión PHP, carga `.env`, define `$URL` y provee las funciones de autenticación (`isAuthenticated()`, `requireLogin()`, `requireRole()`, `getCurrentUser()`) y CSRF (`generateCSRFToken()`, `verifyCSRFToken()`, `csrfField()`, `csrfMetaTag()`, `getRequestCSRFToken()`, `requireCSRF()`, `getSafeRedirectBack()`)
 3. **`views/layouts/header.php`** — incluido después de session; llama a `requireLogin()`, instancia `AuthorizationService`, renderiza el `<head>` y navbar de AdminLTE
 4. **`views/layouts/footer.php`** y **`views/layouts/mensajes.php`** — cierran el HTML y renderizan mensajes flash de `$_SESSION['mensaje']` con SweetAlert2
 
@@ -109,6 +109,15 @@ Dos niveles de control de acceso:
 2. **Por permiso** (`AuthorizationService::tienePermiso()` / `tienePermisoNombre()`) — verificaciones granulares por acción, almacenadas en las tablas `permiso` y `permisousuario`. Los administradores evitan todas las verificaciones de permisos.
 
 Roles de usuario: `administrador`, `supervisor`, `vendedor`.
+
+### CSRF
+
+Todo endpoint de escritura bajo `controllers/*/` que reciba `POST` debe invocar `requireCSRF();` (definido en `views/layouts/session.php`) como primera línea tras los `require_once`. Corta la ejecución con 403 JSON (AJAX) o redirect + mensaje flash (form tradicional) si el token falta o es inválido; no destruye la sesión activa.
+
+- **Formularios tradicionales**: incluir `<?= csrfField() ?>` dentro de cada `<form method="post">`.
+- **AJAX jQuery**: el token viaja automático vía header `X-CSRF-Token` gracias al `$.ajaxSetup` global en `public/js/core/common-utils.js`, que lo lee del meta tag `<?= csrfMetaTag() ?>` emitido en `views/layouts/header.php`.
+- **AJAX con FormData** (uploads): `formData.append('csrf_token', csrfToken)` explícito, leyendo el token del meta tag.
+- **Acciones que mutan estado invocadas antes por GET** (desactivar, cambiar estado, anular, cerrar sesión): usar `submitCsrfForm(action, fields)` de `common-utils.js`, que construye y envía un formulario oculto por POST con el token incluido — nunca `window.location.href` a un endpoint de escritura.
 
 ### Tablas Principales de la Base de Datos
 

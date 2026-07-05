@@ -53,7 +53,7 @@ _______________
 [Restricciones]
 - MVC sin router: las vistas incluyen controladores directamente con require/include
 - Todos los archivos de vista incluyen views/layouts/session.php primero, luego header.php
-- CSRF obligatorio en formularios POST: generateCSRFToken() en vista, verifyCSRFToken() en controlador
+- CSRF obligatorio en formularios POST: csrfField() en vista, requireCSRF() en controlador (helper centralizado en session.php)
 - Conexión a BD: Conexion::getInstance()->getConnection() — nunca instanciar PDO directamente
 - Mensajes flash: $_SESSION['mensaje'] + $_SESSION['icono'] (success/error/warning/info)
 - Subida de imágenes: siempre a través de ImagenService
@@ -109,7 +109,7 @@ Descripción: [criterios de aceptación]
 
 [Restricciones]
 - Seguir el patrón MVC del módulo de ventas como referencia
-- CSRF en todos los formularios POST: generateCSRFToken() en vista, verifyCSRFToken() en controlador
+- CSRF en todos los formularios POST: csrfField() en vista, requireCSRF() en controlador; endpoints AJAX vía header X-CSRF-Token (csrfMetaTag() + $.ajaxSetup)
 - Sanitización con htmlspecialchars() en vistas — nunca en modelos ni controladores
 - Queries con PDO preparado — nunca concatenar variables en SQL
 - Mensajes flash: $_SESSION['mensaje'] + $_SESSION['icono'] antes de cualquier redirect
@@ -195,7 +195,8 @@ Revisa el siguiente código antes del merge.
 [Restricciones]
 Evalúa específicamente:
 - Seguridad: SQL injection (PDO preparado), XSS (htmlspecialchars en vistas),
-  CSRF (generateCSRFToken + verifyCSRFToken), sesiones mal validadas
+  CSRF (requireCSRF() en el controlador + csrfField()/csrfMetaTag() en la vista), sesiones mal validadas,
+  mutaciones de estado invocadas por GET en vez de POST
 - Conexión: Conexion::getInstance() usado correctamente — nunca PDO directo
 - Autorización: requireRole() en páginas, AuthorizationService en acciones
 - Uploads: ImagenService — nunca move_uploaded_file() directo
@@ -299,7 +300,7 @@ Criterios de aceptación:
 
 [Restricciones]
 - Seguir el patrón MVC del módulo ventas como referencia exacta
-- CSRF en todos los formularios POST y endpoints AJAX
+- CSRF en todos los formularios POST y endpoints AJAX: csrfField()/csrfMetaTag() en la vista, requireCSRF() en el controlador
 - PDO preparado en todos los queries — sin concatenación de variables
 - htmlspecialchars() en vistas para todo output de usuario
 - Mensajes flash: $_SESSION['mensaje'] + $_SESSION['icono'] antes de redirect
@@ -326,5 +327,5 @@ Devuelve en este orden:
 
 ---
 
-_Última actualización: 2026-07-01_
+_Última actualización: 2026-07-05_
 _Mantener sincronizado con CLAUDE.md al hacer cambios de arquitectura._
