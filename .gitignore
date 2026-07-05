@@ -22,3 +22,11 @@ bash.exe.stackdump
 *.sql
 !schema.sql
 !seed.sql
+
+# Imágenes subidas por usuarios — solo se versionan las imágenes por defecto
+public/uploads/productos/*
+!public/uploads/productos/producto_default.png
+public/uploads/usuarios/*
+!public/uploads/usuarios/user_default.jpg
+public/uploads/clientes/*
+!public/uploads/clientes/.gitkeep
