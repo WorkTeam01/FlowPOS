@@ -104,7 +104,34 @@ try {
 
     // Validar estado de la venta
     if ($venta['estado'] != 1) {
-        die("Error: No se puede generar recibo para ventas anuladas");
+        http_response_code(409);
+        ?>
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+            <meta charset="UTF-8">
+            <title>Comprobante no disponible</title>
+            <style>
+                body { font-family: Arial, sans-serif; background: #f4f6f9; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+                .aviso { text-align: center; background: #fff; padding: 2.5rem 3rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,.1); }
+                .aviso i { font-size: 3rem; color: #dc3545; }
+                .aviso h1 { font-size: 1.25rem; margin: 1rem 0 .5rem; color: #333; }
+                .aviso p { color: #666; margin-bottom: 1.5rem; }
+                .aviso button { background: #6c757d; color: #fff; border: none; padding: .5rem 1.5rem; border-radius: 4px; cursor: pointer; }
+                .aviso button:hover { background: #5a6268; }
+            </style>
+        </head>
+        <body>
+            <div class="aviso">
+                <i>&#9888;</i>
+                <h1>Comprobante no disponible</h1>
+                <p>Esta venta fue anulada, por lo que no es posible generar su comprobante.</p>
+                <button onclick="window.close()">Cerrar</button>
+            </div>
+        </body>
+        </html>
+        <?php
+        exit;
     }
 
     // Extraer datos principales con validación
