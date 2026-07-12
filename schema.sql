@@ -191,3 +191,13 @@ CREATE TABLE sesionusuario (
   estado tinyint(1) DEFAULT 1, -- 1=Conectado, 0=Desconectado
   FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario)
 );
+
+CREATE TABLE intento_login (
+  idintento    int PRIMARY KEY AUTO_INCREMENT,
+  identificador varchar(255) DEFAULT NULL,
+  ip           varchar(45) NOT NULL,
+  exito        tinyint(1) NOT NULL DEFAULT 0,
+  fecha        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_intento_ip_fecha (ip, fecha),
+  INDEX idx_intento_ident_fecha (identificador, fecha)
+);
