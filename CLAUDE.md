@@ -86,7 +86,7 @@ La aplicación sigue un patrón MVC personalizado **sin router**. No hay un fron
 | `models/`                        | Clases de acceso a datos (una por entidad); cada una instancia `Conexion::getInstance()`                                                                                  |
 | `controllers/`                   | Clases controlador y scripts de acción por módulo (ej. `controllers/ventas/VentaController.php`, `controllers/ventas/crear_venta.php`)                                    |
 | `views/`                         | Archivos de vista PHP organizados por módulo; incluyen controladores y modelos directamente según necesiten                                                               |
-| `services/`                      | `AuthorizationService.php` (verificación de permisos por nombre/ID), `ImagenService.php` (subida y eliminación de imágenes), `literal.php` (conversión número a palabras) |
+| `services/`                      | `AuthorizationService.php` (verificación de permisos por nombre/ID), `ImagenService.php` (subida y eliminación de imágenes), `RateLimiterService.php` (rate limiting de login por cuenta/IP), `literal.php` (conversión número a palabras) |
 | `libs/`                          | Librerías de terceros empaquetadas — solo TCPDF para generación de PDFs                                                                                                   |
 | `public/js/modules/`             | Archivos JavaScript por módulo (un subdirectorio por módulo)                                                                                                              |
 | `public/js/core/common-utils.js` | Utilidades JS compartidas                                                                                                                                                 |
@@ -129,6 +129,7 @@ Todo endpoint de escritura bajo `controllers/*/` que reciba `POST` debe invocar 
 - `venta`, `detalleventa`, `pagoventa` — ventas con líneas de detalle y métodos de pago mixtos (efectivo, tarjeta, QR, transferencia)
 - `compra`, `detallecompra` — ingreso de mercadería/inventario
 - `sesionusuario` — registro de auditoría de sesiones
+- `intento_login` — registro de intentos de login (éxito/fallo) para rate limiting por cuenta e IP
 
 ### Mensajes Flash
 

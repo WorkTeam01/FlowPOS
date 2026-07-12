@@ -246,7 +246,7 @@ Opciones que estoy considerando:
 - No introducir Composer ni dependencias externas sin evaluar impacto
 - Mantener el patrón de includes directos — sin router
 - La solución debe poder mantenerse sin herramientas de build
-- Nuevos servicios van en services/ (ImagenService y AuthorizationService como referencia)
+- Nuevos servicios van en services/ (ImagenService, AuthorizationService y RateLimiterService como referencia)
 
 [Formato de salida]
 1. Recomendación directa (cuál opción y por qué en 3 líneas)
@@ -288,6 +288,7 @@ BD existente relevante:
 - compra (id, idusuario FK, fecha, total, observacion)
 - detallecompra (id, idcompra FK, idproducto FK, cantidad, preciounitario, subtotal)
 - sesionusuario (id, idusuario FK, fechainicio, fechafin, ip)
+- intento_login (id, identificador, ip, exito, fecha) — rate limiting de login
 
 Módulo de referencia para patrones: ventas.
 
@@ -327,5 +328,5 @@ Devuelve en este orden:
 
 ---
 
-_Última actualización: 2026-07-05_
+_Última actualización: 2026-07-12_
 _Mantener sincronizado con CLAUDE.md al hacer cambios de arquitectura._
