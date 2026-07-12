@@ -8,10 +8,8 @@
  * @version 1.0
  */
 
-// Iniciar sesión
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
+// Cargar gestión de sesión y helpers CSRF (define $URL, requireCSRF, getSafeRedirectBack)
+require_once __DIR__ . '/../../views/layouts/session.php';
 
 // Incluir el controlador de autenticación
 require_once __DIR__ . '/AuthController.php';

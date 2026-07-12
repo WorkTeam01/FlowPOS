@@ -24,6 +24,9 @@ class AuthController
         require_once __DIR__ . '/../../models/Usuario.php';
         $this->modelo = new Usuario();
 
+        // Incluir el servicio de rate limiting
+        require_once __DIR__ . '/../../services/RateLimiterService.php';
+
         // Iniciar sesión si no está iniciada
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
@@ -40,48 +43,16 @@ class AuthController
     }
 
     /**
-     * Genera un token CSRF para proteger formularios
-     * 
-     * @return string Token CSRF
-     */
-    public function generarCSRFToken()
-    {
-        if (!isset($_SESSION['csrf_token'])) {
-            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-        }
-        return $_SESSION['csrf_token'];
-    }
-
-    /**
-     * Verifica si el token CSRF es válido
-     * 
-     * @param string $token Token CSRF a verificar
-     * @return bool True si es válido, False en caso contrario
-     */
-    public function verificarCSRFToken($token)
-    {
-        if (!isset($_SESSION['csrf_token']) || $token !== $_SESSION['csrf_token']) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
      * Procesa el formulario de login
      */
     public function login()
     {
+        global $URL;
+
         // Verificar si se envió el formulario
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            // Verificar token CSRF si está presente
-            if (isset($_POST['csrf_token'])) {
-                if (!$this->verificarCSRFToken($_POST['csrf_token'])) {
-                    $_SESSION['mensaje'] = 'Error de seguridad. Por favor, intente nuevamente.';
-                    $_SESSION['icono'] = 'error';
-                    header('Location: ' . $_SERVER['HTTP_REFERER']);
-                    exit;
-                }
-            }
+            // Exigir token CSRF válido (corta la ejecución si falta o es inválido)
+            requireCSRF();
 
             // Validar datos
             $identifier = isset($_POST['identifier']) ? trim($_POST['identifier']) : '';
@@ -101,7 +72,20 @@ class AuthController
             if (!empty($errors)) {
                 $_SESSION['mensaje'] = $errors[0];
                 $_SESSION['icono'] = 'error';
-                header('Location: ' . $_SERVER['HTTP_REFERER']);
+                header('Location: ' . getSafeRedirectBack($URL));
+                exit;
+            }
+
+            // Rate limiting: identificador normalizado + IP del cliente
+            $rateLimiter = new RateLimiterService();
+            $identificadorNormalizado = mb_strtolower($identifier);
+            $ip = $_SERVER['REMOTE_ADDR'];
+
+            if ($rateLimiter->estaBloqueado($identificadorNormalizado, $ip)) {
+                $minutos = $rateLimiter->minutosRestantes($identificadorNormalizado, $ip);
+                $_SESSION['mensaje'] = "Demasiados intentos fallidos. Intente nuevamente en {$minutos} minuto(s).";
+                $_SESSION['icono'] = 'warning';
+                header('Location: ' . getSafeRedirectBack($URL));
                 exit;
             }
 
@@ -118,9 +102,10 @@ class AuthController
                 if ($usuario_existe) {
                     $usuario_id = $this->modelo->obtenerIdPorCorreo($identifier);
                 } else {
+                    $rateLimiter->registrarFallo($identificadorNormalizado, $ip);
                     $_SESSION['mensaje'] = 'El correo electrónico no está registrado en el sistema';
                     $_SESSION['icono'] = 'error';
-                    header('Location: ' . $_SERVER['HTTP_REFERER']);
+                    header('Location: ' . getSafeRedirectBack($URL));
                     exit;
                 }
             } else {
@@ -129,9 +114,10 @@ class AuthController
                 if ($usuario_existe) {
                     $usuario_id = $this->modelo->obtenerIdPorNumDocumento($identifier);
                 } else {
+                    $rateLimiter->registrarFallo($identificadorNormalizado, $ip);
                     $_SESSION['mensaje'] = 'El número de documento no está registrado en el sistema';
                     $_SESSION['icono'] = 'error';
-                    header('Location: ' . $_SERVER['HTTP_REFERER']);
+                    header('Location: ' . getSafeRedirectBack($URL));
                     exit;
                 }
             }
@@ -140,9 +126,10 @@ class AuthController
             $estado_usuario = $this->modelo->obtenerEstadoPorId($usuario_id);
 
             if ($estado_usuario === 0) {
+                $rateLimiter->registrarFallo($identificadorNormalizado, $ip);
                 $_SESSION['mensaje'] = 'Su cuenta está desactivada. Contacte al administrador.';
                 $_SESSION['icono'] = 'warning';
-                header('Location: ' . $_SERVER['HTTP_REFERER']);
+                header('Location: ' . getSafeRedirectBack($URL));
                 exit;
             }
 
@@ -154,6 +141,9 @@ class AuthController
             }
 
             if ($usuario) {
+                // Rate limiting: registrar éxito (resetea implícitamente el conteo por ventana)
+                $rateLimiter->registrarExito($identificadorNormalizado, $ip);
+
                 // Iniciar sesión
                 $this->iniciarSesion($usuario);
 
@@ -163,9 +153,10 @@ class AuthController
                 header('Location: ../../');
             } else {
                 // Credenciales incorrectas (la contraseña es incorrecta)
+                $rateLimiter->registrarFallo($identificadorNormalizado, $ip);
                 $_SESSION['mensaje'] = 'La contraseña ingresada es incorrecta';
                 $_SESSION['icono'] = 'error';
-                header('Location: ' . $_SERVER['HTTP_REFERER']);
+                header('Location: ' . getSafeRedirectBack($URL));
             }
             exit;
         }
