@@ -81,6 +81,11 @@ class AuthController
             $identificadorNormalizado = mb_strtolower($identifier);
             $ip = $_SERVER['REMOTE_ADDR'];
 
+            // Purga perezosa de intentos antiguos (~1% de los logins), evita crecimiento indefinido sin cron
+            if (random_int(1, 100) === 1) {
+                $rateLimiter->purgar();
+            }
+
             if ($rateLimiter->estaBloqueado($identificadorNormalizado, $ip)) {
                 $minutos = $rateLimiter->minutosRestantes($identificadorNormalizado, $ip);
                 $_SESSION['mensaje'] = "Demasiados intentos fallidos. Intente nuevamente en {$minutos} minuto(s).";
