@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     }).then((result) => {
                         if (result.isConfirmed) {
                             // Redirigir al logout
-                            window.location.href = '<?= $URL; ?>controllers/auth/logout.php';
+                            submitCsrfForm(`${appUrl}controllers/auth/logout.php`, {});
                         }
                     });
                 } else {

@@ -8,10 +8,14 @@
  * @version 1.0
  */
 
-// Iniciar sesión si no está iniciada
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
+require_once __DIR__ . '/../../views/layouts/session.php';
+
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+    header('Location: ' . $URL . 'index.php');
+    exit;
 }
+
+requireCSRF();
 
 // Incluir el controlador de autenticación
 require_once __DIR__ . '/AuthController.php';
