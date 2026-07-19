@@ -7,8 +7,11 @@ $dashboardController = new DashboardSupervisorController();
 $module_scripts = ['dashboard/dashboard_supervisor'];
 ?>
 
+<!-- ChartJS (solo necesario en este dashboard) -->
+<script src="<?= $URL; ?>public/js/plugins/chart/Chart.js"></script>
+
 <!-- Content Header (Page header) -->
-<div class="content-header">
+<section class="content-header">
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-6">
@@ -23,7 +26,7 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
             </div>
         </div>
     </div>
-</div>
+</section>
 <!-- /.content-header -->
 
 <!-- Main content -->
@@ -52,7 +55,7 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
                             </div>
 
                             <!-- Fechas personalizadas (inicialmente oculto) -->
-                            <div id="fechas-personalizadas" class="col-md-6 col-sm-12 mb-2 mb-md-0" style="display: none;">
+                            <div id="fechas-personalizadas" class="col-md-6 col-sm-12 mb-2 mb-md-0 d-none">
                                 <div class="row">
                                     <div class="col-sm-5 mb-2 mb-sm-0">
                                         <div class="input-group input-group-sm">
@@ -92,8 +95,8 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
                     <span class="info-box-icon bg-info elevation-1"><i class="fas fa-shopping-bag"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Ventas del Equipo</span>
-                        <span class="info-box-number" id="ventas-equipo">
-                            <i class="fas fa-spinner fa-spin"></i>
+                        <span class="info-box-number" id="ventas-equipo" aria-live="polite">
+                            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
                         </span>
                     </div>
                 </div>
@@ -105,8 +108,8 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
                     <span class="info-box-icon bg-success elevation-1"><i class="fas fa-chart-line"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Cumplimiento Meta</span>
-                        <span class="info-box-number" id="meta-equipo">
-                            <i class="fas fa-spinner fa-spin"></i>
+                        <span class="info-box-number" id="meta-equipo" aria-live="polite">
+                            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
                         </span>
                     </div>
                 </div>
@@ -118,8 +121,8 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
                     <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-users"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Vendedores Activos</span>
-                        <span class="info-box-number" id="vendedores-activos">
-                            <i class="fas fa-spinner fa-spin"></i>
+                        <span class="info-box-number" id="vendedores-activos" aria-live="polite">
+                            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
                         </span>
                     </div>
                 </div>
@@ -131,8 +134,8 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
                     <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-shopping-cart"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Venta Promedio</span>
-                        <span class="info-box-number" id="ticket-promedio">
-                            <i class="fas fa-spinner fa-spin"></i>
+                        <span class="info-box-number" id="ticket-promedio" aria-live="polite">
+                            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
                         </span>
                     </div>
                 </div>
@@ -150,20 +153,20 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
                             Rendimiento por Vendedor
                         </h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer o expandir panel">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="chart">
-                            <canvas id="grafico-vendedores" height="300"></canvas>
+                            <canvas id="grafico-vendedores" height="300" role="img" aria-label="Gráfico de rendimiento de ventas por vendedor del equipo"></canvas>
                         </div>
                     </div>
                     <div class="card-footer bg-white p-0">
                         <ul class="nav nav-pills flex-column" id="lista-vendedores">
                             <li class="nav-item text-center py-3">
-                                <i class="fas fa-spinner fa-spin"></i> Cargando datos...
+                                <i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Cargando datos...
                             </li>
                         </ul>
                     </div>
@@ -179,14 +182,14 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
                             Tendencia de Ventas
                         </h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer o expandir panel">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="chart">
-                            <canvas id="grafico-tendencia" height="250"></canvas>
+                            <canvas id="grafico-tendencia" height="250" role="img" aria-label="Gráfico de tendencia de ventas del equipo"></canvas>
                         </div>
                     </div>
                     <div class="card-footer">
@@ -226,8 +229,8 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
                             Ranking de Vendedores
                         </h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer o expandir panel">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
@@ -246,7 +249,7 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
                                 <tbody id="tabla-ranking">
                                     <tr>
                                         <td colspan="5" class="text-center">
-                                            <i class="fas fa-spinner fa-spin mr-1"></i> Cargando datos...
+                                            <i class="fas fa-spinner fa-spin mr-1" aria-hidden="true"></i> Cargando datos...
                                         </td>
                                     </tr>
                                 </tbody>
@@ -265,18 +268,18 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
                             Ventas por Categoría
                         </h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer o expandir panel">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
                     <div class="card-body">
-                        <canvas id="grafico-categorias" height="240"></canvas>
+                        <canvas id="grafico-categorias" height="240" role="img" aria-label="Gráfico de ventas del equipo por categoría de producto"></canvas>
                     </div>
                     <div class="card-footer bg-white p-0">
                         <ul class="nav nav-pills flex-column" id="lista-categorias">
                             <li class="nav-item text-center py-3">
-                                <i class="fas fa-spinner fa-spin"></i> Cargando datos...
+                                <i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Cargando datos...
                             </li>
                         </ul>
                     </div>
@@ -295,8 +298,8 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
                             Alertas de Inventario
                         </h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer o expandir panel">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
@@ -315,7 +318,7 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
                                 <tbody id="tabla-alertas">
                                     <tr>
                                         <td colspan="5" class="text-center">
-                                            <i class="fas fa-spinner fa-spin mr-1"></i> Cargando datos...
+                                            <i class="fas fa-spinner fa-spin mr-1" aria-hidden="true"></i> Cargando datos...
                                         </td>
                                     </tr>
                                 </tbody>
@@ -339,8 +342,8 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
                             Conversión de Clientes
                         </h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer o expandir panel">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
@@ -348,12 +351,12 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
                         <div class="row">
                             <div class="col-md-8">
                                 <div class="chart-responsive">
-                                    <canvas id="grafico-conversion" height="200"></canvas>
+                                    <canvas id="grafico-conversion" height="200" role="img" aria-label="Gráfico de tasa de conversión de clientes"></canvas>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <ul class="chart-legend clearfix" id="leyenda-conversion">
-                                    <li><i class="fas fa-spinner fa-spin"></i> Cargando...</li>
+                                    <li><i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Cargando...</li>
                                 </ul>
                             </div>
                         </div>
@@ -363,21 +366,21 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
                             <li class="nav-item">
                                 <div class="nav-link">
                                     Clientes nuevos <span class="float-right text-success" id="clientes-nuevos">
-                                        <i class="fas fa-spinner fa-spin"></i>
+                                        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
                                     </span>
                                 </div>
                             </li>
                             <li class="nav-item">
                                 <div class="nav-link">
                                     Clientes recurrentes <span class="float-right text-info" id="clientes-recurrentes">
-                                        <i class="fas fa-spinner fa-spin"></i>
+                                        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
                                     </span>
                                 </div>
                             </li>
                             <li class="nav-item">
                                 <div class="nav-link">
                                     Tasa de retención <span class="float-right text-warning" id="tasa-retencion">
-                                        <i class="fas fa-spinner fa-spin"></i>
+                                        <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
                                     </span>
                                 </div>
                             </li>
@@ -425,12 +428,9 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
 </section>
 <!-- /.content -->
 
+<link rel="stylesheet" href="<?= $URL; ?>public/css/modules/dashboard/dashboard.css">
 <style>
     /* Estilos específicos para dashboard de supervisor */
-    .bg-light-success {
-        background-color: rgba(40, 167, 69, 0.1);
-    }
-
     .chart-legend {
         list-style: none;
         margin-top: 5px;
@@ -452,22 +452,6 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
         width: 15px;
         height: 15px;
         border-radius: 50%;
-    }
-
-    /* Estilos para las barras de progreso en listas */
-    .progress-group {
-        margin-bottom: 8px;
-        padding: 0 10px;
-    }
-
-    .progress-group .progress-text {
-        font-weight: 500;
-        font-size: 0.9rem;
-    }
-
-    .progress-group .progress {
-        height: 5px;
-        margin-bottom: 5px;
     }
 
     #lista-categorias .nav-item {

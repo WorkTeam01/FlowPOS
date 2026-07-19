@@ -7,8 +7,11 @@ $dashboardController = new DashboardController();
 $module_scripts = ['dashboard/dashboard'];
 ?>
 
+<!-- ChartJS (solo necesario en este dashboard) -->
+<script src="<?= $URL; ?>public/js/plugins/chart/Chart.js"></script>
+
 <!-- Content Header (Page header) -->
-<div class="content-header">
+<section class="content-header">
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-6">
@@ -23,7 +26,7 @@ $module_scripts = ['dashboard/dashboard'];
             </div>
         </div>
     </div>
-</div>
+</section>
 <!-- /.content-header -->
 
 <!-- Main content -->
@@ -53,7 +56,7 @@ $module_scripts = ['dashboard/dashboard'];
                             </div>
 
                             <!-- Fechas personalizadas (inicialmente oculto) -->
-                            <div id="fechas-personalizadas" class="col-md-6 col-sm-12 mb-2 mb-md-0" style="display: none;">
+                            <div id="fechas-personalizadas" class="col-md-6 col-sm-12 mb-2 mb-md-0 d-none">
                                 <div class="row">
                                     <div class="col-sm-5 mb-2 mb-sm-0">
                                         <div class="input-group input-group-sm">
@@ -101,8 +104,8 @@ $module_scripts = ['dashboard/dashboard'];
                     <span class="info-box-icon bg-info elevation-1"><i class="fas fa-shopping-bag"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Ventas Totales</span>
-                        <span class="info-box-number" id="ventas-totales">
-                            <i class="fas fa-spinner fa-spin"></i>
+                        <span class="info-box-number" id="ventas-totales" aria-live="polite">
+                            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
                         </span>
                     </div>
                 </div>
@@ -114,8 +117,8 @@ $module_scripts = ['dashboard/dashboard'];
                     <span class="info-box-icon bg-success elevation-1"><i class="fas fa-chart-line"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Ganancias Netas</span>
-                        <span class="info-box-number" id="ganancias-netas">
-                            <i class="fas fa-spinner fa-spin"></i>
+                        <span class="info-box-number" id="ganancias-netas" aria-live="polite">
+                            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
                         </span>
                     </div>
                 </div>
@@ -127,8 +130,8 @@ $module_scripts = ['dashboard/dashboard'];
                     <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-receipt"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Transacciones</span>
-                        <span class="info-box-number" id="total-transacciones">
-                            <i class="fas fa-spinner fa-spin"></i>
+                        <span class="info-box-number" id="total-transacciones" aria-live="polite">
+                            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
                         </span>
                     </div>
                 </div>
@@ -140,8 +143,8 @@ $module_scripts = ['dashboard/dashboard'];
                     <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-shopping-cart"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Venta Promedio</span>
-                        <span class="info-box-number" id="venta-promedio">
-                            <i class="fas fa-spinner fa-spin"></i>
+                        <span class="info-box-number" id="venta-promedio" aria-live="polite">
+                            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
                         </span>
                     </div>
                 </div>
@@ -159,8 +162,8 @@ $module_scripts = ['dashboard/dashboard'];
                             Productos Más Vendidos
                         </h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer o expandir panel">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
@@ -179,7 +182,7 @@ $module_scripts = ['dashboard/dashboard'];
                                 <tbody id="tabla-productos-vendidos">
                                     <tr>
                                         <td colspan="5" class="text-center">
-                                            <i class="fas fa-spinner fa-spin mr-1"></i> Cargando datos...
+                                            <i class="fas fa-spinner fa-spin mr-1" aria-hidden="true"></i> Cargando datos...
                                         </td>
                                     </tr>
                                 </tbody>
@@ -203,18 +206,18 @@ $module_scripts = ['dashboard/dashboard'];
                             Métodos de Pago
                         </h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer o expandir panel">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
                     <div class="card-body">
-                        <canvas id="grafico-metodos-pago" height="220"></canvas>
+                        <canvas id="grafico-metodos-pago" height="220" role="img" aria-label="Gráfico de distribución de ventas por método de pago"></canvas>
 
                         <!-- Detalles de distribución por método de pago -->
                         <div class="mt-4" id="metodos-pago-barras">
                             <div class="text-center">
-                                <i class="fas fa-spinner fa-spin mr-1"></i> Cargando datos...
+                                <i class="fas fa-spinner fa-spin mr-1" aria-hidden="true"></i> Cargando datos...
                             </div>
                         </div>
                     </div>
@@ -233,8 +236,8 @@ $module_scripts = ['dashboard/dashboard'];
                             Productos por Agotar
                         </h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer o expandir panel">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
@@ -253,7 +256,7 @@ $module_scripts = ['dashboard/dashboard'];
                                 <tbody id="tabla-productos-agotar">
                                     <tr>
                                         <td colspan="5" class="text-center">
-                                            <i class="fas fa-spinner fa-spin mr-1"></i> Cargando datos...
+                                            <i class="fas fa-spinner fa-spin mr-1" aria-hidden="true"></i> Cargando datos...
                                         </td>
                                     </tr>
                                 </tbody>
@@ -277,13 +280,13 @@ $module_scripts = ['dashboard/dashboard'];
                             Ventas por Categoría
                         </h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer o expandir panel">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
                     <div class="card-body">
-                        <canvas id="grafico-categorias" height="380"></canvas>
+                        <canvas id="grafico-categorias" height="380" role="img" aria-label="Gráfico de ventas por categoría de producto"></canvas>
                     </div>
                 </div>
             </div>
@@ -299,8 +302,8 @@ $module_scripts = ['dashboard/dashboard'];
                             Últimas Ventas
                         </h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer o expandir panel">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
@@ -321,7 +324,7 @@ $module_scripts = ['dashboard/dashboard'];
                                 <tbody id="tabla-ultimas-ventas">
                                     <tr>
                                         <td colspan="7" class="text-center">
-                                            <i class="fas fa-spinner fa-spin mr-1"></i> Cargando datos...
+                                            <i class="fas fa-spinner fa-spin mr-1" aria-hidden="true"></i> Cargando datos...
                                         </td>
                                     </tr>
                                 </tbody>
@@ -340,99 +343,4 @@ $module_scripts = ['dashboard/dashboard'];
 </section>
 <!-- /.content -->
 
-<style>
-    /* Estilos responsive para dashboard */
-    @media (max-width: 767.98px) {
-
-        /* Ajustes para móviles */
-        .select2-container {
-            width: 100% !important;
-        }
-
-        /* Ajustar tamaño de texto en cards para móviles */
-        .card-title {
-            font-size: 1rem;
-        }
-
-        /* Ajustar espaciado en filtros para móviles */
-        #fechas-personalizadas .input-group-text {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        /* Mejorar visualización de tablas en móviles */
-        .table-responsive {
-            font-size: 0.85rem;
-        }
-
-        /* Los botones de exportación se alinean a la derecha */
-        .exportacion-btns {
-            text-align: right !important;
-            margin-top: 0.5rem;
-        }
-    }
-
-    /* Ajustes para tablets */
-    @media (min-width: 768px) and (max-width: 991.98px) {
-        .select2-container {
-            width: 140px !important;
-        }
-    }
-
-    /* Para que los inputs de fecha tengan el mismo alto en todos los navegadores */
-    input[type="date"] {
-        height: calc(1.8125rem + 2px);
-    }
-
-    /* Mejorar aspecto de Select2 */
-    .select2-container--bootstrap4 .select2-selection--single {
-        height: calc(1.8125rem + 2px) !important;
-    }
-
-    .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
-        line-height: calc(1.8125rem + 2px) !important;
-    }
-
-    /* Estilos para KPI de ganancias */
-    .bg-light-success {
-        background-color: rgba(40, 167, 69, 0.1);
-    }
-
-    /* Estilos para impresión */
-    @media print {
-
-        .card-tools,
-        .main-header,
-        .main-sidebar,
-        .main-footer,
-        .no-print {
-            display: none !important;
-        }
-
-        .content-wrapper {
-            margin-left: 0 !important;
-            padding: 0 !important;
-        }
-
-        .card {
-            box-shadow: none !important;
-            border: 1px solid #ddd;
-        }
-    }
-
-    /* Estilos para las barras de progreso en listas */
-    .progress-group {
-        margin-bottom: 8px;
-        padding: 0 10px;
-    }
-
-    .progress-group .progress-text {
-        font-weight: 500;
-        font-size: 0.9rem;
-    }
-
-    .progress-group .progress {
-        height: 5px;
-        margin-bottom: 5px;
-    }
-</style>
+<link rel="stylesheet" href="<?= $URL; ?>public/css/modules/dashboard/dashboard.css">

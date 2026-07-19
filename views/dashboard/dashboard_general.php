@@ -35,7 +35,7 @@ $idusuariosesion = $currentUser['id'];
             <div class="col-md-12">
                 <div class="p-5 mb-4 bg-white rounded-3 shadow-sm">
                     <div class="container-fluid py-4">
-                        <h1 class="display-5 fw-bold">Bienvenido a <?= $appName ?> - <?= $_SESSION['usuario_cargo']; ?></h1>
+                        <p class="display-5 fw-bold mb-3">Bienvenido a <?= $appName ?> - <?= $_SESSION['usuario_cargo']; ?></p>
                         <p class="col-md-8 fs-4">
                             Este sistema le permite gestionar todos los aspectos relacionados con la gestión de ventas,
                             incluyendo productos, inventario, ventas, clientes y más.
@@ -74,10 +74,10 @@ $idusuariosesion = $currentUser['id'];
                         </h3>
                     </div>
                     <div class="card-body">
-                        <div id="estado-inventario" class="text-center">
-                            <i class="fas fa-spinner fa-spin"></i> Cargando...
+                        <div id="estado-inventario" class="text-center" aria-live="polite">
+                            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Cargando...
                         </div>
-                        <div class="mt-3 text-center" id="detalle-inventario" style="display:none;">
+                        <div class="mt-3 text-center d-none" id="detalle-inventario" aria-live="polite">
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="info-box bg-light">
@@ -124,9 +124,9 @@ $idusuariosesion = $currentUser['id'];
                         </h3>
                     </div>
                     <div class="card-body p-0">
-                        <ul class="products-list product-list-in-card pl-2 pr-2" id="actividad-reciente">
+                        <ul class="products-list product-list-in-card pl-2 pr-2" id="actividad-reciente" aria-live="polite">
                             <li class="item text-center py-3">
-                                <i class="fas fa-spinner fa-spin"></i> Cargando actividad reciente...
+                                <i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Cargando actividad reciente...
                             </li>
                         </ul>
                     </div>
@@ -148,9 +148,9 @@ $idusuariosesion = $currentUser['id'];
                         </h3>
                     </div>
                     <div class="card-body p-0">
-                        <ul class="users-list clearfix" id="clientes-recientes">
+                        <ul class="users-list clearfix" id="clientes-recientes" aria-live="polite">
                             <li class="text-center py-3 w-100">
-                                <i class="fas fa-spinner fa-spin"></i> Cargando clientes recientes...
+                                <i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Cargando clientes recientes...
                             </li>
                         </ul>
                     </div>
@@ -242,95 +242,91 @@ $idusuariosesion = $currentUser['id'];
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Función para cargar los datos básicos del dashboard
+        function formatoFecha(fechaIso) {
+            return new Date(fechaIso.replace(' ', 'T')).toLocaleDateString('es-BO', {
+                day: '2-digit',
+                month: 'short'
+            });
+        }
+
+        function formatoMoneda(valor) {
+            const currency = (window.APP && window.APP.currency) ? window.APP.currency : 'Bs';
+            return currency + ' ' + parseFloat(valor).toFixed(2);
+        }
+
+        function esc(valor) {
+            const div = document.createElement('div');
+            div.textContent = valor ?? '';
+            return div.innerHTML;
+        }
+
+        // Función para cargar los datos reales del dashboard vía AJAX
         async function cargarDatosDashboard() {
             try {
-                // Simular carga de datos (esto debería ser una llamada AJAX real)
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                const response = await fetch(baseUrl + 'controllers/dashboard/get_general_dashboard_data.php', {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const data = await response.json();
 
-                // Actualizar estado del inventario
-                document.getElementById('estado-inventario').style.display = 'none';
-                document.getElementById('detalle-inventario').style.display = 'block';
-                document.getElementById('total-productos').textContent = '145';
-                document.getElementById('total-categorias').textContent = '8';
-                document.getElementById('productos-bajo').textContent = '12';
+                if (!data.success) {
+                    throw new Error(data.message || 'No se pudieron cargar los datos del dashboard');
+                }
 
-                // Actualizar actividad reciente
+                // Estado del inventario
+                if (data.inventario) {
+                    document.getElementById('estado-inventario').classList.add('d-none');
+                    document.getElementById('detalle-inventario').classList.remove('d-none');
+                    document.getElementById('total-productos').textContent = data.inventario.totalProductos;
+                    document.getElementById('total-categorias').textContent = data.inventario.totalCategorias;
+                    document.getElementById('productos-bajo').textContent = data.inventario.stockBajo;
+                } else {
+                    document.getElementById('estado-inventario').textContent = 'Sin acceso a esta información';
+                }
+
+                // Actividad reciente
                 const actividadReciente = document.getElementById('actividad-reciente');
-                actividadReciente.innerHTML = `
-                <li class="item">
-                    <div class="product-info">
-                        <a href="javascript:void(0)" class="product-title">Venta #1245
-                            <span class="badge badge-success float-right">$1,200.00</span>
-                        </a>
-                        <span class="product-description">
-                            Realizada hace 30 minutos
-                        </span>
-                    </div>
-                </li>
-                <li class="item">
-                    <div class="product-info">
-                        <a href="javascript:void(0)" class="product-title">Nuevo producto
-                            <span class="badge badge-warning float-right">Agregado</span>
-                        </a>
-                        <span class="product-description">
-                            Zapatilla Deportiva Modelo XYZ
-                        </span>
-                    </div>
-                </li>
-                <li class="item">
-                    <div class="product-info">
-                        <a href="javascript:void(0)" class="product-title">Venta #1244
-                            <span class="badge badge-success float-right">$850.00</span>
-                        </a>
-                        <span class="product-description">
-                            Realizada hace 2 horas
-                        </span>
-                    </div>
-                </li>
-                <li class="item">
-                    <div class="product-info">
-                        <a href="javascript:void(0)" class="product-title">Actualización de stock
-                            <span class="badge badge-info float-right">Inventario</span>
-                        </a>
-                        <span class="product-description">
-                            Se actualizó el stock de 5 productos
-                        </span>
-                    </div>
-                </li>
-            `;
+                if (data.actividadReciente && data.actividadReciente.length > 0) {
+                    actividadReciente.innerHTML = data.actividadReciente.map(venta => `
+                        <li class="item">
+                            <div class="product-info">
+                                <a href="javascript:void(0)" class="product-title">Venta #${venta.id}
+                                    <span class="badge badge-success float-right">${formatoMoneda(venta.total)}</span>
+                                </a>
+                                <span class="product-description">${formatoFecha(venta.fecha)}</span>
+                            </div>
+                        </li>
+                    `).join('');
+                } else if (data.actividadReciente) {
+                    actividadReciente.innerHTML = '<li class="item text-center py-3">Sin actividad reciente</li>';
+                } else {
+                    actividadReciente.innerHTML = '<li class="item text-center py-3">Sin acceso a esta información</li>';
+                }
 
-                // Actualizar clientes recientes
+                // Clientes recientes
                 const clientesRecientes = document.getElementById('clientes-recientes');
-                clientesRecientes.innerHTML = `
-                <li>
-                    <img src="${URL}public/img/user_default.jpg" alt="Usuario">
-                    <a class="users-list-name" href="#">Ana Pérez</a>
-                    <span class="users-list-date">Hoy</span>
-                </li>
-                <li>
-                    <img src="${URL}public/img/user_default.jpg" alt="Usuario">
-                    <a class="users-list-name" href="#">Juan López</a>
-                    <span class="users-list-date">Ayer</span>
-                </li>
-                <li>
-                    <img src="${URL}public/img/user_default.jpg" alt="Usuario">
-                    <a class="users-list-name" href="#">María García</a>
-                    <span class="users-list-date">18 Jun</span>
-                </li>
-                <li>
-                    <img src="${URL}public/img/user_default.jpg" alt="Usuario">
-                    <a class="users-list-name" href="#">Carlos Ruiz</a>
-                    <span class="users-list-date">15 Jun</span>
-                </li>
-            `;
-
+                if (data.clientesRecientes && data.clientesRecientes.length > 0) {
+                    clientesRecientes.innerHTML = data.clientesRecientes.map(cliente => `
+                        <li>
+                            <img src="${baseUrl}public/img/user_default.jpg" alt="">
+                            <a class="users-list-name" href="#">${esc(cliente.nombre)}</a>
+                            <span class="users-list-date">${formatoFecha(cliente.fecha)}</span>
+                        </li>
+                    `).join('');
+                } else if (data.clientesRecientes) {
+                    clientesRecientes.innerHTML = '<li class="text-center py-3 w-100">Sin clientes recientes</li>';
+                } else {
+                    clientesRecientes.innerHTML = '<li class="text-center py-3 w-100">Sin acceso a esta información</li>';
+                }
             } catch (error) {
                 console.error('Error al cargar datos del dashboard:', error);
+                document.getElementById('estado-inventario').textContent = 'Error al cargar los datos';
+                document.getElementById('actividad-reciente').innerHTML = '<li class="item text-center py-3">Error al cargar los datos</li>';
+                document.getElementById('clientes-recientes').innerHTML = '<li class="text-center py-3 w-100">Error al cargar los datos</li>';
             }
         }
 
-        // Cargar datos iniciales
         cargarDatosDashboard();
     });
 </script>

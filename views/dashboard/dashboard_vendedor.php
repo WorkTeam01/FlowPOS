@@ -7,8 +7,11 @@ $dashboardController = new DashboardVendedorController();
 $module_scripts = ['dashboard/dashboard_vendedor'];
 ?>
 
+<!-- ChartJS (solo necesario en este dashboard) -->
+<script src="<?= $URL; ?>public/js/plugins/chart/Chart.js"></script>
+
 <!-- Content Header (Page header) -->
-<div class="content-header">
+<section class="content-header">
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm-6">
@@ -23,7 +26,7 @@ $module_scripts = ['dashboard/dashboard_vendedor'];
             </div>
         </div>
     </div>
-</div>
+</section>
 <!-- /.content-header -->
 
 <!-- Main content -->
@@ -62,8 +65,8 @@ $module_scripts = ['dashboard/dashboard_vendedor'];
                     <span class="info-box-icon bg-info elevation-1"><i class="fas fa-shopping-bag"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Mis Ventas</span>
-                        <span class="info-box-number" id="ventas-vendedor">
-                            <i class="fas fa-spinner fa-spin"></i>
+                        <span class="info-box-number" id="ventas-vendedor" aria-live="polite">
+                            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
                         </span>
                     </div>
                 </div>
@@ -75,8 +78,8 @@ $module_scripts = ['dashboard/dashboard_vendedor'];
                     <span class="info-box-icon bg-success elevation-1"><i class="fas fa-money-bill"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Comisión Estimada</span>
-                        <span class="info-box-number" id="comision-vendedor">
-                            <i class="fas fa-spinner fa-spin"></i>
+                        <span class="info-box-number" id="comision-vendedor" aria-live="polite">
+                            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
                         </span>
                     </div>
                 </div>
@@ -88,8 +91,8 @@ $module_scripts = ['dashboard/dashboard_vendedor'];
                     <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-receipt"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Ventas Realizadas</span>
-                        <span class="info-box-number" id="total-ventas">
-                            <i class="fas fa-spinner fa-spin"></i>
+                        <span class="info-box-number" id="total-ventas" aria-live="polite">
+                            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
                         </span>
                     </div>
                 </div>
@@ -101,8 +104,8 @@ $module_scripts = ['dashboard/dashboard_vendedor'];
                     <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-users"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Clientes Atendidos</span>
-                        <span class="info-box-number" id="clientes-atendidos">
-                            <i class="fas fa-spinner fa-spin"></i>
+                        <span class="info-box-number" id="clientes-atendidos" aria-live="polite">
+                            <i class="fas fa-spinner fa-spin" aria-hidden="true"></i>
                         </span>
                     </div>
                 </div>
@@ -120,13 +123,13 @@ $module_scripts = ['dashboard/dashboard_vendedor'];
                             Mi Rendimiento de Ventas
                         </h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer o expandir panel">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
                     <div class="card-body">
-                        <canvas id="grafico-rendimiento" height="250"></canvas>
+                        <canvas id="grafico-rendimiento" height="250" role="img" aria-label="Gráfico de mi rendimiento de ventas en el período seleccionado"></canvas>
                     </div>
                 </div>
             </div>
@@ -140,8 +143,8 @@ $module_scripts = ['dashboard/dashboard_vendedor'];
                             Progreso hacia Metas
                         </h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer o expandir panel">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
@@ -193,8 +196,8 @@ $module_scripts = ['dashboard/dashboard_vendedor'];
                             Mis Productos Más Vendidos
                         </h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer o expandir panel">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
@@ -212,7 +215,7 @@ $module_scripts = ['dashboard/dashboard_vendedor'];
                                 <tbody id="tabla-mis-productos">
                                     <tr>
                                         <td colspan="4" class="text-center">
-                                            <i class="fas fa-spinner fa-spin mr-1"></i> Cargando datos...
+                                            <i class="fas fa-spinner fa-spin mr-1" aria-hidden="true"></i> Cargando datos...
                                         </td>
                                     </tr>
                                 </tbody>
@@ -231,8 +234,8 @@ $module_scripts = ['dashboard/dashboard_vendedor'];
                             Productos por Agotar
                         </h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer o expandir panel">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
@@ -250,7 +253,7 @@ $module_scripts = ['dashboard/dashboard_vendedor'];
                                 <tbody id="tabla-productos-agotar">
                                     <tr>
                                         <td colspan="4" class="text-center">
-                                            <i class="fas fa-spinner fa-spin mr-1"></i> Cargando datos...
+                                            <i class="fas fa-spinner fa-spin mr-1" aria-hidden="true"></i> Cargando datos...
                                         </td>
                                     </tr>
                                 </tbody>
@@ -276,8 +279,8 @@ $module_scripts = ['dashboard/dashboard_vendedor'];
                             Mis Últimas Ventas
                         </h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer o expandir panel">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
@@ -297,7 +300,7 @@ $module_scripts = ['dashboard/dashboard_vendedor'];
                                 <tbody id="tabla-mis-ventas">
                                     <tr>
                                         <td colspan="6" class="text-center">
-                                            <i class="fas fa-spinner fa-spin mr-1"></i> Cargando datos...
+                                            <i class="fas fa-spinner fa-spin mr-1" aria-hidden="true"></i> Cargando datos...
                                         </td>
                                     </tr>
                                 </tbody>
@@ -341,24 +344,4 @@ $module_scripts = ['dashboard/dashboard_vendedor'];
 </section>
 <!-- /.content -->
 
-<style>
-    /* Estilos específicos para dashboard de vendedor */
-    .bg-light-success {
-        background-color: rgba(40, 167, 69, 0.1);
-    }
-
-    /* Estilos para las barras de progreso en listas */
-    .progress-group {
-        margin-bottom: 12px;
-    }
-
-    .progress-group .progress-text {
-        font-weight: 500;
-        font-size: 0.9rem;
-    }
-
-    .progress-group .progress {
-        height: 6px;
-        margin-bottom: 5px;
-    }
-</style>
+<link rel="stylesheet" href="<?= $URL; ?>public/css/modules/dashboard/dashboard.css">

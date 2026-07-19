@@ -3,7 +3,7 @@ $URL = $URL ?? ($GLOBALS['URL'] ?? '');
 $appName = $appName ?? ($GLOBALS['appName'] ?? 'FlowPOS');
 $appVersion = $appVersion ?? ($GLOBALS['appVersion'] ?? '1.0.0');
 ?>
-</div>
+</main>
 <!-- /.content-wrapper -->
 
 <!-- Main Footer -->

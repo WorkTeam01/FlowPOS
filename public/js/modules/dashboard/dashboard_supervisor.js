@@ -1111,7 +1111,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Ocultar o mostrar el selector de fechas según corresponda
         const fechasPersonalizadas = document.getElementById('fechas-personalizadas');
         if (fechasPersonalizadas) {
-            fechasPersonalizadas.style.display = (periodo === 'personalizado') ? 'block' : 'none';
+            fechasPersonalizadas.classList.toggle('d-none', periodo !== 'personalizado');
         }
 
         // Si es personalizado pero no hay fechas seleccionadas, no cargar datos aún
@@ -1222,7 +1222,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (periodo === 'personalizado') {
                     const fechasPersonalizadas = document.getElementById('fechas-personalizadas');
                     if (fechasPersonalizadas) {
-                        fechasPersonalizadas.style.display = 'block';
+                        fechasPersonalizadas.classList.remove('d-none');
                     }
                     return;
                 }

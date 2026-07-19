@@ -31,8 +31,10 @@ global $URL;
     <title><?= $appName ?></title>
 
     <!-- Google Font: Source Sans Pro -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-    <!-- Bootstrap 5 -->
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="<?= $URL; ?>public/css/lib/bootstrap/bootstrap.min.css">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="<?= $URL; ?>public/css/lib/fontawesome/all.min.css">
@@ -40,6 +42,7 @@ global $URL;
     <link rel="stylesheet" href="<?= $URL; ?>public/css/lib/adminlte/adminlte.min.css">
     <!-- Font Awesome Webfonts -->
     <link rel="stylesheet" href="<?= $URL; ?>public/css/core/webfonts.css">
+    <link rel="stylesheet" href="<?= $URL; ?>public/css/core/common.css">
     <link rel="icon" type="image/png" href="<?= $URL; ?>public/img/logo_ventas.svg">
     <!-- Datatables -->
     <link rel="stylesheet" href="<?= $URL; ?>public/css/plugins/datatables/datatables.min.css">
@@ -54,8 +57,6 @@ global $URL;
     <script src="<?= $URL; ?>public/js/plugins/sweetalert2/sweetalert2.min.js"></script>
     <!-- jQuery -->
     <script src="<?= $URL; ?>public/js/lib/jquery/jquery.min.js"></script>
-    <!-- ChartJS -->
-    <script src="<?= $URL; ?>public/js/plugins/chart/Chart.js"></script>
 
     <!-- Estilos específicos por módulo -->
     <?php if (isset($module_styles) && is_array($module_styles)): ?>
@@ -114,7 +115,7 @@ global $URL;
                             <?php if ($authService->tienePermisoNombre($idusuariosesion, 'perfil')) : ?>
                                 <a href="<?= $URL; ?>views/usuarios/perfil.php?id=<?= $currentUser['id']; ?>" class="btn btn-default btn-flat">Perfil</a>
                             <?php endif; ?>
-                            <a href="<?= $URL; ?>controllers/auth/logout.php" class="btn btn-default btn-flat float-right">Cerrar Sesión</a>
+                            <a href="#" onclick="submitCsrfForm('<?= $URL; ?>controllers/auth/logout.php', {}); return false;" class="btn btn-default btn-flat float-right">Cerrar Sesión</a>
                         </li>
                     </ul>
                 </li>
@@ -336,4 +337,4 @@ global $URL;
         </aside>
 
         <!-- Content Wrapper. Contains page content -->
-        <div class="content-wrapper">
+        <main class="content-wrapper">
