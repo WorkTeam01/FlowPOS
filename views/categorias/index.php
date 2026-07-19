@@ -140,7 +140,8 @@ $estadisticas = $controller->getEstadisticas();
                                                     <button type="button" class="btn btn-warning btn-sm btn-editar"
                                                         data-id="<?= $categoria['idcategoria']; ?>"
                                                         data-nombre="<?= htmlspecialchars($categoria['nombre']); ?>"
-                                                        data-estado="<?= $categoria['estado']; ?>">
+                                                        data-estado="<?= $categoria['estado']; ?>"
+                                                        data-toggle="tooltip" title="Editar categoría">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
                                                     <button type="button" class="btn <?= $estado_actual == 1 ? 'btn-danger' : 'btn-success'; ?> btn-sm cambiar-estado"

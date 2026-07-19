@@ -83,6 +83,7 @@ $productos = $controller->index();
                                         $titulo_alerta = $estado_actual == 1 ? '¿Desactivar Producto?' : '¿Activar Producto?';
                                         $texto_alerta = $estado_actual == 1 ? 'El producto no estará disponible para venta.' : 'El producto estará disponible para venta.';
                                         $confirm_button_text = $estado_actual == 1 ? 'Sí, desactivar' : 'Sí, activar';
+                                        $texto_boton_estado = $estado_actual == 1 ? 'Desactivar producto' : 'Activar producto';
                                     ?>
                                         <tr>
                                             <td><?= $contador++; ?></td>
@@ -112,16 +113,17 @@ $productos = $controller->index();
                                             </td>
                                             <td class="text-center">
                                                 <div class="btn-group">
-                                                    <a href="<?= $URL; ?>views/productos/show.php?id=<?= $producto['idproducto']; ?>" class="btn btn-info btn-sm">
+                                                    <a href="<?= $URL; ?>views/productos/show.php?id=<?= $producto['idproducto']; ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="Ver detalles">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
-                                                    <a href="<?= $URL; ?>views/productos/update.php?id=<?= $producto['idproducto']; ?>" class="btn btn-warning btn-sm">
+                                                    <a href="<?= $URL; ?>views/productos/update.php?id=<?= $producto['idproducto']; ?>" class="btn btn-warning btn-sm" data-toggle="tooltip" title="Editar producto">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                     <button type="button" class="btn <?= $clase_boton_estado; ?> btn-sm btn-cambiar-estado"
                                                         data-id="<?= $producto['idproducto']; ?>"
                                                         data-estado="<?= $estado_actual; ?>"
-                                                        data-nombre="<?= htmlspecialchars($producto['nombre']); ?>">
+                                                        data-nombre="<?= htmlspecialchars($producto['nombre']); ?>"
+                                                        data-toggle="tooltip" title="<?= $texto_boton_estado; ?>">
                                                         <i class="fas <?= $icono_boton_estado; ?>"></i>
                                                     </button>
                                                 </div>
@@ -148,6 +150,8 @@ $productos = $controller->index();
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        $('[data-toggle="tooltip"]').tooltip();
+
         const botonesCambiarEstado = document.querySelectorAll('.btn-cambiar-estado');
 
         botonesCambiarEstado.forEach(boton => {

@@ -83,6 +83,7 @@ $usuarios = $controller->index();
                                         $titulo_alerta = $estado_actual == 1 ? '¿Desactivar Usuario?' : '¿Activar Usuario?';
                                         $texto_alerta = $estado_actual == 1 ? 'El usuario no podrá acceder al sistema.' : 'El usuario podrá acceder nuevamente al sistema.';
                                         $confirm_button_text = $estado_actual == 1 ? 'Sí, desactivar' : 'Sí, activar';
+                                        $texto_boton_estado = $estado_actual == 1 ? 'Desactivar usuario' : 'Activar usuario';
                                     ?>
                                         <tr>
                                             <td class="text-center"><?= $contador++; ?></td>
@@ -92,9 +93,9 @@ $usuarios = $controller->index();
                                             <td><?= htmlspecialchars($usuario['correo']); ?></td>
                                             <td class="text-center">
                                                 <?php if (isset($usuario['imagen'])): ?>
-                                                    <img src="<?= $URL; ?>public/uploads/usuarios/<?= $usuario['imagen']; ?>" loading="lazy" alt="Imagen" class="img-thumbnail" width="50">
+                                                    <img src="<?= $URL; ?>public/uploads/usuarios/<?= $usuario['imagen']; ?>" loading="lazy" alt="Imagen" class="img-thumbnail" width="40">
                                                 <?php else : ?>
-                                                    <img src="<?= $URL; ?>public/uploads/usuarios/user_default.jpg" loading="lazy" alt="Imagen" class="img-thumbnail" width="50">
+                                                    <img src="<?= $URL; ?>public/uploads/usuarios/user_default.jpg" loading="lazy" alt="Imagen" class="img-thumbnail" width="40">
                                                 <?php endif; ?>
                                             </td>
                                             <td><?= (!empty($usuario['cargo'])) ? htmlspecialchars($usuario['cargo']) : 'N/A'; ?></td>
@@ -107,16 +108,17 @@ $usuarios = $controller->index();
                                             </td>
                                             <td class="text-center">
                                                 <div class="btn-group">
-                                                    <a href="<?= $URL; ?>views/usuarios/show.php?id=<?= $usuario['idusuario']; ?>" class="btn btn-info btn-sm">
+                                                    <a href="<?= $URL; ?>views/usuarios/show.php?id=<?= $usuario['idusuario']; ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="Ver detalles">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
-                                                    <a href="<?= $URL; ?>views/usuarios/update.php?id=<?= $usuario['idusuario']; ?>" class="btn btn-warning btn-sm">
+                                                    <a href="<?= $URL; ?>views/usuarios/update.php?id=<?= $usuario['idusuario']; ?>" class="btn btn-warning btn-sm" data-toggle="tooltip" title="Editar usuario">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                     <button type="button" class="btn <?= $clase_boton_estado; ?> btn-sm btn-cambiar-estado"
                                                         data-id="<?= $usuario['idusuario']; ?>"
                                                         data-estado="<?= $estado_actual; ?>"
-                                                        data-nombre="<?= htmlspecialchars($usuario['nombre']); ?>">
+                                                        data-nombre="<?= htmlspecialchars($usuario['nombre']); ?>"
+                                                        data-toggle="tooltip" title="<?= $texto_boton_estado; ?>">
                                                         <i class="fas <?= $icono_boton_estado; ?>"></i>
                                                     </button>
                                                 </div>
@@ -143,6 +145,8 @@ $usuarios = $controller->index();
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        $('[data-toggle="tooltip"]').tooltip();
+
         const botonesCambiarEstado = document.querySelectorAll('.btn-cambiar-estado');
 
         botonesCambiarEstado.forEach(boton => {

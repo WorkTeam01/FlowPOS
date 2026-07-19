@@ -152,7 +152,8 @@ $estadisticas = $controller->getEstadisticas();
                                                         data-telefono="<?= htmlspecialchars($empresa['telefono']); ?>"
                                                         data-email="<?= htmlspecialchars($empresa['email']); ?>"
                                                         data-imagen="<?= htmlspecialchars($empresa['imagen']); ?>"
-                                                        data-estado="<?= $empresa['estado']; ?>">
+                                                        data-estado="<?= $empresa['estado']; ?>"
+                                                        data-toggle="tooltip" title="Editar empresa">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
                                                     <button type="button" class="btn <?= $estado_actual == 1 ? 'btn-danger' : 'btn-success'; ?> btn-sm cambiar-estado"

@@ -99,7 +99,7 @@ $compras = $controller->index();
                                             </td>
                                             <td class="text-center">
                                                 <div class="btn-group">
-                                                    <a href="<?= $URL; ?>views/compras/show.php?id=<?= $compra['idcompra']; ?>" class="btn btn-info btn-sm">
+                                                    <a href="<?= $URL; ?>views/compras/show.php?id=<?= $compra['idcompra']; ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="Ver detalles">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
 
@@ -107,7 +107,8 @@ $compras = $controller->index();
                                                         <button type="button" class="btn btn-danger btn-sm btn-cambiar-estado"
                                                             data-id="<?= $compra['idcompra']; ?>"
                                                             data-accion="cancelar"
-                                                            data-titulo="COMP-<?= str_pad($compra['idcompra'], 6, '0', STR_PAD_LEFT); ?>">
+                                                            data-titulo="COMP-<?= str_pad($compra['idcompra'], 6, '0', STR_PAD_LEFT); ?>"
+                                                            data-toggle="tooltip" title="Cancelar compra">
                                                             <i class="fas fa-times"></i>
                                                         </button>
                                                     <?php endif; ?>
@@ -135,6 +136,8 @@ $compras = $controller->index();
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        $('[data-toggle="tooltip"]').tooltip();
+
         const botonesCambiarEstado = document.querySelectorAll('.btn-cambiar-estado');
 
         botonesCambiarEstado.forEach(boton => {

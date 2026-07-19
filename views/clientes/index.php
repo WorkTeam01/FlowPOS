@@ -79,6 +79,7 @@ $clientes = $controller->index();
                                         $titulo_alerta = $estado_actual == 1 ? '¿Desactivar Cliente?' : '¿Activar Cliente?';
                                         $texto_alerta = $estado_actual == 1 ? 'El cliente no podrá realizar reservas.' : 'El cliente podrá realizar reservas nuevamente.';
                                         $confirm_button_text = $estado_actual == 1 ? 'Sí, desactivar' : 'Sí, activar';
+                                        $texto_boton_estado = $estado_actual == 1 ? 'Desactivar cliente' : 'Activar cliente';
                                     ?>
                                         <tr>
                                             <td class="text-center"><?= $contador++; ?></td>
@@ -94,16 +95,17 @@ $clientes = $controller->index();
                                             </td>
                                             <td class="text-center">
                                                 <div class="btn-group">
-                                                    <a href="<?= $URL; ?>views/clientes/show.php?id=<?= $cliente['idcliente']; ?>" class="btn btn-info btn-sm">
+                                                    <a href="<?= $URL; ?>views/clientes/show.php?id=<?= $cliente['idcliente']; ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="Ver detalles">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
-                                                    <a href="<?= $URL; ?>views/clientes/update.php?id=<?= $cliente['idcliente']; ?>" class="btn btn-warning btn-sm">
+                                                    <a href="<?= $URL; ?>views/clientes/update.php?id=<?= $cliente['idcliente']; ?>" class="btn btn-warning btn-sm" data-toggle="tooltip" title="Editar cliente">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                     <button type="button" class="btn <?= $clase_boton_estado; ?> btn-sm btn-cambiar-estado"
                                                         data-id="<?= $cliente['idcliente']; ?>"
                                                         data-estado="<?= $estado_actual; ?>"
-                                                        data-nombre="<?= htmlspecialchars($cliente['nombres']); ?>">
+                                                        data-nombre="<?= htmlspecialchars($cliente['nombres']); ?>"
+                                                        data-toggle="tooltip" title="<?= $texto_boton_estado; ?>">
                                                         <i class="fas <?= $icono_boton_estado; ?>"></i>
                                                     </button>
                                                 </div>
@@ -130,6 +132,8 @@ $clientes = $controller->index();
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        $('[data-toggle="tooltip"]').tooltip();
+
         const botonesCambiarEstado = document.querySelectorAll('.btn-cambiar-estado');
 
         botonesCambiarEstado.forEach(boton => {

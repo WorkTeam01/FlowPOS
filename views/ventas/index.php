@@ -299,11 +299,6 @@ $estadisticas = $controller->getEstadisticas();
         background-color: #9c27b0;
         color: white;
     }
-
-    .tooltip-inner {
-        max-width: 250px;
-        text-align: left;
-    }
 </style>
 
 <script>

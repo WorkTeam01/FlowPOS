@@ -153,7 +153,8 @@ $estadisticas = $controller->getEstadisticas();
                                                         data-id="<?= $sucursal['idsucursal']; ?>"
                                                         data-nombre="<?= htmlspecialchars($sucursal['nombre']); ?>"
                                                         data-idempresa="<?= $sucursal['idempresa']; ?>"
-                                                        data-estado="<?= $sucursal['estado']; ?>">
+                                                        data-estado="<?= $sucursal['estado']; ?>"
+                                                        data-toggle="tooltip" title="Editar sucursal">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
                                                     <button type="button" class="btn <?= $estado_actual == 1 ? 'btn-danger' : 'btn-success'; ?> btn-sm cambiar-estado"
