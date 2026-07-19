@@ -5,6 +5,26 @@ Todos los cambios importantes de este proyecto se documentan en este archivo.
 Este formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.1.1] - 2026-07-19
+
+### Fixed
+
+- Dashboard general: reemplazados los datos de ejemplo hardcodeados por datos reales vía el endpoint `get_general_dashboard_data.php` (inventario, actividad reciente, clientes recientes), respetando los permisos granulares por sección.
+- Accesibilidad del login: labels asociados a los campos, botón de mostrar/ocultar contraseña convertido a `<button>` real, mensajes de error inline, landmark `<main>`, sin demoras artificiales antes de enviar el formulario.
+- Accesibilidad del dashboard (los 4 roles): `aria-live` en KPIs y secciones cargadas por AJAX, `aria-hidden` en íconos decorativos, `aria-label` en botones de colapsar panel y en gráficos (`<canvas>`), jerarquía de encabezados corregida.
+- XSS en el dashboard general: escape de datos de clientes antes de insertarlos en el DOM.
+- Landmark `<main>` agregado al layout compartido (`header.php`/`footer.php`), beneficiando a todas las vistas autenticadas.
+
+### Changed
+
+- CSS de los 3 dashboards por rol (administrador, supervisor, vendedor) consolidado en una hoja compartida (`dashboard.css`), eliminando duplicación y unificando breakpoints responsive y estilos de barras de progreso.
+- Toggles de visibilidad (fechas personalizadas, detalle de inventario) migrados de `style="display"` inline a la clase utilitaria `.d-none`.
+- Estructura de encabezado de página estandarizada (`<section class="content-header">`) en los 4 dashboards.
+
+### Performance
+
+- Chart.js ya no se carga globalmente en el layout: solo se incluye en los 3 dashboards que efectivamente lo usan.
+
 ## [1.1.0] - 2026-07-12
 
 ### Security

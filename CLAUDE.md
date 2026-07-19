@@ -131,6 +131,12 @@ Todo endpoint de escritura bajo `controllers/*/` que reciba `POST` debe invocar 
 - `sesionusuario` — registro de auditoría de sesiones
 - `intento_login` — registro de intentos de login (éxito/fallo) para rate limiting por cuenta e IP
 
+### Datos de Dashboard vía AJAX
+
+Los dashboards por rol (`views/dashboard/dashboard*.php`) no reciben datos precargados desde el controlador de vista — el JS del módulo hace `fetch()` a un endpoint dedicado en `controllers/dashboard/` (ej. `get_general_dashboard_data.php`) que devuelve JSON. Cada sección del payload se condiciona con `AuthorizationService::tienePermisoNombre()`: si el usuario no tiene el permiso, la clave se omite del JSON (no se envía vacía ni con datos parciales) y el frontend muestra "Sin acceso a esta información" en su lugar. Al agregar una sección nueva a un dashboard, seguir este mismo patrón de permiso-por-sección en el endpoint, no en la vista.
+
+CSS compartido entre los 3 dashboards por rol vive en `public/css/modules/dashboard/dashboard.css` — evitar duplicar `<style>` inline por vista; agregar ahí lo que aplique a más de un rol.
+
 ### Mensajes Flash
 
 Se asignan en `$_SESSION['mensaje']` (cadena de texto) y `$_SESSION['icono']` (ícono de SweetAlert2: `success`, `error`, `warning`, `info`). Los renderiza `views/layouts/mensajes.php`.

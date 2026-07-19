@@ -82,7 +82,7 @@ Variables principales:
 | Variable       | Descripción                      | Ejemplo                            |
 | -------------- | -------------------------------- | ---------------------------------- |
 | `APP_NAME`     | Nombre visible de la aplicación  | `FlowPOS`             |
-| `APP_VERSION`  | Versión actual de la aplicación  | `1.1.0`                            |
+| `APP_VERSION`  | Versión actual de la aplicación  | `1.1.1`                            |
 | `APP_CURRENCY` | Símbolo de moneda                | `Bs`, `$`, `€`, `S/`               |
 | `APP_URL`      | URL base (debe terminar con `/`) | `http://localhost/FlowPOS/` |
 | `TIMEZONE`     | Zona horaria PHP                 | `America/La_Paz`                   |
@@ -161,6 +161,7 @@ FlowPOS/
 - Si trabajas con datos reales, configura HTTPS y credenciales de BD robustas.
 - Todos los formularios y endpoints AJAX de escritura están protegidos con CSRF (token de sesión validado en servidor); ver `CHANGELOG.md` [1.0.1].
 - El login tiene protección contra fuerza bruta (rate limiting por cuenta e IP con ventana deslizante); ver `CHANGELOG.md` [1.1.0].
+- Login y dashboards auditados y corregidos en accesibilidad (WCAG AA) y XSS de datos dinámicos; ver `CHANGELOG.md` [1.1.1].
 
 ## Changelog
 
