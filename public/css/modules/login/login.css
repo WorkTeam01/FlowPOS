@@ -78,10 +78,34 @@
     padding: 0 15px;
 }
 
-/* Efecto hover en el botón de mostrar/ocultar contraseña */
+/* Botón de mostrar/ocultar contraseña */
+.password-toggle {
+    border: 1px solid #ced4da;
+    cursor: pointer;
+    font: inherit;
+    line-height: inherit;
+    appearance: none;
+    -webkit-appearance: none;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (pointer: coarse) {
+    .password-toggle {
+        min-height: 44px;
+    }
+}
+
 .password-toggle:hover {
     background-color: #e9ecef;
-    cursor: pointer;
+}
+
+.password-toggle:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    z-index: 3;
 }
 
 /* Botones */
@@ -156,19 +180,6 @@
     margin-top: .25rem;
     font-size: 80%;
     color: #dc3545;
-}
-
-/* Elementos decorativos para un tema de zapatillas y carteras */
-.login-page::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    opacity: 0.05;
-    z-index: 1;
 }
 
 /* Responsive adjustments */
