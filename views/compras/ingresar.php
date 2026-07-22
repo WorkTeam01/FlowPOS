@@ -24,6 +24,8 @@ if (!isset($_SESSION['usuario_nombre'])) {
 }
 
 // Incluir encabezado
+$skip_datatables = true; // Esta vista no usa tabla; evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
+$skip_select2 = true; // Esta vista no usa Select2
 include_once '../layouts/header.php';
 
 // Obtener productos activos

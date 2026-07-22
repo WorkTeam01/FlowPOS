@@ -24,6 +24,8 @@ if (!isset($idusuario_session)) {
 }
 
 // Incluir el encabezado
+$skip_datatables = true; // Esta vista no usa tabla; evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
+$skip_select2 = true; // Esta vista no usa Select2
 include_once '../layouts/header.php';
 
 // Instanciar el controlador y obtener los datos del usuario
@@ -44,7 +46,7 @@ $module_scripts = ['usuarios/perfil-usuario'];
 <!-- Content Header (Page header) -->
 <section class="content-header">
     <div class="container-fluid">
-        <div class="row mb-2">
+        <div class="row">
             <div class="col-sm-6">
                 <h1>Perfil de Usuario</h1>
             </div>

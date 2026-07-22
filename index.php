@@ -17,6 +17,11 @@ $currentUser = getCurrentUser();
 $idusuariosesion = $currentUser['id'];
 $cargoUsuario = strtolower($currentUser['cargo']);
 
+// Ninguno de los 4 dashboards usa DataTables; Select2 solo lo usan los de
+// administrador, vendedor y supervisor (dashboard_general no tiene JS propio).
+$skip_datatables = true;
+$skip_select2 = !in_array($cargoUsuario, ['administrador', 'vendedor', 'supervisor'], true);
+
 // Incluir el header común para todos los usuarios
 require_once 'views/layouts/header.php';
 

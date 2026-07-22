@@ -16,6 +16,7 @@ if (!($authService->tienePermisoNombre($idusuario, 'usuarios')) && !($authServic
 }
 
 // Incluir el encabezado DESPUÉS de verificar permisos
+$skip_select2 = true; // Esta vista no usa Select2
 include_once '../layouts/header.php';
 
 $controller = new UsuarioController();
@@ -25,7 +26,7 @@ $usuarios = $controller->index();
 <!-- Content Header (Page header) -->
 <section class="content-header">
     <div class="container-fluid">
-        <div class="row mb-2">
+        <div class="row">
             <div class="col-sm-6">
                 <h1>Gestión de Usuarios</h1>
             </div>
@@ -101,24 +102,24 @@ $usuarios = $controller->index();
                                             <td><?= (!empty($usuario['cargo'])) ? htmlspecialchars($usuario['cargo']) : 'N/A'; ?></td>
                                             <td class="text-center">
                                                 <?php if ($estado_actual == 1) : ?>
-                                                    <span class="badge badge-success">Activo</span>
+                                                    <span class="badge badge-success badge-pill p-2">Activo</span>
                                                 <?php else : ?>
-                                                    <span class="badge badge-danger">Inactivo</span>
+                                                    <span class="badge badge-danger badge-pill p-2">Inactivo</span>
                                                 <?php endif; ?>
                                             </td>
                                             <td class="text-center">
                                                 <div class="btn-group">
-                                                    <a href="<?= $URL; ?>views/usuarios/show.php?id=<?= $usuario['idusuario']; ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="Ver detalles">
+                                                    <a href="<?= $URL; ?>views/usuarios/show.php?id=<?= $usuario['idusuario']; ?>" class="btn btn-info btn-sm" aria-label="Ver detalles de <?= htmlspecialchars($usuario['nombre']); ?>">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
-                                                    <a href="<?= $URL; ?>views/usuarios/update.php?id=<?= $usuario['idusuario']; ?>" class="btn btn-warning btn-sm" data-toggle="tooltip" title="Editar usuario">
+                                                    <a href="<?= $URL; ?>views/usuarios/update.php?id=<?= $usuario['idusuario']; ?>" class="btn btn-warning btn-sm" aria-label="Editar usuario <?= htmlspecialchars($usuario['nombre']); ?>">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                     <button type="button" class="btn <?= $clase_boton_estado; ?> btn-sm btn-cambiar-estado"
                                                         data-id="<?= $usuario['idusuario']; ?>"
                                                         data-estado="<?= $estado_actual; ?>"
                                                         data-nombre="<?= htmlspecialchars($usuario['nombre']); ?>"
-                                                        data-toggle="tooltip" title="<?= $texto_boton_estado; ?>">
+                                                        aria-label="<?= $texto_boton_estado; ?> <?= htmlspecialchars($usuario['nombre']); ?>">
                                                         <i class="fas <?= $icono_boton_estado; ?>"></i>
                                                     </button>
                                                 </div>
@@ -145,8 +146,6 @@ $usuarios = $controller->index();
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        $('[data-toggle="tooltip"]').tooltip();
-
         const botonesCambiarEstado = document.querySelectorAll('.btn-cambiar-estado');
 
         botonesCambiarEstado.forEach(boton => {
@@ -165,7 +164,7 @@ $usuarios = $controller->index();
                     text: textoAlerta,
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: estadoActual == 1 ? '#d33' : '#3085d6',
+                    confirmButtonColor: estadoActual == 1 ? '#d33' : '#28a745',
                     cancelButtonColor: '#6c757d',
                     confirmButtonText: confirmButtonText,
                     cancelButtonText: cancelButtonText

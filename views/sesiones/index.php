@@ -19,6 +19,7 @@ if (!($authService->tienePermisoNombre($idusuario, 'sesiones')) && !($authServic
 $mostrarActivas = isset($_GET['activas']) && $_GET['activas'] == '1';
 
 // Incluir el encabezado DESPUÉS de verificar permisos
+$skip_select2 = true; // Esta vista no usa Select2
 include_once '../layouts/header.php';
 
 $module_scripts = ['sesiones/index-sesiones'];

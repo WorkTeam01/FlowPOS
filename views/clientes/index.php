@@ -15,6 +15,7 @@ if (!$authService->tienePermisoNombre($idusuario, 'clientes') && !$authService->
     exit;
 }
 
+$skip_select2 = true; // Esta vista no usa Select2
 include_once '../layouts/header.php';
 
 $controller = new ClienteController();
