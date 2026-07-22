@@ -15,7 +15,7 @@ $(document).ready(function () {
                 }
             }, {
                 extend: 'pdf',
-                title: 'Usuarios del Sistema - Alojamiento Flores',
+                title: 'Usuarios del Sistema - FlowPOS',
                 filename: 'usuarios_sistema_' + new Date().toISOString().slice(0, 10),
                 pageSize: 'LETTER',
                 exportOptions: {
@@ -31,7 +31,7 @@ $(document).ready(function () {
 
                     // Agregar título con fecha
                     doc.content.splice(0, 1, {
-                        text: 'USUARIOS DEL SISTEMA - ALOJAMIENTO FLORES',
+                        text: 'USUARIOS DEL SISTEMA - FLOWPOS',
                         style: {
                             fontSize: 16,
                             alignment: 'center',
@@ -67,7 +67,7 @@ $(document).ready(function () {
                     doc.footer = function (currentPage, pageCount) {
                         return {
                             columns: [{
-                                text: 'Sistema de Gestión - Alojamiento Flores',
+                                text: 'Sistema de Gestión - FlowPOS',
                                 alignment: 'left',
                                 fontSize: 8
                             },
@@ -88,7 +88,7 @@ $(document).ready(function () {
                 }
             }, {
                 extend: 'excel',
-                title: 'Usuarios del Sistema - Alojamiento Flores',
+                title: 'Usuarios del Sistema - FlowPOS',
                 messageTop: 'Registro de usuarios del sistema',
                 messageBottom: 'Documento generado el ' + new Date().toLocaleDateString('es-BO'),
                 exportOptions: {
@@ -111,7 +111,7 @@ $(document).ready(function () {
             }, {
                 extend: 'print',
                 text: 'Imprimir',
-                title: 'Usuarios del Sistema - Alojamiento Flores',
+                title: 'Usuarios del Sistema - FlowPOS',
                 messageTop: 'Reporte generado el ' + new Date().toLocaleDateString('es-BO'),
                 exportOptions: {
                     columns: [0, 1]
