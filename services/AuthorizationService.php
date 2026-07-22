@@ -225,8 +225,56 @@ class AuthorizationService
     }
 
     /**
+     * Categoría visual de cada permiso, usada solo para agrupar el checklist
+     * en tabs (no restringe qué permisos puede tener un cargo: en FlowPOS
+     * cualquier permiso es asignable a cualquier usuario).
+     *
+     * @return array<string,string> nombre de permiso => categoría
+     */
+    private static function categoriasPermisos()
+    {
+        return [
+            'nueva_venta' => 'Ventas',
+            'ventas' => 'Ventas',
+            'clientes' => 'Ventas',
+            'nueva_compra' => 'Compras',
+            'compras' => 'Compras',
+            'productos' => 'Catálogo',
+            'categorias' => 'Catálogo',
+            'usuarios' => 'Administración',
+            'permisos' => 'Administración',
+            'empresa' => 'Administración',
+            'empresas' => 'Administración',
+            'sucursales' => 'Administración',
+            'sesiones' => 'Administración',
+            'perfil' => 'Perfil',
+        ];
+    }
+
+    /**
+     * Agrupa una lista de permisos (idpermiso, nombre) en categorías visuales
+     * para renderizarlas como tabs. Los permisos sin categoría definida caen
+     * en "Otros".
+     *
+     * @param array $permisos Lista de permisos (con al menos 'nombre')
+     * @return array<string,array> categoría => lista de permisos
+     */
+    public static function agruparPermisosPorCategoria($permisos)
+    {
+        $categorias_permisos = self::categoriasPermisos();
+        $grupos = [];
+
+        foreach ($permisos as $permiso) {
+            $categoria = $categorias_permisos[$permiso['nombre']] ?? 'Otros';
+            $grupos[$categoria][] = $permiso;
+        }
+
+        return $grupos;
+    }
+
+    /**
      * Obtiene todos los permisos disponibles en el sistema
-     * 
+     *
      * @return array Lista de todos los permisos
      */
     public function obtenerTodosLosPermisos()
