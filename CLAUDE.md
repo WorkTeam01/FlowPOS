@@ -80,17 +80,17 @@ La aplicación sigue un patrón MVC personalizado **sin router**. No hay un fron
 
 ### Rol de los Directorios
 
-| Directorio                       | Propósito                                                                                                                                                                 |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `config/`                        | `env.php` (carga .env), `config.php` (retorna array de config), `conexion.php` (wrapper PDO Singleton)                                                                    |
-| `models/`                        | Clases de acceso a datos (una por entidad); cada una instancia `Conexion::getInstance()`                                                                                  |
-| `controllers/`                   | Clases controlador y scripts de acción por módulo (ej. `controllers/ventas/VentaController.php`, `controllers/ventas/crear_venta.php`)                                    |
-| `views/`                         | Archivos de vista PHP organizados por módulo; incluyen controladores y modelos directamente según necesiten                                                               |
+| Directorio                       | Propósito                                                                                                                                                                                                                                  |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `config/`                        | `env.php` (carga .env), `config.php` (retorna array de config), `conexion.php` (wrapper PDO Singleton)                                                                                                                                     |
+| `models/`                        | Clases de acceso a datos (una por entidad); cada una instancia `Conexion::getInstance()`                                                                                                                                                   |
+| `controllers/`                   | Clases controlador y scripts de acción por módulo (ej. `controllers/ventas/VentaController.php`, `controllers/ventas/crear_venta.php`)                                                                                                     |
+| `views/`                         | Archivos de vista PHP organizados por módulo; incluyen controladores y modelos directamente según necesiten                                                                                                                                |
 | `services/`                      | `AuthorizationService.php` (verificación de permisos por nombre/ID), `ImagenService.php` (subida y eliminación de imágenes), `RateLimiterService.php` (rate limiting de login por cuenta/IP), `literal.php` (conversión número a palabras) |
-| `libs/`                          | Librerías de terceros empaquetadas — solo TCPDF para generación de PDFs                                                                                                   |
-| `public/js/modules/`             | Archivos JavaScript por módulo (un subdirectorio por módulo)                                                                                                              |
-| `public/js/core/common-utils.js` | Utilidades JS compartidas                                                                                                                                                 |
-| `public/uploads/`                | Imágenes subidas por usuarios (productos/, clientes/, usuarios/)                                                                                                          |
+| `libs/`                          | Librerías de terceros empaquetadas — solo TCPDF para generación de PDFs                                                                                                                                                                    |
+| `public/js/modules/`             | Archivos JavaScript por módulo (un subdirectorio por módulo)                                                                                                                                                                               |
+| `public/js/core/common-utils.js` | Utilidades JS compartidas                                                                                                                                                                                                                  |
+| `public/uploads/`                | Imágenes subidas por usuarios (productos/, clientes/, usuarios/)                                                                                                                                                                           |
 
 ### Conexión a la Base de Datos
 
@@ -136,6 +136,23 @@ Todo endpoint de escritura bajo `controllers/*/` que reciba `POST` debe invocar 
 Los dashboards por rol (`views/dashboard/dashboard*.php`) no reciben datos precargados desde el controlador de vista — el JS del módulo hace `fetch()` a un endpoint dedicado en `controllers/dashboard/` (ej. `get_general_dashboard_data.php`) que devuelve JSON. Cada sección del payload se condiciona con `AuthorizationService::tienePermisoNombre()`: si el usuario no tiene el permiso, la clave se omite del JSON (no se envía vacía ni con datos parciales) y el frontend muestra "Sin acceso a esta información" en su lugar. Al agregar una sección nueva a un dashboard, seguir este mismo patrón de permiso-por-sección en el endpoint, no en la vista.
 
 CSS compartido entre los 3 dashboards por rol vive en `public/css/modules/dashboard/dashboard.css` — evitar duplicar `<style>` inline por vista; agregar ahí lo que aplique a más de un rol.
+
+### Carga Condicional de Librerías Pesadas
+
+`header.php`/`footer.php` cargan DataTables y Select2 por defecto. Si una vista no usa alguna, declarar antes de `include_once 'header.php'`:
+
+```php
+$skip_datatables = true; // Sin tabla; evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
+$skip_select2 = true;    // Sin Select2
+```
+
+Antes de marcar `skip_select2`, confirmar que ningún `<select class="select2">` dependa de `initializeSelect2()` — la ausencia de un JS de módulo no es evidencia suficiente. Si `header.php` se incluye antes de saber el contexto (p. ej. `index.php` despachando por rol), declarar los flags ahí mismo.
+
+### Utilidades CSS Compartidas (`public/css/core/common.css`)
+
+- `.sidebar-sticky` — columna lateral fija al hacer scroll (`position: sticky`, `static` bajo 767.98px).
+- `.card-outline-tabs .nav-link:not(.active)` — color info en pestañas inactivas de cualquier card con tabs (vistas "show"), sin CSS por módulo.
+- `common.css` y `module_styles` versionados por query string (`?v=<?= $appVersion ?>`) igual que `module_scripts`, para evitar caché obsoleta.
 
 ### Mensajes Flash
 

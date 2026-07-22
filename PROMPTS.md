@@ -58,6 +58,7 @@ _______________
 - Mensajes flash: $_SESSION['mensaje'] + $_SESSION['icono'] (success/error/warning/info)
 - Subida de imágenes: siempre a través de ImagenService
 - DataTables para listados; SweetAlert2 para confirmaciones y notificaciones
+- Vistas que no usan DataTables/Select2: declarar `$skip_datatables`/`$skip_select2` antes del `include_once` de `header.php` (ver CLAUDE.md)
 - No introducir dependencias externas sin evaluar el impacto
 - Si se modifica comportamiento funcional: actualizar `CHANGELOG.md`
 
@@ -117,6 +118,7 @@ Descripción: [criterios de aceptación]
 - Control de acceso: requireRole() para páginas, AuthorizationService para acciones
 - DataTables para listados; SweetAlert2 para confirmaciones — nunca alert()/confirm() nativo
 - Select2 para dropdowns; con dropdownParent si está dentro de un modal
+- Si la vista no usa DataTables y/o Select2, declarar `$skip_datatables`/`$skip_select2` antes de incluir `header.php`
 - AJAX: devolver JSON con header('Content-Type: application/json') + json_encode()
 - No introducir librerías externas nuevas
 - Si cambia funcionalidad visible: actualizar `CHANGELOG.md` en `Unreleased`
@@ -328,5 +330,5 @@ Devuelve en este orden:
 
 ---
 
-_Última actualización: 2026-07-19_
+_Última actualización: 2026-07-22_
 _Mantener sincronizado con CLAUDE.md al hacer cambios de arquitectura._

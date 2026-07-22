@@ -5,6 +5,26 @@ Todos los cambios importantes de este proyecto se documentan en este archivo.
 Este formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.1.2] - 2026-07-22
+
+### Changed
+
+- Vistas de creación/edición de usuarios: cada sección del formulario pasa a tener su propia tarjeta independiente en vez de un único card con `fieldset` anidados.
+- Vista de detalle de usuario rediseñada al estilo de perfil de AdminLTE, con el contenido organizado en pestañas.
+- Columna de guía/perfil de las vistas de usuarios ahora permanece visible al hacer scroll (`.sidebar-sticky` en `common.css`).
+
+### Added
+
+- Regla global en `common.css` para que las pestañas inactivas de cualquier card con tabs (patrón de vistas "show") usen el color info en vez del primary por defecto de AdminLTE.
+
+### Fixed
+
+- Caché obsoleta de `common.css` y de los CSS por módulo: ahora versionados por query string igual que el resto de assets.
+
+### Performance
+
+- Carga de DataTables/Select2 (`$skip_datatables`/`$skip_select2`) ajustada en todas las vistas de todos los módulos según lo que cada una realmente usa.
+
 ## [1.1.1] - 2026-07-19
 
 ### Fixed
