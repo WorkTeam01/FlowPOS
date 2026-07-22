@@ -15,6 +15,8 @@ if (!($authService->tienePermisoNombre($idusuario, 'usuarios')) && !($authServic
 }
 
 // Incluir el encabezado
+$skip_datatables = true; // Esta vista no usa tabla; evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
+$skip_select2 = true; // Esta vista no usa Select2
 include_once '../layouts/header.php';
 
 // Verificar si se proporcionó un ID
@@ -37,12 +39,16 @@ if (!$usuario) {
     header('Location: index.php');
     exit;
 }
+
+$permisosAsignados = $authService->obtenerPermisosAsignados($usuario['idusuario']);
+$todosLosPermisos = $authService->obtenerTodosLosPermisos();
+$esAdmin = $authService->esAdministrador($usuario['idusuario']);
 ?>
 
 <!-- Content Header (Page header) -->
 <section class="content-header">
     <div class="container-fluid">
-        <div class="row mb-2">
+        <div class="row">
             <div class="col-sm-6">
                 <h1>Detalle de Usuario</h1>
             </div>
@@ -61,166 +67,218 @@ if (!$usuario) {
 <section class="content">
     <div class="container-fluid">
         <div class="row">
-            <!-- Columna izquierda (8 columnas) -->
-            <div class="col-md-8">
+            <!-- Columna de perfil -->
+            <div class="col-md-4">
+              <div class="sidebar-sticky">
+                <!-- Tarjeta de perfil con imagen -->
+                <div class="card card-info card-outline">
+                    <div class="card-body box-profile">
+                        <div class="text-center position-relative mb-4">
+                            <?php if (!empty($usuario['imagen'])): ?>
+                                <img class="profile-user-img img-fluid img-circle"
+                                    src="<?= $URL; ?>public/uploads/usuarios/<?= htmlspecialchars($usuario['imagen']); ?>"
+                                    alt="Imagen de perfil">
+                            <?php else: ?>
+                                <img class="profile-user-img img-fluid img-circle"
+                                    src="<?= $URL; ?>public/uploads/usuarios/user_default.jpg"
+                                    alt="Imagen de perfil">
+                            <?php endif; ?>
+
+                            <!-- Indicador de estado sobre la imagen -->
+                            <span id="avatarEstadoBadge" class="position-absolute badge <?= $usuario['estado'] == 1 ? 'badge-success' : 'badge-danger'; ?>"
+                                style="top: 0; right: 50%; transform: translateX(60px);">
+                                <i class="fas <?= $usuario['estado'] == 1 ? 'fa-check' : 'fa-times'; ?>"></i>
+                            </span>
+                        </div>
+
+                        <h3 class="profile-username text-center">
+                            <?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidopaterno']); ?>
+                        </h3>
+
+                        <p class="text-muted text-center">
+                            <?= htmlspecialchars($usuario['cargo'] ?? 'Sin cargo asignado'); ?>
+                        </p>
+
+                        <ul class="list-group list-group-unbordered mb-3">
+                            <li class="list-group-item">
+                                <b><i class="fas fa-id-card mr-2"></i><?= htmlspecialchars($usuario['tipodocumento']); ?></b>
+                                <span class="float-right"><?= htmlspecialchars($usuario['numdocumento']); ?></span>
+                            </li>
+                            <li class="list-group-item">
+                                <b><i class="fas fa-envelope mr-2"></i>Correo</b>
+                                <span class="float-right text-truncate" style="max-width: 170px;" title="<?= htmlspecialchars($usuario['correo'] ?? 'No registrado'); ?>">
+                                    <?= htmlspecialchars($usuario['correo'] ?? 'No registrado'); ?>
+                                </span>
+                            </li>
+                            <li class="list-group-item">
+                                <b><i class="fas fa-phone mr-2"></i>Teléfono</b>
+                                <span class="float-right"><?= htmlspecialchars($usuario['telefono'] ?? 'No registrado'); ?></span>
+                            </li>
+                            <li class="list-group-item">
+                                <b><i class="fas fa-calendar-alt mr-2"></i>Fecha Registro</b>
+                                <span class="float-right">
+                                    <?= isset($usuario['fechacreacion']) ? date('d/m/Y', strtotime($usuario['fechacreacion'])) : 'No disponible'; ?>
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Tarjeta de acciones -->
                 <div class="card card-info">
                     <div class="card-header">
-                        <h3 class="card-title">Información Detallada del Usuario</h3>
+                        <h3 class="card-title"><i class="fas fa-cogs mr-2"></i>Acciones</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <a href="<?= $URL; ?>views/usuarios/update.php?id=<?= $usuario['idusuario']; ?>" class="list-group-item list-group-item-action">
+                                <i class="fas fa-edit mr-2 text-warning"></i> Editar usuario
+                            </a>
+                            <a href="#" id="btnCambiarEstado" class="list-group-item list-group-item-action"
+                                data-id="<?= $usuario['idusuario']; ?>"
+                                data-estado="<?= $usuario['estado']; ?>"
+                                data-nombre="<?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidopaterno']); ?>">
+                                <i class="fas <?= $usuario['estado'] == 1 ? 'fa-user-slash text-danger' : 'fa-user-check text-success'; ?> mr-2"></i>
+                                <span id="btnCambiarEstadoTexto"><?= $usuario['estado'] == 1 ? 'Desactivar usuario' : 'Activar usuario'; ?></span>
+                            </a>
+                            <a href="<?= $URL; ?>views/usuarios/index.php" class="list-group-item list-group-item-action">
+                                <i class="fas fa-list mr-2 text-primary"></i> Volver a la lista de usuarios
+                            </a>
+                        </div>
+                    </div>
+                </div>
+              </div>
+            </div>
+            <!-- /.col-md-4 -->
+
+            <!-- Columna de información detallada -->
+            <div class="col-md-8">
+                <div class="card card-info card-outline card-outline-tabs">
+                    <div class="card-header p-0 border-bottom-0">
+                        <ul class="nav nav-tabs" id="detail-tabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="tab-personal" data-toggle="pill" href="#personal" role="tab" aria-controls="personal" aria-selected="true">
+                                    <i class="fas fa-user mr-1"></i> Personal
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="tab-contacto" data-toggle="pill" href="#contacto" role="tab" aria-controls="contacto" aria-selected="false">
+                                    <i class="fas fa-address-book mr-1"></i> Contacto
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="tab-permisos" data-toggle="pill" href="#permisos" role="tab" aria-controls="permisos" aria-selected="false">
+                                    <i class="fas fa-key mr-1"></i> Permisos
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="tab-sistema" data-toggle="pill" href="#sistema" role="tab" aria-controls="sistema" aria-selected="false">
+                                    <i class="fas fa-cogs mr-1"></i> Sistema
+                                </a>
+                            </li>
+                        </ul>
                     </div>
                     <div class="card-body">
-                        <!-- Información Personal -->
-                        <div class="card card-outline card-info mb-3">
-                            <div class="card-header">
-                                <h3 class="card-title">Información Personal</h3>
-                            </div>
-                            <div class="card-body">
+                        <div class="tab-content" id="detail-tabs-content">
+                            <!-- Tab Información Personal -->
+                            <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="tab-personal">
                                 <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-user"></i> Nombre Completo:</label>
-                                            <p class="lead">
-                                                <?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidopaterno'] . ' ' . $usuario['apellidomaterno']); ?>
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-id-card"></i> Documento:</label>
-                                            <p class="lead">
-                                                <?= htmlspecialchars($usuario['tipodocumento'] . ': ' . $usuario['numdocumento']); ?>
-                                            </p>
+                                    <div class="col-12">
+                                        <div class="info-box bg-light">
+                                            <div class="info-box-content">
+                                                <h5 class="info-box-text text-center text-muted">Nombre Completo</h5>
+                                                <h6 class="info-box-number text-center text-muted mb-0">
+                                                    <?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidopaterno'] . ' ' . $usuario['apellidomaterno']); ?>
+                                                </h6>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-map-marker-alt"></i> Dirección:</label>
-                                            <p class="lead">
-                                                <?= !empty($usuario['direccion']) ? htmlspecialchars($usuario['direccion']) : '<span class="text-muted">No registrada</span>'; ?>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Información de Contacto -->
-                        <div class="card card-outline card-info mb-3">
-                            <div class="card-header">
-                                <h3 class="card-title">Información de Contacto</h3>
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped">
+                                        <tbody>
+                                            <tr>
+                                                <th style="width: 30%"><i class="fas fa-id-badge mr-2"></i>Tipo Documento</th>
+                                                <td><?= htmlspecialchars($usuario['tipodocumento']); ?></td>
+                                            </tr>
+                                            <tr>
+                                                <th><i class="fas fa-hashtag mr-2"></i>Número Documento</th>
+                                                <td><?= htmlspecialchars($usuario['numdocumento']); ?></td>
+                                            </tr>
+                                            <tr>
+                                                <th><i class="fas fa-map-marker-alt mr-2"></i>Dirección</th>
+                                                <td>
+                                                    <?php if (!empty($usuario['direccion'])): ?>
+                                                        <?= htmlspecialchars($usuario['direccion']); ?>
+                                                    <?php else: ?>
+                                                        <span class="text-muted">No registrada</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                            <div class="card-body">
+
+                            <!-- Tab Información de Contacto -->
+                            <div class="tab-pane fade" id="contacto" role="tabpanel" aria-labelledby="tab-contacto">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-envelope"></i> Correo Electrónico:</label>
-                                            <p class="lead">
-                                                <?php if (!empty($usuario['correo'])): ?>
-                                                    <a href="mailto:<?= htmlspecialchars($usuario['correo']); ?>">
-                                                        <?= htmlspecialchars($usuario['correo']); ?>
-                                                    </a>
-                                                <?php else: ?>
-                                                    <span class="text-muted">No registrado</span>
-                                                <?php endif; ?>
-                                            </p>
+                                        <div class="info-box">
+                                            <span class="info-box-icon bg-info"><i class="fas fa-envelope"></i></span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Correo Electrónico</span>
+                                                <span class="info-box-number">
+                                                    <?php if (!empty($usuario['correo'])): ?>
+                                                        <a href="mailto:<?= htmlspecialchars($usuario['correo']); ?>" class="text-info">
+                                                            <?= htmlspecialchars($usuario['correo']); ?>
+                                                        </a>
+                                                    <?php else: ?>
+                                                        <span class="text-muted">No registrado</span>
+                                                    <?php endif; ?>
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-phone"></i> Teléfono:</label>
-                                            <p class="lead">
-                                                <?php if (!empty($usuario['telefono'])): ?>
-                                                    <a href="tel:<?= htmlspecialchars($usuario['telefono']); ?>">
-                                                        <?= htmlspecialchars($usuario['telefono']); ?>
-                                                    </a>
-                                                <?php else: ?>
-                                                    <span class="text-muted">No registrado</span>
-                                                <?php endif; ?>
-                                            </p>
+                                        <div class="info-box">
+                                            <span class="info-box-icon bg-success"><i class="fas fa-phone"></i></span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Teléfono</span>
+                                                <span class="info-box-number">
+                                                    <?php if (!empty($usuario['telefono'])): ?>
+                                                        <a href="tel:<?= htmlspecialchars($usuario['telefono']); ?>" class="text-success">
+                                                            <?= htmlspecialchars($usuario['telefono']); ?>
+                                                        </a>
+                                                    <?php else: ?>
+                                                        <span class="text-muted">No registrado</span>
+                                                    <?php endif; ?>
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Información del Sistema -->
-                        <div class="card card-outline card-info mb-3">
-                            <div class="card-header">
-                                <h3 class="card-title">Información del Sistema</h3>
-                            </div>
-                            <div class="card-body">
+                            <!-- Tab Permisos -->
+                            <div class="tab-pane fade" id="permisos" role="tabpanel" aria-labelledby="tab-permisos">
                                 <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-user-tag"></i> Cargo:</label>
-                                            <p class="lead">
-                                                <?= !empty($usuario['cargo']) ? htmlspecialchars($usuario['cargo']) : '<span class="text-muted">No asignado</span>'; ?>
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-toggle-on"></i> Estado:</label>
-                                            <p>
-                                                <?php if ($usuario['estado'] == 1): ?>
-                                                    <span class="badge badge-success">Activo</span>
-                                                <?php else: ?>
-                                                    <span class="badge badge-danger">Inactivo</span>
-                                                <?php endif; ?>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-calendar-plus"></i> Fecha de Creación:</label>
-                                            <p class="text-muted">
-                                                <?= isset($usuario['fechacreacion']) ? date('d/m/Y H:i', strtotime($usuario['fechacreacion'])) : 'No disponible'; ?>
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-calendar-check"></i> Última Actualización:</label>
-                                            <p class="text-muted">
-                                                <?= isset($usuario['fechaactualizacion']) ? date('d/m/Y H:i', strtotime($usuario['fechaactualizacion'])) : 'No disponible'; ?>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Permisos Asignados -->
-                        <div class="card card-outline card-info">
-                            <div class="card-header">
-                                <h3 class="card-title">Permisos Asignados</h3>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <?php
-                                    // Obtener los permisos asignados al usuario
-                                    $permisosAsignados = $authService->obtenerPermisosAsignados($usuario['idusuario']);
-                                    $todosLosPermisos = $authService->obtenerTodosLosPermisos();
-
-                                    if (empty($permisosAsignados) && !$authService->esAdministrador($usuario['idusuario'])):
-                                    ?>
+                                    <?php if (empty($permisosAsignados) && !$esAdmin): ?>
                                         <div class="col-12">
-                                            <div class="alert alert-warning">
+                                            <div class="alert alert-warning mb-0">
                                                 <i class="fas fa-exclamation-triangle"></i> Este usuario no tiene permisos específicos asignados.
                                             </div>
                                         </div>
-                                    <?php elseif ($authService->esAdministrador($usuario['idusuario'])): ?>
+                                    <?php elseif ($esAdmin): ?>
                                         <div class="col-12">
-                                            <div class="alert alert-info">
+                                            <div class="alert alert-info mb-0">
                                                 <i class="fas fa-crown"></i> Este usuario es Administrador y tiene acceso a todas las funcionalidades del sistema.
                                             </div>
                                         </div>
                                     <?php else: ?>
                                         <?php foreach ($todosLosPermisos as $permiso): ?>
-                                            <div class="col-md-4 mb-2">
+                                            <div class="col-md-6 mb-2">
                                                 <div class="d-flex align-items-center">
                                                     <?php if (in_array($permiso['idpermiso'], $permisosAsignados)): ?>
                                                         <span class="badge badge-success mr-2"><i class="fas fa-check"></i></span>
@@ -234,133 +292,78 @@ if (!$usuario) {
                                     <?php endif; ?>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <!-- Botones de acción -->
-                        <div class="row g-1">
-                            <div class="col-12 col-sm-auto">
-                                <a href="<?= $URL; ?>views/usuarios/update.php?id=<?= $usuario['idusuario']; ?>" class="btn btn-warning w-100">
-                                    <i class="fas fa-edit mr-1"></i> Editar Usuario
-                                </a>
-                            </div>
-                            <div class="col-12 col-sm-auto">
-                                <a href="<?= $URL; ?>views/usuarios/index.php" class="btn btn-secondary w-100">
-                                    <i class="fas fa-arrow-left mr-1"></i> Volver a la Lista
-                                </a>
+
+                            <!-- Tab Información del Sistema -->
+                            <div class="tab-pane fade" id="sistema" role="tabpanel" aria-labelledby="tab-sistema">
+                                <div class="timeline">
+                                    <!-- Fecha de Creación -->
+                                    <div>
+                                        <i class="fas fa-user-plus bg-primary"></i>
+                                        <div class="timeline-item">
+                                            <span class="time"><i class="fas fa-clock"></i> <?= isset($usuario['fechacreacion']) ? date('H:i', strtotime($usuario['fechacreacion'])) : ''; ?></span>
+                                            <h3 class="timeline-header"><strong>Registro en el Sistema</strong></h3>
+                                            <div class="timeline-body">
+                                                Este usuario fue registrado el <?= isset($usuario['fechacreacion']) ? date('d/m/Y', strtotime($usuario['fechacreacion'])) : 'fecha no disponible'; ?>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Última Actualización -->
+                                    <?php if (!empty($usuario['fechaactualizacion'])): ?>
+                                        <div>
+                                            <i class="fas fa-edit bg-warning"></i>
+                                            <div class="timeline-item">
+                                                <span class="time"><i class="fas fa-clock"></i> <?= date('H:i', strtotime($usuario['fechaactualizacion'])); ?></span>
+                                                <h3 class="timeline-header"><strong>Última Actualización</strong></h3>
+                                                <div class="timeline-body">
+                                                    La información fue actualizada por última vez el <?= date('d/m/Y', strtotime($usuario['fechaactualizacion'])); ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <!-- Estado del Usuario -->
+                                    <div>
+                                        <i id="timelineEstadoIcono" class="fas <?= $usuario['estado'] == 1 ? 'fa-check-circle bg-success' : 'fa-times-circle bg-danger'; ?>"></i>
+                                        <div class="timeline-item">
+                                            <h3 class="timeline-header"><strong>Estado de la Cuenta</strong></h3>
+                                            <div class="timeline-body">
+                                                El usuario se encuentra actualmente
+                                                <span id="timelineEstadoBadge" class="badge <?= $usuario['estado'] == 1 ? 'badge-success' : 'badge-danger'; ?>">
+                                                    <?= $usuario['estado'] == 1 ? 'Activo' : 'Inactivo'; ?>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Cargo del Usuario -->
+                                    <div>
+                                        <i class="fas fa-user-tag bg-info"></i>
+                                        <div class="timeline-item">
+                                            <h3 class="timeline-header"><strong>Cargo en el Sistema</strong></h3>
+                                            <div class="timeline-body">
+                                                <span class="badge badge-info"><?= htmlspecialchars($usuario['cargo'] ?? 'Sin cargo'); ?></span>
+                                                <p class="mt-2">
+                                                    <?php if ($esAdmin): ?>
+                                                        Usuario con permisos completos para administrar el sistema.
+                                                    <?php else: ?>
+                                                        Usuario con permisos personalizados según lo asignado en la pestaña Permisos.
+                                                    <?php endif; ?>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <i class="fas fa-clock bg-gray"></i>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <!-- /.col-md-8 -->
-
-            <!-- Columna derecha - Perfil y acciones rápidas (4 columnas) -->
-            <div class="col-md-4">
-                <!-- Tarjeta de perfil -->
-                <div class="card card-info card-outline">
-                    <div class="card-body box-profile">
-                        <div class="text-center">
-                            <?php if (isset($usuario['imagen']) && !empty($usuario['imagen'])): ?>
-                                <img class="profile-user-img img-fluid img-circle"
-                                    src="<?= $URL; ?>public/uploads/usuarios/<?= $usuario['imagen']; ?>"
-                                    alt="Imagen de perfil">
-                            <?php else: ?>
-                                <img class="profile-user-img img-fluid img-circle"
-                                    src="<?= $URL; ?>public/uploads/usuarios/user_default.jpg"
-                                    alt="Imagen de perfil">
-                            <?php endif; ?>
-                        </div>
-
-                        <h3 class="profile-username text-center">
-                            <?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidopaterno']); ?>
-                        </h3>
-
-                        <p class="text-muted text-center"><?= htmlspecialchars($usuario['cargo'] ?? 'Sin cargo asignado'); ?></p>
-
-                        <ul class="list-group list-group-unbordered mb-3">
-                            <li class="list-group-item">
-                                <b><i class="fas fa-id-card mr-1"></i> <?= htmlspecialchars($usuario['tipodocumento']); ?></b>
-                                <span class="float-right"><?= htmlspecialchars($usuario['numdocumento']); ?></span>
-                            </li>
-                            <li class="list-group-item">
-                                <b><i class="fas fa-envelope mr-1"></i> Email</b>
-                                <span class="float-right text-truncate" style="max-width: 170px;" title="<?= htmlspecialchars($usuario['correo'] ?? 'No registrado'); ?>">
-                                    <?= htmlspecialchars($usuario['correo'] ?? 'No registrado'); ?>
-                                </span>
-                            </li>
-                            <li class="list-group-item">
-                                <b><i class="fas fa-phone mr-1"></i> Teléfono</b>
-                                <span class="float-right"><?= htmlspecialchars($usuario['telefono'] ?? 'No registrado'); ?></span>
-                            </li>
-                            <li class="list-group-item">
-                                <b><i class="fas fa-toggle-on mr-1"></i> Estado</b>
-                                <span class="float-right">
-                                    <?php if ($usuario['estado'] == 1): ?>
-                                        <span class="badge badge-success">Activo</span>
-                                    <?php else: ?>
-                                        <span class="badge badge-danger">Inactivo</span>
-                                    <?php endif; ?>
-                                </span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Tarjeta de acciones rápidas -->
-                <div class="card card-success">
-                    <div class="card-header">
-                        <h3 class="card-title">Acciones Rápidas</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="list-group">
-                            <?php if ($usuario['estado'] == 1): ?>
-                                <button type="button" class="list-group-item list-group-item-action"
-                                    onclick="cambiarEstado(<?= $usuario['idusuario']; ?>, 0);">
-                                    <i class="fas fa-user-slash mr-2"></i> Desactivar Usuario
-                                </button>
-                            <?php else: ?>
-                                <button type="button" class="list-group-item list-group-item-action"
-                                    onclick="cambiarEstado(<?= $usuario['idusuario']; ?>, 1);">
-                                    <i class="fas fa-user-check mr-2"></i> Activar Usuario
-                                </button>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tarjeta de información del sistema -->
-                <div class="card card-info">
-                    <div class="card-header">
-                        <h3 class="card-title">Datos del Sistema</h3>
-                    </div>
-                    <div class="card-body p-0">
-                        <table class="table table-striped">
-                            <tbody>
-                                <tr>
-                                    <td><i class="fas fa-calendar-plus mr-1"></i> Creado</td>
-                                    <td><span class="text-muted"><?= isset($usuario['fechacreacion']) ? date('d/m/Y H:i', strtotime($usuario['fechacreacion'])) : 'No disponible'; ?></span></td>
-                                </tr>
-                                <tr>
-                                    <td><i class="fas fa-calendar-check mr-1"></i> Actualizado</td>
-                                    <td><span class="text-muted"><?= isset($usuario['fechaactualizacion']) ? date('d/m/Y H:i', strtotime($usuario['fechaactualizacion'])) : 'No disponible'; ?></span></td>
-                                </tr>
-                                <tr>
-                                    <td><i class="fas fa-user-shield mr-1"></i> Tipo</td>
-                                    <td>
-                                        <?php if ($authService->esAdministrador($usuario['idusuario'])): ?>
-                                            <span class="badge badge-primary">Administrador</span>
-                                        <?php else: ?>
-                                            <span class="badge badge-info"><?= htmlspecialchars($usuario['cargo'] ?? 'Usuario estándar'); ?></span>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <!-- /.col-md-4 -->
         </div>
         <!-- /.row -->
     </div>
@@ -369,33 +372,52 @@ if (!$usuario) {
 <!-- /.content -->
 
 <script>
-    // Función para cambiar el estado del usuario
-    function cambiarEstado(userId, newStatus) {
-        const estadoActual = newStatus == 0 ? 1 : 0; // Convertir al estado actual para el controlador
-        const tituloAlerta = newStatus == 1 ? '¿Activar usuario?' : '¿Desactivar usuario?';
-        const textoAlerta = newStatus == 1 ?
-            "El usuario podrá acceder nuevamente al sistema." :
-            "El usuario no podrá acceder al sistema hasta que sea activado nuevamente.";
-        const confirmButtonText = newStatus == 1 ? 'Sí, activar' : 'Sí, desactivar';
-
-        Swal.fire({
-            title: tituloAlerta,
-            text: textoAlerta,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: newStatus == 1 ? '#28a745' : '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: confirmButtonText,
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                submitCsrfForm('<?= $URL; ?>controllers/usuarios/desactivar_usuario.php', {
-                    id: userId,
-                    estado: estadoActual
-                });
-            }
+    $(document).ready(function() {
+        // Recordar la pestaña activa entre visitas
+        $('a[data-toggle="pill"]').on('shown.bs.tab', function(e) {
+            localStorage.setItem('lastUsuarioDetailTab', $(e.target).attr('id'));
         });
-    }
+        var lastTab = localStorage.getItem('lastUsuarioDetailTab');
+        if (lastTab && document.getElementById(lastTab)) {
+            $('#' + lastTab).tab('show');
+        }
+
+        // Cambiar el estado del usuario
+        $('#btnCambiarEstado').on('click', function(e) {
+            e.preventDefault();
+
+            const boton = $(this);
+            const usuarioId = boton.data('id');
+            const estadoActual = parseInt(boton.attr('data-estado'), 10);
+            const nombreUsuario = boton.data('nombre');
+
+            const tituloAlerta = estadoActual == 1 ?
+                `¿Desactivar a ${nombreUsuario}?` :
+                `¿Activar a ${nombreUsuario}?`;
+            const textoAlerta = estadoActual == 1 ?
+                'El usuario no podrá acceder al sistema hasta que sea activado nuevamente.' :
+                'El usuario podrá acceder nuevamente al sistema.';
+            const confirmButtonText = estadoActual == 1 ? 'Sí, desactivar' : 'Sí, activar';
+
+            Swal.fire({
+                title: tituloAlerta,
+                text: textoAlerta,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: estadoActual == 1 ? '#dc3545' : '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: confirmButtonText,
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+
+                submitCsrfForm('<?= $URL; ?>controllers/usuarios/desactivar_usuario.php', {
+                    id: usuarioId,
+                    estado: estadoActual == 1 ? 0 : 1
+                });
+            });
+        });
+    });
 </script>
 
 <?php
