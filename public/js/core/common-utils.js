@@ -2,7 +2,7 @@
  * common-utils.js - Utilidades JavaScript básicas para el sistema
  *
  * Este archivo contiene funciones simples para inicializar componentes
- * comunes en el sistema de Alojamiento Flores.
+ * comunes en el sistema de FlowPOS.
  *
  * @version 1.0
  */
@@ -320,6 +320,51 @@ function ajaxRequest(url, method = 'GET', data = {}, successCallback, errorCallb
         }
     });
 }
+
+/**
+ * Toggle centralizado de mostrar/ocultar contraseña.
+ * Se activa por delegación de eventos, por lo que no requiere inicialización:
+ * basta con incluir el markup en cualquier página que cargue este archivo.
+ *
+ * Markup esperado:
+ * <div class="input-group">
+ *   <input type="password" id="clave" ...>
+ *   <div class="input-group-append">
+ *     <button type="button" class="btn btn-outline-secondary password-toggle" data-target="#clave" aria-label="Mostrar contraseña" aria-pressed="false">
+ *       <i class="fas fa-eye"></i>
+ *     </button>
+ *   </div>
+ * </div>
+ */
+$(document).on('click', '.password-toggle', function () {
+    const $boton = $(this);
+    const $input = $($boton.data('target'));
+
+    if (!$input.length) {
+        return;
+    }
+
+    const mostrando = $input.attr('type') === 'text';
+
+    $input.attr('type', mostrando ? 'password' : 'text');
+    $boton.find('i, span').toggleClass('fa-eye fa-eye-slash');
+    $boton.attr({
+        'aria-label': mostrando ? 'Mostrar contraseña' : 'Ocultar contraseña',
+        'aria-pressed': mostrando ? 'false' : 'true',
+        title: mostrando ? 'Mostrar contraseña' : 'Ocultar contraseña'
+    });
+});
+
+/**
+ * Mantiene aria-selected sincronizado en tabs de Bootstrap 4 (nav-tabs con
+ * data-toggle="tab"): Bootstrap 4 solo mueve la clase "active", no el
+ * atributo ARIA, así que lectores de pantalla no anuncian el cambio de tab
+ * sin este handler.
+ */
+$(document).on('shown.bs.tab', '[data-toggle="tab"]', function (e) {
+    $(e.target).attr('aria-selected', 'true');
+    $(e.relatedTarget).attr('aria-selected', 'false');
+});
 
 /**
  * Envía un formulario POST construido dinámicamente con el token CSRF incluido.
