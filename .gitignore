@@ -4,6 +4,7 @@
 # Archivos de caché y temporales
 *.log
 *.tmp
+.playwright-mcp/
 
 # Archivos del sistema
 vendror/
