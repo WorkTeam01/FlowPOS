@@ -42,16 +42,26 @@ global $URL;
     <link rel="stylesheet" href="<?= $URL; ?>public/css/lib/adminlte/adminlte.min.css">
     <!-- Font Awesome Webfonts -->
     <link rel="stylesheet" href="<?= $URL; ?>public/css/core/webfonts.css">
-    <link rel="stylesheet" href="<?= $URL; ?>public/css/core/common.css">
+    <link rel="stylesheet" href="<?= $URL; ?>public/css/core/common.css?v=<?= urlencode($appVersion) ?>">
     <link rel="icon" type="image/png" href="<?= $URL; ?>public/img/logo_ventas.svg">
-    <!-- Datatables -->
-    <link rel="stylesheet" href="<?= $URL; ?>public/css/plugins/datatables/datatables.min.css">
-    <link rel="stylesheet" href="<?= $URL; ?>public/css/plugins/datatables/dataTables.bootstrap4.min.css">
-    <link rel="stylesheet" href="<?= $URL; ?>public/css/plugins/datatables/responsive.bootstrap4.min.css">
-    <link rel="stylesheet" href="<?= $URL; ?>public/css/plugins/datatables/buttons.bootstrap4.min.css">
-    <!-- Select2 -->
-    <link rel="stylesheet" href="<?= $URL; ?>public/css/plugins/select2/select2.min.css">
-    <link rel="stylesheet" href="<?= $URL; ?>public/css/plugins/select2/select2-bootstrap4.min.css">
+    <?php
+    // $skip_datatables: opt-out para vistas sin tabla (ver mismo condicional en footer.php).
+    $cargar_datatables = !(isset($skip_datatables) && $skip_datatables === true);
+    // $skip_select2: opt-out para vistas que no usan Select2 (ver mismo condicional en footer.php).
+    $cargar_select2 = !(isset($skip_select2) && $skip_select2 === true);
+    ?>
+    <?php if ($cargar_datatables): ?>
+        <!-- Datatables -->
+        <link rel="stylesheet" href="<?= $URL; ?>public/css/plugins/datatables/datatables.min.css">
+        <link rel="stylesheet" href="<?= $URL; ?>public/css/plugins/datatables/dataTables.bootstrap4.min.css">
+        <link rel="stylesheet" href="<?= $URL; ?>public/css/plugins/datatables/responsive.bootstrap4.min.css">
+        <link rel="stylesheet" href="<?= $URL; ?>public/css/plugins/datatables/buttons.bootstrap4.min.css">
+    <?php endif; ?>
+    <?php if ($cargar_select2): ?>
+        <!-- Select2 -->
+        <link rel="stylesheet" href="<?= $URL; ?>public/css/plugins/select2/select2.min.css">
+        <link rel="stylesheet" href="<?= $URL; ?>public/css/plugins/select2/select2-bootstrap4.min.css">
+    <?php endif; ?>
     <!-- Sweetalert2 -->
     <link rel="stylesheet" href="<?= $URL; ?>public/css/plugins/sweetalert2/sweetalert2.min.css">
     <script src="<?= $URL; ?>public/js/plugins/sweetalert2/sweetalert2.min.js"></script>
@@ -61,7 +71,7 @@ global $URL;
     <!-- Estilos específicos por módulo -->
     <?php if (isset($module_styles) && is_array($module_styles)): ?>
         <?php foreach ($module_styles as $style): ?>
-            <link rel="stylesheet" href="<?= $URL; ?>public/css/modules/<?= $style; ?>.css">
+            <link rel="stylesheet" href="<?= $URL; ?>public/css/modules/<?= $style; ?>.css?v=<?= urlencode($appVersion) ?>">
         <?php endforeach; ?>
     <?php endif; ?>
 
