@@ -4,3 +4,55 @@
     max-width: 250px;
     text-align: left;
 }
+
+/*
+ * Touch targets accesibles (WCAG 2.5.5) para botones de acción icon-only
+ * agrupados en tablas (ver, editar, cambiar estado, etc.). En dispositivos
+ * táctiles el btn-sm de AdminLTE (~31px) queda por debajo del mínimo
+ * recomendado de 44x44px; se amplía el área de toque sin cambiar el
+ * tamaño visual del ícono.
+ */
+@media (pointer: coarse) {
+    .btn-group>.btn-sm {
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-group>.btn-sm+.btn-sm {
+        margin-left: 2px;
+    }
+}
+
+/*
+ * Panel lateral (guías, ayuda contextual) que permanece visible al hacer
+ * scroll en formularios largos de dos columnas. z-index por debajo de la
+ * navbar/sidebar de AdminLTE (~1030) para no superponerse a ellas.
+ */
+.sidebar-sticky {
+    position: sticky;
+    top: 1rem;
+    z-index: 1000;
+}
+
+@media (max-width: 767.98px) {
+    .sidebar-sticky {
+        position: static;
+    }
+}
+
+/*
+ * Pestañas de las vistas "show" con card-outline-tabs (AdminLTE): por defecto
+ * el texto de las pestañas inactivas hereda el color primary (azul), lo cual
+ * es inconsistente con el acento info/outline de la propia card. Se aplica
+ * a cualquier .card-outline-tabs del proyecto (no solo usuarios).
+ */
+.card-outline-tabs .nav-link:not(.active) {
+    color: #17a2b8;
+}
+
+.card-outline-tabs .nav-link:not(.active):hover {
+    color: #138496;
+}
