@@ -127,9 +127,14 @@ class Usuario
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':nombre', $datos['nombre'], PDO::PARAM_STR);
             $stmt->bindParam(':apellidopaterno', $datos['apellidopaterno'], PDO::PARAM_STR);
-            $stmt->bindParam(':apellidomaterno', $datos['apellidomaterno'], PDO::PARAM_STR);
             $stmt->bindParam(':tipodocumento', $datos['tipodocumento'], PDO::PARAM_STR);
             $stmt->bindParam(':numdocumento', $datos['numdocumento'], PDO::PARAM_STR);
+
+            if (empty($datos['apellidomaterno'])) {
+                $stmt->bindValue(':apellidomaterno', null, PDO::PARAM_NULL);
+            } else {
+                $stmt->bindParam(':apellidomaterno', $datos['apellidomaterno'], PDO::PARAM_STR);
+            }
 
             // Manejar valores nulos correctamente
             if (empty($datos['direccion'])) {
@@ -206,9 +211,14 @@ class Usuario
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':nombre', $datos['nombre'], PDO::PARAM_STR);
             $stmt->bindParam(':apellidopaterno', $datos['apellidopaterno'], PDO::PARAM_STR);
-            $stmt->bindParam(':apellidomaterno', $datos['apellidomaterno'], PDO::PARAM_STR);
             $stmt->bindParam(':tipodocumento', $datos['tipodocumento'], PDO::PARAM_STR);
             $stmt->bindParam(':numdocumento', $datos['numdocumento'], PDO::PARAM_STR);
+
+            if (empty($datos['apellidomaterno'])) {
+                $stmt->bindValue(':apellidomaterno', null, PDO::PARAM_NULL);
+            } else {
+                $stmt->bindParam(':apellidomaterno', $datos['apellidomaterno'], PDO::PARAM_STR);
+            }
 
             // Manejar valores nulos correctamente para campos opcionales
             if (empty($datos['direccion'])) {

@@ -67,7 +67,7 @@ class UsuarioController
         $datos = [
             'nombre' => isset($post_data['nombre']) ? trim($post_data['nombre']) : '',
             'apellidopaterno' => isset($post_data['apellidopaterno']) ? trim($post_data['apellidopaterno']) : '',
-            'apellidomaterno' => isset($post_data['apellidomaterno']) ? trim($post_data['apellidomaterno']) : '',
+            'apellidomaterno' => isset($post_data['apellidomaterno']) && !empty($post_data['apellidomaterno']) ? trim($post_data['apellidomaterno']) : null,
             'tipodocumento' => isset($post_data['tipodocumento']) ? trim($post_data['tipodocumento']) : '',
             'numdocumento' => isset($post_data['numdocumento']) ? trim($post_data['numdocumento']) : '',
             'direccion' => isset($post_data['direccion']) && !empty($post_data['direccion']) ? trim($post_data['direccion']) : null,
@@ -305,7 +305,7 @@ class UsuarioController
         $datos = [
             'nombre' => isset($_POST['nombre']) ? trim($_POST['nombre']) : $usuario_actual['nombre'],
             'apellidopaterno' => isset($_POST['apellidopaterno']) ? trim($_POST['apellidopaterno']) : $usuario_actual['apellidopaterno'],
-            'apellidomaterno' => isset($_POST['apellidomaterno']) ? trim($_POST['apellidomaterno']) : $usuario_actual['apellidomaterno'],
+            'apellidomaterno' => isset($_POST['apellidomaterno']) ? (!empty($_POST['apellidomaterno']) ? trim($_POST['apellidomaterno']) : null) : $usuario_actual['apellidomaterno'],
             'direccion' => isset($_POST['direccion']) && !empty($_POST['direccion']) ? trim($_POST['direccion']) : $usuario_actual['direccion'],
             'telefono' => isset($_POST['telefono']) && !empty($_POST['telefono']) ? trim($_POST['telefono']) : $usuario_actual['telefono'],
             'correo' => isset($_POST['correo']) && !empty($_POST['correo']) ? trim($_POST['correo']) : $usuario_actual['correo'],

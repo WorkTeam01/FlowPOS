@@ -67,7 +67,7 @@ class ClienteController
         $datos = [
             'nombres' => isset($post_data['nombres']) ? trim($post_data['nombres']) : '',
             'apellidopaterno' => isset($post_data['apellidopaterno']) ? trim($post_data['apellidopaterno']) : '',
-            'apellidomaterno' => isset($post_data['apellidomaterno']) ? trim($post_data['apellidomaterno']) : null,
+            'apellidomaterno' => isset($post_data['apellidomaterno']) && !empty($post_data['apellidomaterno']) ? trim($post_data['apellidomaterno']) : null,
             'tipodocumento' => isset($post_data['tipodocumento']) ? trim($post_data['tipodocumento']) : '',
             'numdocumento' => isset($post_data['numdocumento']) ? trim($post_data['numdocumento']) : '',
             'direccion' => isset($post_data['direccion']) && !empty($post_data['direccion']) ? trim($post_data['direccion']) : null,
