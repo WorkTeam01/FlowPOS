@@ -12,7 +12,7 @@ $idusuario = $_SESSION['usuario_id'];
 $auth = new AuthorizationService();
 
 // Verificar si el usuario tiene acceso al módulo ANTES de incluir el header
-if (!($auth->tienePermisoNombre($idusuario, 'empresas')) && !($auth->esAdministrador($idusuario))) {
+if (!($auth->tienePermisoNombre($idusuario, 'empresa')) && !($auth->esAdministrador($idusuario))) {
     $_SESSION['mensaje'] = 'No tiene permisos para acceder a esta sección.';
     $_SESSION['icono'] = 'error';
 
@@ -21,8 +21,8 @@ if (!($auth->tienePermisoNombre($idusuario, 'empresas')) && !($auth->esAdministr
     exit;
 }
 
-// Incluir el encabezado después de verificar permisos
-$skip_select2 = true; // Esta vista no usa Select2
+$skip_select2 = true;
+$module_scripts = ['empresas/index-empresas'];
 include_once '../layouts/header.php';
 
 $controller = new EmpresaController();
@@ -254,10 +254,3 @@ $estadisticas = $controller->getEstadisticas();
 include_once '../layouts/mensajes.php';
 include_once '../layouts/footer.php';
 ?>
-
-<script>
-    var mensajeErrorDesactivar = "No se puede desactivar la empresa porque tiene sucursales asociadas";
-</script>
-
-<!-- Script para la gestión de empresas -->
-<script src="<?= $URL; ?>public/js/modules/empresas/index-empresas.js"></script>

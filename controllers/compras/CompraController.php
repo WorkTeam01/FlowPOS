@@ -28,9 +28,15 @@ class CompraController
 
     /**
      * Muestra la lista de compras
+     *
+     * @param int|null $idusuario Si se indica, limita el listado a las compras de ese usuario
      */
-    public function index()
+    public function index($idusuario = null)
     {
+        if ($idusuario !== null) {
+            return $this->modelo->getPorUsuario($idusuario);
+        }
+
         // Obtener todas las compras
         return $this->modelo->getAll();
     }

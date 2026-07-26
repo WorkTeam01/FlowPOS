@@ -34,11 +34,20 @@ if (!$venta) {
     exit;
 }
 
+// Los usuarios no administradores solo pueden ver sus propias ventas
+if (!$authService->esAdministrador($idusuario) && (int)$venta['idusuario'] !== (int)$idusuario) {
+    $_SESSION['mensaje'] = 'No tiene permisos para ver esta venta.';
+    $_SESSION['icono'] = 'error';
+    header('Location: ' . $URL . 'views/ventas');
+    exit;
+}
+
 // Determinar si es pago mixto
 $esPagoMixto = count($venta['pagos'] ?? []) > 1;
 
-$skip_datatables = true; // Esta vista no usa tabla; evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
-$skip_select2 = true; // Esta vista no usa Select2
+$skip_datatables = true; // Evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
+$skip_select2 = true;
+$module_scripts = ['ventas/show-venta'];
 include_once '../layouts/header.php';
 ?>
 
@@ -105,7 +114,7 @@ include_once '../layouts/header.php';
                         <div class="form-group">
                             <label>Total Venta:</label>
                             <p class="text-primary font-weight-bold" style="font-size: 1.5rem;">
-                                <?= number_format($venta['totalventa'], 2); ?> Bs.
+                                <?= number_format($venta['totalventa'], 2); ?> <?= $appCurrency ?>
                             </p>
                         </div>
 
@@ -187,16 +196,16 @@ include_once '../layouts/header.php';
                                                 <?= ucfirst($pago['metodopago']) ?>
                                             </span>
                                         </td>
-                                        <td class="text-right"><?= number_format($pago['monto'], 2) ?> Bs.</td>
-                                        <td class="text-right"><?= number_format($pago['pagorecibido'], 2) ?> Bs.</td>
-                                        <td class="text-right"><?= number_format($pago['cambio'], 2) ?> Bs.</td>
+                                        <td class="text-right"><?= number_format($pago['monto'], 2) ?> <?= $appCurrency ?></td>
+                                        <td class="text-right"><?= number_format($pago['pagorecibido'], 2) ?> <?= $appCurrency ?></td>
+                                        <td class="text-right"><?= number_format($pago['cambio'], 2) ?> <?= $appCurrency ?></td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
                             <tfoot>
                                 <tr>
                                     <th>Total Pagado:</th>
-                                    <th class="text-right"><?= number_format($totalPagado, 2) ?> Bs.</th>
+                                    <th class="text-right"><?= number_format($totalPagado, 2) ?> <?= $appCurrency ?></th>
                                     <th colspan="2"></th>
                                 </tr>
                             </tfoot>
@@ -252,35 +261,35 @@ include_once '../layouts/header.php';
                                                     Código: <?= htmlspecialchars($detalle['producto_codigo'] ?? 'N/A'); ?>
                                                 </small>
                                             </td>
-                                            <td class="text-right"><?= number_format($precioUnitario, 2); ?> Bs.</td>
+                                            <td class="text-right"><?= number_format($precioUnitario, 2); ?> <?= $appCurrency ?></td>
                                             <td class="text-center"><?= $cantidad; ?></td>
                                             <td class="text-right">
                                                 <?php if ($descuento > 0): ?>
                                                     <span class="text-danger">
-                                                        <?= number_format($descuento, 2); ?> Bs.
+                                                        <?= number_format($descuento, 2); ?> <?= $appCurrency ?>
                                                     </span>
                                                 <?php else: ?>
-                                                    0.00 Bs.
+                                                    0.00 <?= $appCurrency ?>
                                                 <?php endif; ?>
                                             </td>
-                                            <td class="text-right"><?= number_format($subtotal, 2); ?> Bs.</td>
+                                            <td class="text-right"><?= number_format($subtotal, 2); ?> <?= $appCurrency ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                                 <tfoot>
                                     <tr>
                                         <th colspan="4" class="text-right">Subtotal:</th>
-                                        <th class="text-right"><?= number_format($subtotalGeneral + $descuentoGeneral, 2); ?> Bs.</th>
+                                        <th class="text-right"><?= number_format($subtotalGeneral + $descuentoGeneral, 2); ?> <?= $appCurrency ?></th>
                                         <th></th>
                                     </tr>
                                     <tr>
                                         <th colspan="4" class="text-right">Descuento Total:</th>
-                                        <th class="text-right text-danger">-<?= number_format($descuentoGeneral, 2); ?> Bs.</th>
+                                        <th class="text-right text-danger">-<?= number_format($descuentoGeneral, 2); ?> <?= $appCurrency ?></th>
                                         <th></th>
                                     </tr>
                                     <tr class="bg-light">
                                         <th colspan="5" class="text-right">Total:</th>
-                                        <th class="text-right"><?= number_format($venta['totalventa'], 2); ?> Bs.</th>
+                                        <th class="text-right"><?= number_format($venta['totalventa'], 2); ?> <?= $appCurrency ?></th>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -342,37 +351,6 @@ include_once '../layouts/header.php';
         </div>
     </div>
 </section>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Configuración del botón de anulación
-        const btnAnular = document.querySelector('.btn-anular-venta');
-
-        if (btnAnular) {
-            btnAnular.addEventListener('click', function() {
-                const ventaId = this.dataset.id;
-                const nombreVenta = this.dataset.nombre;
-
-                Swal.fire({
-                    title: `¿Anular ${nombreVenta}?`,
-                    text: "Esta acción restaurará el stock de los productos y no se puede deshacer.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Sí, anular',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        submitCsrfForm('<?= $URL; ?>controllers/ventas/anular_venta.php', {
-                            id: ventaId
-                        });
-                    }
-                });
-            });
-        }
-    });
-</script>
 
 <?php
 include_once '../layouts/mensajes.php';

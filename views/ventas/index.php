@@ -15,12 +15,15 @@ if (!($authService->tienePermisoNombre($idusuario, 'ventas')) && !($authService-
     exit;
 }
 
-// Incluir el encabezado DESPUÉS de verificar permisos
-$skip_select2 = true; // Esta vista no usa Select2
+$skip_select2 = true;
+$module_scripts = ['ventas/index-ventas'];
+$module_styles = ['ventas/ventas'];
 include_once '../layouts/header.php';
 
+$esAdmin = $authService->esAdministrador($idusuario);
+
 $controller = new VentaController();
-$ventas = $controller->index();
+$ventas = $controller->index($esAdmin ? null : $idusuario);
 $estadisticas = $controller->getEstadisticas();
 ?>
 
@@ -60,7 +63,7 @@ $estadisticas = $controller->getEstadisticas();
                     <span class="info-box-icon bg-success elevation-1"><i class="fas fa-money-bill-wave"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Total Hoy</span>
-                        <span class="info-box-number"><?= number_format($estadisticas['total_hoy'], 2); ?> Bs.</span>
+                        <span class="info-box-number"><?= number_format($estadisticas['total_hoy'], 2); ?> <?= $appCurrency ?></span>
                     </div>
                 </div>
             </div>
@@ -119,7 +122,7 @@ $estadisticas = $controller->getEstadisticas();
                                     <?= ucfirst($metodoPago['metodopago']); ?>
                                 </span>
                                 <span class="info-box-number">
-                                    <?= number_format($metodoPago['total'], 2); ?> Bs.
+                                    <?= number_format($metodoPago['total'], 2); ?> <?= $appCurrency ?>
                                 </span>
                                 <span class="text-muted">
                                     <?= $metodoPago['cantidad']; ?> transacciones
@@ -224,7 +227,7 @@ $estadisticas = $controller->getEstadisticas();
                                             <td><?= date('d/m/Y', strtotime($venta['fechacreacion'])); ?></td>
                                             <td><?= htmlspecialchars($venta['cliente_nombre'] ?? 'Consumidor Final'); ?></td>
                                             <td><?= htmlspecialchars($venta['usuario_nombre'] ?? 'N/A'); ?></td>
-                                            <td class="text-right"><?= number_format($venta['totalventa'], 2); ?> Bs.</td>
+                                            <td class="text-right"><?= number_format($venta['totalventa'], 2); ?> <?= $appCurrency ?></td>
                                             <td class="text-center">
                                                 <?php if ($tienePagosMixtos): ?>
                                                     <span class="badge <?= $clase_badge; ?>"
@@ -233,7 +236,7 @@ $estadisticas = $controller->getEstadisticas();
                                                         title="<?php
                                                                 $tooltipContent = '';
                                                                 foreach ($metodosPago as $pago) {
-                                                                    $tooltipContent .= ucfirst($pago['metodopago']) . ': ' . number_format($pago['monto'], 2) . ' Bs.<br>';
+                                                                    $tooltipContent .= ucfirst($pago['metodopago']) . ': ' . number_format($pago['monto'], 2) . ' ' . $appCurrency . '<br>';
                                                                 }
                                                                 echo htmlspecialchars($tooltipContent);
                                                                 ?>">
@@ -265,7 +268,7 @@ $estadisticas = $controller->getEstadisticas();
 
                                                     <?php if ($venta['estado'] == 1) : ?>
                                                         <a href="<?= $URL; ?>views/ventas/recibo.php?id=<?= $venta['idventa']; ?>"
-                                                            class="btn btn-secondary btn-sm" target="_blank" title="Imprimir comprobante">
+                                                            class="btn btn-secondary btn-sm" target="_blank" data-toggle="tooltip" title="Imprimir comprobante">
                                                             <i class="fas fa-print"></i>
                                                         </a>
                                                     <?php else : ?>
@@ -294,53 +297,7 @@ $estadisticas = $controller->getEstadisticas();
 </section>
 <!-- /.content -->
 
-<!-- Estilos personalizados para el módulo de ventas -->
-<style>
-    .badge-purple {
-        background-color: #9c27b0;
-        color: white;
-    }
-</style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const botonesAnular = document.querySelectorAll('.btn-anular-venta');
-        const botonesImprimir = document.querySelectorAll('.btn-imprimir-ticket');
-        const btnImprimir = document.getElementById('btn-imprimir');
-
-        // Inicializar tooltips
-        $('[data-toggle="tooltip"]').tooltip();
-
-        // Botones de anulación
-        botonesAnular.forEach(boton => {
-            boton.addEventListener('click', function() {
-                const ventaId = this.dataset.id;
-                const tituloVenta = this.dataset.titulo;
-
-                Swal.fire({
-                    title: `¿Anular venta ${tituloVenta}?`,
-                    text: 'La venta será anulada y el stock de productos será revertido. Esta acción no se puede deshacer.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Sí, anular',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        submitCsrfForm('<?= $URL; ?>controllers/ventas/anular_venta.php', {
-                            id: ventaId
-                        });
-                    }
-                });
-            });
-        });
-    });
-</script>
-
 <?php
 include_once '../layouts/mensajes.php';
 include_once '../layouts/footer.php';
 ?>
-
-<script src="<?= $URL; ?>public/js/modules/ventas/index-ventas.js"></script>

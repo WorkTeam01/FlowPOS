@@ -28,11 +28,16 @@ class VentaController
 
     /**
      * Muestra la lista de ventas
-     * 
+     *
+     * @param int|null $idusuario Si se indica, limita el listado a las ventas de ese usuario
      * @return array Lista de ventas
      */
-    public function index()
+    public function index($idusuario = null)
     {
+        if ($idusuario !== null) {
+            return $this->modelo->getPorUsuario($idusuario);
+        }
+
         // Obtener todas las ventas
         return $this->modelo->getAll();
     }

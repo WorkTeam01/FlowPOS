@@ -109,11 +109,7 @@ $permisos = $controller->index();
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item">
                                 <i class="fas fa-cash-register text-primary mr-2"></i> <strong>ventas</strong>
-                                <p class="text-muted mb-0 small">Gestión completa de ventas</p>
-                            </li>
-                            <li class="list-group-item">
-                                <i class="fas fa-cart-plus text-success mr-2"></i> <strong>nueva_venta</strong>
-                                <p class="text-muted mb-0 small">Crear nueva venta</p>
+                                <p class="text-muted mb-0 small">Crear ventas y ver el propio historial (todas para administradores)</p>
                             </li>
                             <li class="list-group-item">
                                 <i class="fas fa-users text-warning mr-2"></i> <strong>clientes</strong>
@@ -121,11 +117,7 @@ $permisos = $controller->index();
                             </li>
                             <li class="list-group-item">
                                 <i class="fas fa-shopping-cart text-info mr-2"></i> <strong>compras</strong>
-                                <p class="text-muted mb-0 small">Gestión de compras</p>
-                            </li>
-                            <li class="list-group-item">
-                                <i class="fas fa-cart-arrow-down text-danger mr-2"></i> <strong>nueva_compra</strong>
-                                <p class="text-muted mb-0 small">Crear nueva compra</p>
+                                <p class="text-muted mb-0 small">Crear compras y ver el propio historial (todas para administradores)</p>
                             </li>
                         </ul>
                     </div>

@@ -14,9 +14,9 @@ if (!($authService->tienePermisoNombre($idusuario, 'compras')) && !($authService
     exit;
 }
 
-// Incluir el encabezado
-$skip_datatables = true; // Esta vista no usa tabla; evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
-$skip_select2 = true; // Esta vista no usa Select2
+$skip_datatables = true; // Evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
+$skip_select2 = true;
+$module_scripts = ['compras/show-compra'];
 include_once '../layouts/header.php';
 
 // Verificar si se proporcionó un ID
@@ -36,6 +36,14 @@ $compra = $controller->ver($id);
 // Verificar si la compra existe
 if (!$compra) {
     $_SESSION['mensaje'] = 'Compra no encontrada';
+    $_SESSION['icono'] = 'error';
+    header('Location: index.php');
+    exit;
+}
+
+// Los usuarios no administradores solo pueden ver sus propias compras
+if (!$authService->esAdministrador($idusuario) && (int)$compra['idusuario'] !== (int)$idusuario) {
+    $_SESSION['mensaje'] = 'No tiene permisos para ver esta compra.';
     $_SESSION['icono'] = 'error';
     header('Location: index.php');
     exit;
@@ -249,48 +257,6 @@ $estado_icono = $compra['estado'] == 1 ? 'check-circle' : 'times-circle';
         </div>
     </div>
 </section>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Manejar botón de cancelar compra
-        const btnCancelar = document.querySelector('.btn-cancelar');
-        if (btnCancelar) {
-            btnCancelar.addEventListener('click', function() {
-                const compraId = this.dataset.id;
-                confirmarAccion(compraId, 'cancelar');
-            });
-        }
-
-        function confirmarAccion(id, accion) {
-            Swal.fire({
-                title: '¿Cancelar esta compra?',
-                text: 'La compra será cancelada y el stock de productos será revertido. Esta acción no se puede deshacer.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: '<i class="fas fa-check mr-2"></i> Sí, cancelar',
-                cancelButtonText: '<i class="fas fa-times mr-2"></i> Cancelar',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    Swal.fire({
-                        title: 'Procesando...',
-                        html: 'Cancelando la compra y ajustando inventario',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-                    submitCsrfForm('<?= $URL; ?>controllers/compras/cambiar_estado_compra.php', {
-                        id: id,
-                        accion: accion
-                    });
-                }
-            });
-        }
-    });
-</script>
 
 <?php
 include_once '../layouts/mensajes.php';

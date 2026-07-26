@@ -234,17 +234,14 @@ class AuthorizationService
     private static function categoriasPermisos()
     {
         return [
-            'nueva_venta' => 'Ventas',
             'ventas' => 'Ventas',
             'clientes' => 'Ventas',
-            'nueva_compra' => 'Compras',
             'compras' => 'Compras',
             'productos' => 'Catálogo',
             'categorias' => 'Catálogo',
             'usuarios' => 'Administración',
             'permisos' => 'Administración',
             'empresa' => 'Administración',
-            'empresas' => 'Administración',
             'sucursales' => 'Administración',
             'sesiones' => 'Administración',
             'perfil' => 'Perfil',
