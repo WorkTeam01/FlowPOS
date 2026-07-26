@@ -15,12 +15,14 @@ if (!($authService->tienePermisoNombre($idusuario, 'compras')) && !($authService
     exit;
 }
 
-// Incluir el encabezado DESPUÉS de verificar permisos
-$skip_select2 = true; // Esta vista no usa Select2
+$skip_select2 = true;
+$module_scripts = ['compras/index-compras'];
 include_once '../layouts/header.php';
 
+$esAdmin = $authService->esAdministrador($idusuario);
+
 $controller = new CompraController();
-$compras = $controller->index();
+$compras = $controller->index($esAdmin ? null : $idusuario);
 ?>
 
 <!-- Content Header (Page header) -->
@@ -132,54 +134,6 @@ $compras = $controller->index();
     <!-- /.container-fluid -->
 </section>
 <!-- /.content -->
-
-<script src="<?= $URL; ?>public/js/modules/compras/index-compras.js"></script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        $('[data-toggle="tooltip"]').tooltip();
-
-        const botonesCambiarEstado = document.querySelectorAll('.btn-cambiar-estado');
-
-        botonesCambiarEstado.forEach(boton => {
-            boton.addEventListener('click', function() {
-                const compraId = this.getAttribute('data-id');
-                const accion = this.getAttribute('data-accion');
-                const tituloCompra = this.getAttribute('data-titulo');
-
-                let tituloAlerta, textoAlerta, confirmButtonText, confirmButtonColor;
-
-                if (accion === 'cancelar') {
-                    tituloAlerta = `¿Cancelar compra ${tituloCompra}?`;
-                    textoAlerta = 'La compra será cancelada y el stock de productos será revertido.';
-                    confirmButtonText = 'Sí, cancelar';
-                    confirmButtonColor = '#dc3545';
-                }
-
-                Swal.fire({
-                    title: tituloAlerta,
-                    text: textoAlerta,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: confirmButtonColor,
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: confirmButtonText,
-                    cancelButtonText: 'Cancelar',
-                    allowOutsideClick: false,
-                    allowEscapeKey: false
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const baseUrl = '<?= $URL; ?>';
-                        submitCsrfForm(`${baseUrl}controllers/compras/cambiar_estado_compra.php`, {
-                            id: compraId,
-                            accion: accion
-                        });
-                    }
-                });
-            });
-        });
-    });
-</script>
 
 <?php
 include_once '../layouts/mensajes.php';
