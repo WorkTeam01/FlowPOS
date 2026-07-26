@@ -5,6 +5,7 @@
 *.log
 *.tmp
 .playwright-mcp/
+.claude/
 
 # Archivos del sistema
 vendror/
