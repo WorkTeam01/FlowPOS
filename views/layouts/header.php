@@ -27,6 +27,9 @@ global $URL;
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <?= csrfMetaTag() ?>
     <meta name="app-url" content="<?= $URL; ?>">
+    <meta name="app-name" content="<?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?>">
+    <meta name="app-version" content="<?= htmlspecialchars($appVersion, ENT_QUOTES, 'UTF-8') ?>">
+    <meta name="app-currency" content="<?= htmlspecialchars($appCurrency, ENT_QUOTES, 'UTF-8') ?>">
 
     <title><?= $appName ?></title>
 
@@ -75,14 +78,7 @@ global $URL;
         <?php endforeach; ?>
     <?php endif; ?>
 
-    <script>
-        const baseUrl = '<?= $URL ?>';
-        window.APP = {
-            name: '<?= addslashes($appName) ?>',
-            version: '<?= addslashes($appVersion) ?>',
-            currency: '<?= addslashes($appCurrency) ?>'
-        };
-    </script>
+    <script src="<?= $URL; ?>public/js/core/app-globals.js"></script>
 </head>
 
 <body class="hold-transition sidebar-mini">
@@ -159,7 +155,6 @@ global $URL;
                         <!-- Ventas -->
                         <?php if (
                             $authService->tienePermisoNombre($idusuariosesion, 'ventas') ||
-                            $authService->tienePermisoNombre($idusuariosesion, 'nueva_venta') ||
                             $authService->tienePermisoNombre($idusuariosesion, 'clientes')
                         ) : ?>
                             <li class="nav-item">
@@ -172,9 +167,9 @@ global $URL;
                                 </a>
                                 <ul class="nav nav-treeview">
                                     <!-- Nueva Venta -->
-                                    <?php if ($authService->tienePermisoNombre($idusuariosesion, 'nueva_venta')) : ?>
+                                    <?php if ($authService->tienePermisoNombre($idusuariosesion, 'ventas')) : ?>
                                         <li class="nav-item">
-                                            <a href="<?= $URL; ?>views/ventas/nueva.php" class="nav-link">
+                                            <a href="<?= $URL; ?>views/ventas/create.php" class="nav-link">
                                                 <i class="fas fa-plus nav-icon"></i>
                                                 <p>Nueva venta</p>
                                             </a>
@@ -236,7 +231,7 @@ global $URL;
                         <?php endif; ?>
 
                         <!-- Compras -->
-                        <?php if ($authService->tienePermisoNombre($idusuariosesion, 'compras') || $authService->tienePermisoNombre($idusuariosesion, 'nueva_compra')) : ?>
+                        <?php if ($authService->tienePermisoNombre($idusuariosesion, 'compras')) : ?>
                             <li class="nav-item">
                                 <a href="#" class="nav-link">
                                     <i class="nav-icon fas fa-shopping-cart"></i>
@@ -247,9 +242,9 @@ global $URL;
                                 </a>
                                 <ul class="nav nav-treeview">
                                     <!-- Nueva Compra -->
-                                    <?php if ($authService->tienePermisoNombre($idusuariosesion, 'nueva_compra')) : ?>
+                                    <?php if ($authService->tienePermisoNombre($idusuariosesion, 'compras')) : ?>
                                         <li class="nav-item">
-                                            <a href="<?= $URL; ?>views/compras/ingresar.php" class="nav-link">
+                                            <a href="<?= $URL; ?>views/compras/create.php" class="nav-link">
                                                 <i class="fas fa-plus nav-icon"></i>
                                                 <p>Nueva compra</p>
                                             </a>

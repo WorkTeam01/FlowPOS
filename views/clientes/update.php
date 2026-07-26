@@ -36,7 +36,8 @@ if (!$cliente) {
     exit;
 }
 
-$skip_datatables = true; // Esta vista no usa tabla; evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
+$skip_datatables = true; // Evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
+$module_scripts = ['clientes/update-cliente'];
 include_once '../layouts/header.php';
 ?>
 
@@ -356,7 +357,7 @@ include_once '../layouts/header.php';
                                 <i class="fas fa-eye mr-2"></i> Ver Detalles del Cliente
                             </a>
 
-                            <a href="<?= $URL; ?>views/ventas/nueva.php?cliente=<?= $cliente['idcliente']; ?>" class="list-group-item list-group-item-action">
+                            <a href="<?= $URL; ?>views/ventas/create.php?cliente=<?= $cliente['idcliente']; ?>" class="list-group-item list-group-item-action">
                                 <i class="fas fa-shopping-cart mr-2"></i> Nueva Venta
                             </a>
                         </div>
@@ -370,54 +371,6 @@ include_once '../layouts/header.php';
     <!-- /.container-fluid -->
 </section>
 <!-- /.content -->
-
-<script>
-    // Inicializar Select2
-    $(document).ready(function() {
-        initializeSelect2();
-
-        // Validación del formulario
-        $('form').submit(function(e) {
-            let isValid = true;
-
-            // Validar campos obligatorios
-            $('input[required], select[required]').each(function() {
-                if (!$(this).val()) {
-                    $(this).addClass('is-invalid');
-                    isValid = false;
-                } else {
-                    $(this).removeClass('is-invalid');
-                }
-            });
-
-            // Validar email si se ingresó
-            let email = $('#email').val();
-            if (email && !validateEmail(email)) {
-                $('#email').addClass('is-invalid');
-                if (!$('#email').next('.invalid-feedback').length) {
-                    $('#email').after('<div class="invalid-feedback">Ingrese un email válido</div>');
-                }
-                isValid = false;
-            }
-
-            if (!isValid) {
-                e.preventDefault();
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error de validación',
-                    text: 'Por favor corrija los errores en el formulario'
-                });
-                return false;
-            }
-        });
-    });
-
-    // Función para validar formato de email
-    function validateEmail(email) {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(String(email).toLowerCase());
-    }
-</script>
 
 <?php
 include_once '../layouts/mensajes.php';

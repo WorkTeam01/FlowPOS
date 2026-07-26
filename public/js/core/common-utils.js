@@ -391,3 +391,28 @@ function submitCsrfForm(action, fields) {
     document.body.appendChild(form);
     form.submit();
 }
+
+// Muestra el mensaje flash de sesión (dejado por views/layouts/mensajes.php) como Toast de SweetAlert2
+document.addEventListener('DOMContentLoaded', function () {
+    const flash = document.getElementById('flash-mensaje');
+    if (!flash || typeof Swal === 'undefined') {
+        return;
+    }
+
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 5000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.onmouseenter = Swal.stopTimer;
+            toast.onmouseleave = Swal.resumeTimer;
+        }
+    });
+
+    Toast.fire({
+        icon: flash.dataset.icono,
+        title: flash.dataset.mensaje
+    });
+});

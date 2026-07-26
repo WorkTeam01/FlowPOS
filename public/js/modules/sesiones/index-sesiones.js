@@ -199,4 +199,85 @@ $(document).ready(function () {
             }
         }
     }).buttons().container().appendTo('#tablaSesiones_wrapper .col-md-6:eq(0)');
+
+    // Inicializar tooltips
+    $('[data-toggle="tooltip"]').tooltip();
+
+    // Botones para cerrar sesión
+    const botonesCerrarSesion = document.querySelectorAll('.btn-cerrar-sesion');
+    botonesCerrarSesion.forEach(boton => {
+        boton.addEventListener('click', function() {
+            const sesionId = this.dataset.id;
+            const usuario = this.dataset.usuario;
+
+            Swal.fire({
+                title: `¿Cerrar sesión de ${usuario}?`,
+                text: 'El usuario será desconectado del sistema.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, cerrar sesión',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    submitCsrfForm(baseUrl + 'controllers/sesiones/cerrar_sesion.php', {
+                        id: sesionId
+                    });
+                }
+            });
+        });
+    });
+
+    // Botones para cerrar todas las sesiones de un usuario
+    const botonesCerrarTodasSesiones = document.querySelectorAll('.btn-cerrar-todas-sesiones');
+    botonesCerrarTodasSesiones.forEach(boton => {
+        boton.addEventListener('click', function() {
+            const usuarioId = this.dataset.id;
+            const nombre = this.dataset.nombre;
+
+            Swal.fire({
+                title: `¿Cerrar todas las sesiones de ${nombre}?`,
+                text: 'El usuario será desconectado de todas sus sesiones activas.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, cerrar todas',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    submitCsrfForm(baseUrl + 'controllers/sesiones/cerrar_sesiones_usuario.php', {
+                        id: usuarioId
+                    });
+                }
+            });
+        });
+    });
+
+    // Botones para ver sesiones de un usuario
+    const botonesVerSesiones = document.querySelectorAll('.btn-ver-sesiones-usuario');
+    botonesVerSesiones.forEach(boton => {
+        boton.addEventListener('click', function() {
+            const usuarioId = this.dataset.id;
+            const nombre = this.dataset.nombre;
+
+            // Mostrar modal
+            $('#nombreUsuarioModal').text(nombre);
+            $('#cargandoSesiones').show();
+            $('#contenidoSesionesUsuario').empty();
+            $('#modalSesionesUsuario').modal('show');
+
+            // Cargar sesiones del usuario (simulado por ahora)
+            setTimeout(() => {
+                $('#cargandoSesiones').hide();
+                $('#contenidoSesionesUsuario').html(`
+                    <div class="alert alert-info">
+                        <p><strong>Nota:</strong> Esta funcionalidad estará disponible en una próxima actualización.</p>
+                        <p>Puede ver todas las sesiones del usuario ${nombre} en la tabla principal filtrando por su nombre.</p>
+                    </div>
+                `);
+            }, 1000);
+        });
+    });
 });

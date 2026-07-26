@@ -15,7 +15,8 @@ if (!$authService->tienePermisoNombre($idusuario, 'clientes') && !$authService->
     exit;
 }
 
-$skip_select2 = true; // Esta vista no usa Select2
+$skip_select2 = true;
+$module_scripts = ['clientes/index-clientes'];
 include_once '../layouts/header.php';
 
 $controller = new ClienteController();
@@ -128,48 +129,6 @@ $clientes = $controller->index();
     <!-- /.container-fluid -->
 </section>
 <!-- /.content -->
-
-<script src="<?= $URL; ?>public/js/modules/clientes/index-clientes.js"></script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        $('[data-toggle="tooltip"]').tooltip();
-
-        const botonesCambiarEstado = document.querySelectorAll('.btn-cambiar-estado');
-
-        botonesCambiarEstado.forEach(boton => {
-            boton.addEventListener('click', function() {
-                const clienteId = this.dataset.id;
-                const estadoActual = this.dataset.estado;
-                const nombreCliente = this.dataset.nombre;
-
-                const tituloAlerta = estadoActual == 1 ? `¿Desactivar a ${nombreCliente}?` : `¿Activar a ${nombreCliente}?`;
-                const textoAlerta = estadoActual == 1 ? 'El cliente no podrá realizar reservas.' : 'El cliente podrá realizar reservas nuevamente.';
-                const confirmButtonText = estadoActual == 1 ? 'Sí, desactivar' : 'Sí, activar';
-                const cancelButtonText = 'Cancelar';
-
-                Swal.fire({
-                    title: tituloAlerta,
-                    text: textoAlerta,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: estadoActual == 1 ? '#d33' : '#3085d6',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: confirmButtonText,
-                    cancelButtonText: cancelButtonText
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const baseUrl = '<?= $URL; ?>';
-                        submitCsrfForm(`${baseUrl}controllers/clientes/desactivar_cliente.php`, {
-                            id: clienteId,
-                            estado: estadoActual
-                        });
-                    }
-                });
-            });
-        });
-    });
-</script>
 
 <?php
 include_once '../layouts/mensajes.php';

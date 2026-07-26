@@ -15,8 +15,8 @@ if (!($authService->tienePermisoNombre($idusuario, 'productos')) && !($authServi
     exit;
 }
 
-// Incluir el encabezado DESPUÉS de verificar permisos
-$skip_select2 = true; // Esta vista no usa Select2
+$skip_select2 = true;
+$module_scripts = ['productos/index-productos'];
 include_once '../layouts/header.php';
 
 $controller = new ProductoController();
@@ -146,48 +146,6 @@ $productos = $controller->index();
     <!-- /.container-fluid -->
 </section>
 <!-- /.content -->
-
-<script src="<?= $URL; ?>public/js/modules/productos/index-productos.js"></script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        $('[data-toggle="tooltip"]').tooltip();
-
-        const botonesCambiarEstado = document.querySelectorAll('.btn-cambiar-estado');
-
-        botonesCambiarEstado.forEach(boton => {
-            boton.addEventListener('click', function() {
-                const productoId = this.dataset.id;
-                const estadoActual = this.dataset.estado;
-                const nombreProducto = this.dataset.nombre;
-
-                const tituloAlerta = estadoActual == 1 ? `¿Desactivar ${nombreProducto}?` : `¿Activar ${nombreProducto}?`;
-                const textoAlerta = estadoActual == 1 ? 'El producto no estará disponible para venta.' : 'El producto estará disponible para venta.';
-                const confirmButtonText = estadoActual == 1 ? 'Sí, desactivar' : 'Sí, activar';
-                const cancelButtonText = 'Cancelar';
-
-                Swal.fire({
-                    title: tituloAlerta,
-                    text: textoAlerta,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: estadoActual == 1 ? '#d33' : '#3085d6',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: confirmButtonText,
-                    cancelButtonText: cancelButtonText
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const baseUrl = '<?= $URL; ?>';
-                        submitCsrfForm(`${baseUrl}controllers/productos/desactivar_producto.php`, {
-                            id: productoId,
-                            estado: estadoActual
-                        });
-                    }
-                });
-            });
-        });
-    });
-</script>
 
 <?php
 include_once '../layouts/mensajes.php';

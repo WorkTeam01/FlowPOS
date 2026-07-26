@@ -15,8 +15,8 @@ if (!($authService->tienePermisoNombre($idusuario, 'usuarios')) && !($authServic
     exit;
 }
 
-// Incluir el encabezado DESPUÉS de verificar permisos
-$skip_select2 = true; // Esta vista no usa Select2
+$skip_select2 = true;
+$module_scripts = ['usuarios/index-usuarios'];
 include_once '../layouts/header.php';
 
 $controller = new UsuarioController();
@@ -141,46 +141,6 @@ $usuarios = $controller->index();
     <!-- /.container-fluid -->
 </section>
 <!-- /.content -->
-
-<script src="<?= $URL; ?>public/js/modules/usuarios/index-usuarios.js"></script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const botonesCambiarEstado = document.querySelectorAll('.btn-cambiar-estado');
-
-        botonesCambiarEstado.forEach(boton => {
-            boton.addEventListener('click', function() {
-                const usuarioId = this.dataset.id;
-                const estadoActual = this.dataset.estado;
-                const nombreUsuario = this.dataset.nombre;
-
-                const tituloAlerta = estadoActual == 1 ? `¿Desactivar a ${nombreUsuario}?` : `¿Activar a ${nombreUsuario}?`;
-                const textoAlerta = estadoActual == 1 ? 'El usuario no podrá acceder al sistema.' : 'El usuario podrá acceder nuevamente al sistema.';
-                const confirmButtonText = estadoActual == 1 ? 'Sí, desactivar' : 'Sí, activar';
-                const cancelButtonText = 'Cancelar';
-
-                Swal.fire({
-                    title: tituloAlerta,
-                    text: textoAlerta,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: estadoActual == 1 ? '#d33' : '#28a745',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: confirmButtonText,
-                    cancelButtonText: cancelButtonText
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const baseUrl = '<?= $URL; ?>';
-                        submitCsrfForm(`${baseUrl}controllers/usuarios/desactivar_usuario.php`, {
-                            id: usuarioId,
-                            estado: estadoActual
-                        });
-                    }
-                });
-            });
-        });
-    });
-</script>
 
 <?php
 include_once '../layouts/mensajes.php';

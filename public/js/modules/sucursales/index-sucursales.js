@@ -8,6 +8,8 @@
  * - Integración con Select2 para selección de empresas
  */
 
+const mensajeErrorDesactivar = "No se puede desactivar la sucursal porque tiene usuarios asociados";
+
 $(document).ready(function () {
     // Inicializar tooltips y Select2
     $('[data-toggle="tooltip"]').tooltip();

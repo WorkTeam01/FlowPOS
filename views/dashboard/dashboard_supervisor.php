@@ -326,7 +326,7 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
                         </div>
                     </div>
                     <div class="card-footer clearfix">
-                        <a href="<?= $URL; ?>views/compras/nueva.php" class="btn btn-sm btn-danger float-right">
+                        <a href="<?= $URL; ?>views/compras/create.php" class="btn btn-sm btn-danger float-right">
                             Solicitar Compra
                         </a>
                     </div>

@@ -1,4 +1,6 @@
 $(document).ready(function () {
+    initializeSelect2();
+
     // Validación de número de documento según tipo
     $('#tipodocumento').on('change', function () {
         let tipo = $(this).val();

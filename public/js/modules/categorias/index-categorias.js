@@ -5,6 +5,8 @@
  * relacionadas con las categorías (crear, editar, cambiar estado)
  */
 
+const mensajeErrorDesactivar = "No se puede desactivar la categoría porque tiene productos asociados";
+
 $(document).ready(function () {
     // Inicializar tooltips
     $('[data-toggle="tooltip"]').tooltip();

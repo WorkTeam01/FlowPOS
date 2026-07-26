@@ -155,4 +155,37 @@ $(document).ready(function () {
             }
         }
     }).buttons().container().appendTo('#tablaClientes_wrapper .col-md-6:eq(0)');
+
+    $('[data-toggle="tooltip"]').tooltip();
+
+    document.querySelectorAll('.btn-cambiar-estado').forEach(boton => {
+        boton.addEventListener('click', function () {
+            const clienteId = this.dataset.id;
+            const estadoActual = this.dataset.estado;
+            const nombreCliente = this.dataset.nombre;
+
+            const tituloAlerta = estadoActual == 1 ? `¿Desactivar a ${nombreCliente}?` : `¿Activar a ${nombreCliente}?`;
+            const textoAlerta = estadoActual == 1 ? 'El cliente no podrá realizar reservas.' : 'El cliente podrá realizar reservas nuevamente.';
+            const confirmButtonText = estadoActual == 1 ? 'Sí, desactivar' : 'Sí, activar';
+            const cancelButtonText = 'Cancelar';
+
+            Swal.fire({
+                title: tituloAlerta,
+                text: textoAlerta,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: estadoActual == 1 ? '#d33' : '#3085d6',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: confirmButtonText,
+                cancelButtonText: cancelButtonText
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    submitCsrfForm(`${baseUrl}controllers/clientes/desactivar_cliente.php`, {
+                        id: clienteId,
+                        estado: estadoActual
+                    });
+                }
+            });
+        });
+    });
 });

@@ -14,10 +14,11 @@ if (!($authService->tienePermisoNombre($idusuario, 'productos')) && !($authServi
     exit;
 }
 
-// Incluir el encabezado
-$skip_datatables = true; // Esta vista no usa tabla; evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
-$skip_select2 = true; // Esta vista no usa Select2
+$skip_datatables = true; // Evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
+$skip_select2 = true;
+$module_scripts = ['productos/show-producto'];
 include_once '../layouts/header.php';
+
 // Verificar si se proporcionó un ID
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
@@ -163,7 +164,10 @@ if (!$producto) {
                         <h3 class="card-title"><i class="fas fa-cogs mr-2"></i>Acciones</h3>
                     </div>
                     <div class="card-body">
-                        <button type="button" class="btn btn-block <?= $producto['estado'] == 1 ? 'btn-danger' : 'btn-success'; ?>" id="btnCambiarEstado">
+                        <button type="button" class="btn btn-block <?= $producto['estado'] == 1 ? 'btn-danger' : 'btn-success'; ?>" id="btnCambiarEstado"
+                            data-id="<?= $producto['idproducto']; ?>"
+                            data-estado="<?= $producto['estado']; ?>"
+                            data-nombre="<?= htmlspecialchars($producto['nombre']); ?>">
                             <i class="fas <?= $producto['estado'] == 1 ? 'fa-ban' : 'fa-check'; ?> mr-2"></i>
                             <?= $producto['estado'] == 1 ? 'Desactivar Producto' : 'Activar Producto'; ?>
                         </button>
@@ -562,58 +566,3 @@ if (!$producto) {
 include_once '../layouts/mensajes.php';
 include_once '../layouts/footer.php';
 ?>
-
-<script>
-    // Inicializar plugins cuando el documento esté listo
-    $(document).ready(function() {
-        // Activar tooltips
-        $('[data-toggle="tooltip"]').tooltip();
-
-        // Guardar la pestaña activa en el almacenamiento local
-        $('a[data-toggle="pill"]').on('shown.bs.tab', function(e) {
-            localStorage.setItem('lastProductDetailTab', $(e.target).attr('id'));
-        });
-
-        // Restaurar la pestaña activa del almacenamiento local
-        var lastTab = localStorage.getItem('lastProductDetailTab');
-        if (lastTab) {
-            $('#' + lastTab).tab('show');
-        }
-
-        // Cambiar el estado del producto con SweetAlert2
-        $('#btnCambiarEstado').on('click', function() {
-            const productoId = <?= $producto['idproducto']; ?>;
-            const estadoActual = <?= $producto['estado']; ?>;
-            const nombreProducto = "<?= htmlspecialchars($producto['nombre']); ?>";
-
-            const tituloAlerta = estadoActual == 1 ?
-                `¿Desactivar producto "${nombreProducto}"?` :
-                `¿Activar producto "${nombreProducto}"?`;
-
-            const textoAlerta = estadoActual == 1 ?
-                'El producto no estará disponible para venta hasta que sea activado nuevamente.' :
-                'El producto estará disponible nuevamente para venta.';
-
-            const confirmButtonText = estadoActual == 1 ? 'Sí, desactivar' : 'Sí, activar';
-            const cancelButtonText = 'Cancelar';
-
-            Swal.fire({
-                title: tituloAlerta,
-                text: textoAlerta,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: estadoActual == 1 ? '#d33' : '#3085d6',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: confirmButtonText,
-                cancelButtonText: cancelButtonText
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    submitCsrfForm('<?= $URL; ?>controllers/productos/desactivar_producto.php', {
-                        id: productoId,
-                        estado: estadoActual
-                    });
-                }
-            });
-        });
-    });
-</script>

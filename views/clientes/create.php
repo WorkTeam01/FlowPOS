@@ -339,14 +339,6 @@ include_once '../layouts/header.php';
 </section>
 <!-- /.content -->
 
-<!-- Script para inicializar Select2 -->
-<script>
-    // Inicializar Select2
-    $(document).ready(function() {
-        initializeSelect2();
-    });
-</script>
-
 <?php
 include_once '../layouts/mensajes.php';
 include_once '../layouts/footer.php';

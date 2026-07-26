@@ -36,8 +36,9 @@ if (!$cliente) {
     exit;
 }
 
-$skip_datatables = true; // Esta vista no usa tabla; evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
-$skip_select2 = true; // Esta vista no usa Select2
+$skip_datatables = true; // Evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
+$skip_select2 = true;
+$module_scripts = ['clientes/show-cliente'];
 include_once '../layouts/header.php';
 ?>
 
@@ -223,7 +224,7 @@ include_once '../layouts/header.php';
                                 </a>
                             </div>
                             <div class="col-12 col-sm-auto">
-                                <a href="<?= $URL; ?>views/ventas/nueva.php" class="btn btn-success w-100">
+                                <a href="<?= $URL; ?>views/ventas/create.php" class="btn btn-success w-100">
                                     <i class="fas fa-shopping-cart mr-1"></i> Nueva Venta
                                 </a>
                             </div>
@@ -343,39 +344,6 @@ include_once '../layouts/header.php';
     <!-- /.container-fluid -->
 </section>
 <!-- /.content -->
-
-<script>
-    // Función para cambiar el estado del cliente
-    function cambiarEstado(clienteId, nuevoEstado) {
-        // El controlador espera el estado actual, no el nuevo
-        const estadoActual = nuevoEstado == 0 ? 1 : 0;
-
-        const tituloAlerta = nuevoEstado == 1 ? '¿Activar cliente?' : '¿Desactivar cliente?';
-        const textoAlerta = nuevoEstado == 1 ?
-            "El cliente podrá realizar nuevas compras." :
-            "El cliente no podrá realizar compras hasta que sea activado nuevamente.";
-        const confirmButtonText = nuevoEstado == 1 ? 'Sí, activar' : 'Sí, desactivar';
-
-        Swal.fire({
-            title: tituloAlerta,
-            text: textoAlerta,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: nuevoEstado == 1 ? '#28a745' : '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: confirmButtonText,
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Usar la misma ruta que usa index.php
-                submitCsrfForm('<?= $URL; ?>controllers/clientes/desactivar_cliente.php', {
-                    id: clienteId,
-                    estado: estadoActual
-                });
-            }
-        });
-    }
-</script>
 
 <?php
 include_once '../layouts/mensajes.php';

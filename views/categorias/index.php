@@ -16,8 +16,8 @@ if (!($auth->tienePermisoNombre($idusuario, 'categorias')) && !($auth->esAdminis
     exit;
 }
 
-// Incluir el encabezado después de verificar permisos
-$skip_select2 = true; // Esta vista no usa Select2
+$skip_select2 = true;
+$module_scripts = ['categorias/index-categorias'];
 include_once '../layouts/header.php';
 
 $controller = new CategoriaController();
@@ -213,9 +213,3 @@ include_once '../layouts/mensajes.php';
 include_once '../layouts/footer.php';
 ?>
 
-<script>
-    var mensajeErrorDesactivar = "No se puede desactivar la categoría porque tiene productos asociados";
-</script>
-
-<!-- Script para la gestión de categorías -->
-<script src="<?= $URL; ?>public/js/modules/categorias/index-categorias.js"></script>

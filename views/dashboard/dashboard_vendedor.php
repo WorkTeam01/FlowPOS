@@ -321,7 +321,7 @@ $module_scripts = ['dashboard/dashboard_vendedor'];
                     <div class="card-body">
                         <div class="row g-2">
                             <div class="col-md-4 col-sm-6">
-                                <a href="<?= $URL; ?>views/ventas/nueva.php" class="btn btn-success btn-block">
+                                <a href="<?= $URL; ?>views/ventas/create.php" class="btn btn-success btn-block">
                                     <i class="fas fa-cart-plus mr-2"></i> Nueva Venta
                                 </a>
                             </div>

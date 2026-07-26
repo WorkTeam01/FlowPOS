@@ -22,7 +22,7 @@ if (!($auth->tienePermisoNombre($idusuario, 'sucursales')) && !($auth->esAdminis
     exit;
 }
 
-// Incluir el encabezado después de verificar permisos
+$module_scripts = ['sucursales/index-sucursales'];
 include_once '../layouts/header.php';
 
 // Obtener empresas desde la base de datos
@@ -236,10 +236,3 @@ $estadisticas = $controller->getEstadisticas();
 include_once '../layouts/mensajes.php';
 include_once '../layouts/footer.php';
 ?>
-
-<script>
-    var mensajeErrorDesactivar = "No se puede desactivar la sucursal porque tiene usuarios asociados";
-</script>
-
-<!-- Script para la gestión de sucursales -->
-<script src="<?= $URL; ?>public/js/modules/sucursales/index-sucursales.js"></script>
