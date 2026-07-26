@@ -271,4 +271,43 @@ $(document).ready(function () {
             { "orderable": false, "targets": 6 } // Acciones
         ]
     }).buttons().container().appendTo('#tablaCompras_wrapper .col-md-6:eq(0)');
+
+    $('[data-toggle="tooltip"]').tooltip();
+
+    document.querySelectorAll('.btn-cambiar-estado').forEach(boton => {
+        boton.addEventListener('click', function () {
+            const compraId = this.getAttribute('data-id');
+            const accion = this.getAttribute('data-accion');
+            const tituloCompra = this.getAttribute('data-titulo');
+
+            let tituloAlerta, textoAlerta, confirmButtonText, confirmButtonColor;
+
+            if (accion === 'cancelar') {
+                tituloAlerta = `¿Cancelar compra ${tituloCompra}?`;
+                textoAlerta = 'La compra será cancelada y el stock de productos será revertido.';
+                confirmButtonText = 'Sí, cancelar';
+                confirmButtonColor = '#dc3545';
+            }
+
+            Swal.fire({
+                title: tituloAlerta,
+                text: textoAlerta,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: confirmButtonColor,
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: confirmButtonText,
+                cancelButtonText: 'Cancelar',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    submitCsrfForm(`${baseUrl}controllers/compras/cambiar_estado_compra.php`, {
+                        id: compraId,
+                        accion: accion
+                    });
+                }
+            });
+        });
+    });
 });
