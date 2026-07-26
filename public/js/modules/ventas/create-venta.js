@@ -8,6 +8,11 @@
  */
 
 document.addEventListener('DOMContentLoaded', function () {
+    // Datos exportados desde PHP vía atributos data-*
+    const datosVenta = document.getElementById('datos-venta');
+    const productosDisponibles = datosVenta ? ($(datosVenta).data('productos') || []) : [];
+    const clientesDisponibles = datosVenta ? ($(datosVenta).data('clientes') || []) : [];
+
     // Referencias a elementos del DOM
     // Elementos relacionados con productos
     const buscarProductoInput = document.getElementById('buscar-producto');
@@ -40,8 +45,8 @@ document.addEventListener('DOMContentLoaded', function () {
     let totalVentaActual = 0;
     let totalPagado = 0;
 
-    // Inicializar Select2
-    initializeSelect2();
+    // Inicializar Select2 en el método de pago único (utilidad compartida de common-utils.js)
+    initializeSelect2('#metodopago-unico');
 
     // Inicializar modo de pago único
     initPagoUnico();
@@ -111,12 +116,51 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Evento para buscar cliente
-    document.getElementById('buscar-cliente').addEventListener('input', function () {
+    const inputBuscarCliente = document.getElementById('buscar-cliente');
+    inputBuscarCliente.addEventListener('input', function () {
         if (this.value.length >= 2) {
             const resultados = buscarClientes(this.value);
             mostrarSugerencias(resultados);
         } else {
             document.getElementById('sugerencias-clientes').style.display = 'none';
+            this.setAttribute('aria-expanded', 'false');
+            this.removeAttribute('aria-activedescendant');
+        }
+    });
+
+    // Navegación por teclado en las sugerencias de cliente (patrón combobox ARIA)
+    inputBuscarCliente.addEventListener('keydown', function (e) {
+        const contenedor = document.getElementById('sugerencias-clientes');
+        if (contenedor.style.display === 'none') {
+            return;
+        }
+
+        const opciones = Array.from(contenedor.querySelectorAll('[role="option"]'));
+        if (opciones.length === 0) {
+            return;
+        }
+
+        const indiceActual = opciones.findIndex(op => op.classList.contains('active'));
+
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            const siguiente = e.key === 'ArrowDown'
+                ? (indiceActual + 1) % opciones.length
+                : (indiceActual - 1 + opciones.length) % opciones.length;
+
+            opciones.forEach(op => op.classList.remove('active'));
+            opciones[siguiente].classList.add('active');
+            opciones[siguiente].scrollIntoView({ block: 'nearest' });
+            this.setAttribute('aria-activedescendant', opciones[siguiente].id);
+        } else if (e.key === 'Enter') {
+            if (indiceActual >= 0) {
+                e.preventDefault();
+                opciones[indiceActual].click();
+            }
+        } else if (e.key === 'Escape') {
+            contenedor.style.display = 'none';
+            this.setAttribute('aria-expanded', 'false');
+            this.removeAttribute('aria-activedescendant');
         }
     });
 
@@ -132,8 +176,41 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('click', function (e) {
         if (!e.target.closest('#buscar-cliente') && !e.target.closest('#sugerencias-clientes')) {
             document.getElementById('sugerencias-clientes').style.display = 'none';
+            inputBuscarCliente.setAttribute('aria-expanded', 'false');
+            inputBuscarCliente.removeAttribute('aria-activedescendant');
         }
     });
+
+    /**
+     * Valida cantidad/precio de cada fila de producto y marca los campos inválidos
+     * (el form usa novalidate, así que esta validación reemplaza a la nativa del navegador)
+     */
+    function validarFilasProductos() {
+        const filas = document.querySelectorAll('tr.fila-producto');
+        let esValido = true;
+
+        if (filas.length === 0) {
+            esValido = false;
+        }
+
+        filas.forEach(fila => {
+            const cantidad = fila.querySelector('.cantidad');
+            const precio = fila.querySelector('.precio');
+
+            [cantidad, precio].forEach(input => {
+                if (!input.checkValidity()) {
+                    input.classList.add('is-invalid');
+                    input.setAttribute('aria-invalid', 'true');
+                    esValido = false;
+                } else {
+                    input.classList.remove('is-invalid');
+                    input.setAttribute('aria-invalid', 'false');
+                }
+            });
+        });
+
+        return esValido;
+    }
 
     // Añadir la confirmación de formulario con SweetAlert2
     document.getElementById('form-venta').addEventListener('submit', function (e) {
@@ -157,6 +234,20 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('buscar-cliente').focus();
 
             return false; // Detener el envío del formulario
+        }
+
+        // Verificar cantidad/precio de los productos agregados
+        if (!validarFilasProductos()) {
+            Swal.fire({
+                title: 'Revise los productos',
+                text: 'Hay cantidades o precios inválidos en el detalle de la venta',
+                icon: 'warning',
+                timer: 3000,
+                showConfirmButton: false,
+                position: 'top-end',
+                toast: true
+            });
+            return false;
         }
 
         // Obtener el tipo de pago
@@ -231,18 +322,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /**
-     * Inicializa los selectores mejorados
-     */
-    function initializeSelect2() {
-        if ($.fn.select2) {
-            $('.select2').select2({
-                theme: 'bootstrap4',
-                width: '100%'
-            });
-        }
-    }
-
-    /**
      * Función para inicializar el modo de pago único
      */
     function initPagoUnico() {
@@ -306,6 +385,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Agregar al contenedor
         contenedorPagos.appendChild(nuevoMetodoPago);
+
+        // Inicializar Select2 en el select de método de pago de esta fila
+        initializeSelect2($(nuevoMetodoPago).find('.select-metodo-pago'));
 
         // Configurar eventos
         const selectMetodo = nuevoMetodoPago.querySelector('.select-metodo-pago');
@@ -514,6 +596,24 @@ document.addEventListener('DOMContentLoaded', function () {
         nuevaFila.querySelector('.subtotal').textContent = parseFloat(producto.precioventa).toFixed(2);
         nuevaFila.querySelector('.stock-disponible').textContent = `Disponible: ${producto.stock}`;
 
+        // Vincular cada input con su mensaje de error (aria-describedby) para que
+        // los lectores de pantalla anuncien la invalidez, no solo la clase visual is-invalid
+        const cantidadInput = nuevaFila.querySelector('.cantidad');
+        const precioInput = nuevaFila.querySelector('.precio');
+        const cantidadFeedback = cantidadInput.nextElementSibling;
+        const precioInputGroup = precioInput.closest('.input-group');
+        const precioFeedback = precioInputGroup ? precioInputGroup.querySelector('.invalid-feedback') : null;
+
+        cantidadFeedback.id = `feedback-cantidad-${producto.idproducto}`;
+        cantidadInput.setAttribute('aria-describedby', cantidadFeedback.id);
+        cantidadInput.setAttribute('aria-invalid', 'false');
+
+        if (precioFeedback) {
+            precioFeedback.id = `feedback-precio-${producto.idproducto}`;
+            precioInput.setAttribute('aria-describedby', precioFeedback.id);
+        }
+        precioInput.setAttribute('aria-invalid', 'false');
+
         // Agregar eventos
         nuevaFila.querySelector('.btn-eliminar-fila').addEventListener('click', eliminarFila);
         agregarEventosCalculo(nuevaFila);
@@ -554,11 +654,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 this.value = maxStock;
                 Swal.fire('Stock insuficiente', `Máximo disponible: ${maxStock}`, 'warning');
             }
+            const invalido = !this.checkValidity();
+            this.classList.toggle('is-invalid', invalido);
+            this.setAttribute('aria-invalid', invalido ? 'true' : 'false');
             calcularSubtotal(fila);
             calcularTotalesVenta();
         });
 
-        precio.addEventListener('input', () => {
+        precio.addEventListener('input', function () {
+            const invalido = !this.checkValidity();
+            this.classList.toggle('is-invalid', invalido);
+            this.setAttribute('aria-invalid', invalido ? 'true' : 'false');
             calcularSubtotal(fila);
             calcularTotalesVenta();
         });
@@ -687,21 +793,30 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     function mostrarSugerencias(clientes) {
         const contenedor = document.getElementById('sugerencias-clientes');
+        const inputBusqueda = document.getElementById('buscar-cliente');
         contenedor.innerHTML = '';
 
         if (clientes.length === 0) {
             contenedor.style.display = 'none';
+            inputBusqueda.setAttribute('aria-expanded', 'false');
+            inputBusqueda.removeAttribute('aria-activedescendant');
             return;
         }
 
-        clientes.forEach(cliente => {
+        clientes.forEach((cliente, indice) => {
             const item = document.createElement('button');
             item.type = 'button';
+            item.id = `sugerencia-cliente-${indice}`;
+            item.setAttribute('role', 'option');
             item.className = 'list-group-item list-group-item-action';
-            item.innerHTML = `
-                <strong>${cliente.numdocumento}</strong> - 
-                ${cliente.nombres} ${cliente.apellidopaterno} ${cliente.apellidomaterno || ''}
-            `;
+
+            const numDoc = document.createElement('strong');
+            numDoc.textContent = cliente.numdocumento;
+            item.appendChild(numDoc);
+            item.appendChild(document.createTextNode(
+                ` - ${cliente.nombres} ${cliente.apellidopaterno} ${cliente.apellidomaterno || ''}`
+            ));
+
             item.addEventListener('click', () => {
                 seleccionarCliente(cliente);
             });
@@ -709,6 +824,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         contenedor.style.display = 'block';
+        inputBusqueda.setAttribute('aria-expanded', 'true');
     }
 
     /**
@@ -721,5 +837,7 @@ document.addEventListener('DOMContentLoaded', function () {
             `${cliente.nombres} ${cliente.apellidopaterno} ${cliente.apellidomaterno || ''}`;
         document.getElementById('info-cliente-seleccionado').style.display = 'block';
         document.getElementById('sugerencias-clientes').style.display = 'none';
+        document.getElementById('buscar-cliente').setAttribute('aria-expanded', 'false');
+        document.getElementById('buscar-cliente').removeAttribute('aria-activedescendant');
     }
 });

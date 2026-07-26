@@ -1,0 +1,16 @@
+/* Badge para ventas con pago mixto (sin equivalente "purple" en la paleta de AdminLTE) */
+.badge-purple {
+    background-color: #9c27b0;
+    color: white;
+}
+
+/* Botones de acción de la tabla de ventas (ver/anular/imprimir): en dispositivos
+   táctiles, btn-sm queda bajo el mínimo de 44x44px recomendado por WCAG 2.5.5.
+   Se amplía solo para puntero táctil; en desktop se mantiene la densidad compacta. */
+@media (hover: none) and (pointer: coarse) {
+    #tablaVentas .btn-group .btn-sm {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 0.5rem 0.75rem;
+    }
+}

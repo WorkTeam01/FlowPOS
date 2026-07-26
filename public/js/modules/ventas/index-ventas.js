@@ -183,40 +183,28 @@ $(document).ready(function () {
     // Inicializar tooltips
     $('[data-toggle="tooltip"]').tooltip();
 
-    // Funcionalidad para obtener ticket
-    $('.btn-imprimir-ticket').on('click', function () {
-        const ventaId = $(this).data('id');
+    // Botones de anulación
+    document.querySelectorAll('.btn-anular-venta').forEach(boton => {
+        boton.addEventListener('click', function () {
+            const ventaId = this.dataset.id;
+            const tituloVenta = this.dataset.titulo;
 
-        // Aquí se implementaría la lógica para obtener e imprimir el ticket
-        // Mostrar un modal con un formulario, etc.
-        console.log(`Imprimir ticket para venta ID: ${ventaId}`);
-
-        // Por ahora, simplemente mostraremos un mensaje
-        Swal.fire({
-            title: 'Función en desarrollo',
-            text: 'La impresión de tickets estará disponible próximamente',
-            icon: 'info'
-        });
-    });
-
-    // Funcionalidad para filtrar por rango de fechas
-    $('#btn-filtrar-fechas').on('click', function () {
-        const fechaInicio = $('#fecha_inicio').val();
-        const fechaFin = $('#fecha_fin').val();
-
-        if (fechaInicio && fechaFin) {
-            window.location.href = `?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
-        } else {
             Swal.fire({
-                title: 'Fechas incompletas',
-                text: 'Por favor seleccione ambas fechas para filtrar',
-                icon: 'warning'
+                title: `¿Anular venta ${tituloVenta}?`,
+                text: 'La venta será anulada y el stock de productos será revertido. Esta acción no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, anular',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    submitCsrfForm(`${baseUrl}controllers/ventas/anular_venta.php`, {
+                        id: ventaId
+                    });
+                }
             });
-        }
-    });
-
-    // Funcionalidad para restablecer filtros
-    $('#btn-restablecer-filtros').on('click', function () {
-        window.location.href = window.location.pathname;
+        });
     });
 });

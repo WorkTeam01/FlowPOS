@@ -15,7 +15,9 @@ if (!($authService->tienePermisoNombre($idusuario, 'ventas')) && !($authService-
     exit;
 }
 
-$skip_datatables = true; // Esta vista no usa tabla; evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
+$skip_datatables = true; // Evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
+$module_scripts = ['ventas/create-venta'];
+
 include_once '../layouts/header.php';
 
 // Obtener datos necesarios
@@ -67,11 +69,12 @@ $clientes = $clienteController->index();
 
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="idcliente">Cliente <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="buscar-cliente" placeholder="Buscar por número de documento o nombre" autocomplete="off">
+                                        <label for="buscar-cliente">Cliente <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="buscar-cliente" placeholder="Buscar por número de documento o nombre" autocomplete="off"
+                                            role="combobox" aria-expanded="false" aria-controls="sugerencias-clientes" aria-autocomplete="list">
                                         <input type="hidden" id="idcliente" name="idcliente" required>
                                         <div class="invalid-feedback">Seleccione un cliente</div>
-                                        <div id="sugerencias-clientes" class="list-group" style="display: none; position: absolute; z-index: 1000; width: 100%; max-height: 200px; overflow-y: auto;"></div>
+                                        <div id="sugerencias-clientes" class="list-group" role="listbox" aria-label="Sugerencias de clientes" style="display: none; position: absolute; z-index: 1000; width: 100%; max-height: 200px; overflow-y: auto;"></div>
                                     </div>
                                     <div id="info-cliente-seleccionado" class="mt-2" style="display: none;">
                                         <strong>Cliente seleccionado:</strong>
@@ -216,7 +219,7 @@ $clientes = $clienteController->index();
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label>Método de Pago <span class="text-danger">*</span></label>
-                                                    <select class="form-control" id="metodopago-unico" name="metodopago_unico" required>
+                                                    <select class="form-control select2" id="metodopago-unico" name="metodopago_unico" required>
                                                         <option value="">-- Seleccione método de pago --</option>
                                                         <option value="efectivo">Efectivo</option>
                                                         <option value="tarjeta">Tarjeta</option>
@@ -330,7 +333,7 @@ $clientes = $clienteController->index();
             <div class="col-md-4">
                 <div class="form-group">
                     <label>Método de Pago <span class="text-danger">*</span></label>
-                    <select class="form-control select-metodo-pago" name="metodopago[]" required>
+                    <select class="form-control select2 select-metodo-pago" name="metodopago[]" required>
                         <option value="">-- Seleccione método de pago --</option>
                         <option value="efectivo">Efectivo</option>
                         <option value="tarjeta">Tarjeta</option>
@@ -385,18 +388,13 @@ $clientes = $clienteController->index();
     </div>
 </div>
 
-<!-- Scripts para el formulario de ventas -->
-<script>
-    // Estas variables son necesarias para el archivo JS
-    // Exportamos los datos desde PHP a variables JavaScript globales
-    const productosDisponibles = <?= json_encode(array_filter($productos, function ($p) {
-                                        return $p['estado'] == 1 && $p['stock'] > 0;
-                                    })) ?>;
-
-    const clientesDisponibles = <?= json_encode($clientes) ?>;
-</script>
-
-<script src="<?= $URL; ?>public/js/modules/ventas/create-venta.js"></script>
+<!-- Datos para el formulario de ventas -->
+<div id="datos-venta"
+    data-productos='<?= htmlspecialchars(json_encode(array_filter($productos, function ($p) {
+                        return $p['estado'] == 1 && $p['stock'] > 0;
+                    })), ENT_QUOTES, "UTF-8") ?>'
+    data-clientes='<?= htmlspecialchars(json_encode($clientes), ENT_QUOTES, "UTF-8") ?>'
+    style="display:none"></div>
 
 <?php
 include_once '../layouts/mensajes.php';
