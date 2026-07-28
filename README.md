@@ -82,7 +82,7 @@ Variables principales:
 | Variable       | Descripción                      | Ejemplo                            |
 | -------------- | -------------------------------- | ---------------------------------- |
 | `APP_NAME`     | Nombre visible de la aplicación  | `FlowPOS`             |
-| `APP_VERSION`  | Versión actual de la aplicación  | `1.1.3`                            |
+| `APP_VERSION`  | Versión actual de la aplicación  | `1.1.4`                            |
 | `APP_CURRENCY` | Símbolo de moneda                | `Bs`, `$`, `€`, `S/`               |
 | `APP_URL`      | URL base (debe terminar con `/`) | `http://localhost/FlowPOS/` |
 | `TIMEZONE`     | Zona horaria PHP                 | `America/La_Paz`                   |
@@ -163,6 +163,7 @@ FlowPOS/
 - El login tiene protección contra fuerza bruta (rate limiting por cuenta e IP con ventana deslizante); ver `CHANGELOG.md` [1.1.0].
 - Login y dashboards auditados y corregidos en accesibilidad (WCAG AA) y XSS de datos dinámicos; ver `CHANGELOG.md` [1.1.1].
 - Corregido acceso no autorizado (IDOR) al detalle de ventas/compras de otros usuarios y desactivados permisos redundantes tras filtrar el historial por usuario; ver `CHANGELOG.md` [1.1.3].
+- Corregido IDOR al anular ventas y al generar el comprobante PDF de ventas ajenas, y la autoría de venta (antes tomada de un campo de formulario, ahora siempre de la sesión); ver `CHANGELOG.md` [1.1.4].
 
 ## Changelog
 

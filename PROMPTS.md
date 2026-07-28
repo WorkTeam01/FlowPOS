@@ -60,6 +60,7 @@ _______________
 - DataTables para listados; SweetAlert2 para confirmaciones y notificaciones
 - Vistas que no usan DataTables/Select2: declarar `$skip_datatables`/`$skip_select2` antes del `include_once` de `header.php` (ver CLAUDE.md)
 - No introducir dependencias externas sin evaluar el impacto
+- Lógica de negocio (cálculos, mapeos de estado/badge, agregaciones, consultas por fila) va en el controlador o el modelo — la vista solo consume datos ya resueltos (ver `VentaController` como referencia: `calcularTotales()`, `obtenerIconoMetodoPago()`, `calcularInfoMetodoPago()`)
 - Si se modifica comportamiento funcional: actualizar `CHANGELOG.md`
 
 [Formato de salida]
@@ -111,7 +112,7 @@ Descripción: [criterios de aceptación]
 [Restricciones]
 - Seguir el patrón MVC del módulo de ventas como referencia
 - CSRF en todos los formularios POST: csrfField() en vista, requireCSRF() en controlador; endpoints AJAX vía header X-CSRF-Token (csrfMetaTag() + $.ajaxSetup)
-- Sanitización con htmlspecialchars() en vistas — nunca en modelos ni controladores
+- Sanitización con htmlspecialchars() al guardar (sanitizarDatos() en el modelo, ver CLAUDE.md) — las vistas NO deben volver a escapar esos campos al mostrarlos (produce doble escape); cualquier INSERT/UPDATE nuevo debe pasar por ese sanitizarDatos()
 - Queries con PDO preparado — nunca concatenar variables en SQL
 - Mensajes flash: $_SESSION['mensaje'] + $_SESSION['icono'] antes de cualquier redirect
 - Subida de archivos: siempre ImagenService — nunca move_uploaded_file() directo
@@ -196,7 +197,7 @@ Revisa el siguiente código antes del merge.
 
 [Restricciones]
 Evalúa específicamente:
-- Seguridad: SQL injection (PDO preparado), XSS (htmlspecialchars en vistas),
+- Seguridad: SQL injection (PDO preparado), XSS (htmlspecialchars() vía sanitizarDatos() del modelo al guardar — no re-escapar en la vista, ver CLAUDE.md),
   CSRF (requireCSRF() en el controlador + csrfField()/csrfMetaTag() en la vista), sesiones mal validadas,
   mutaciones de estado invocadas por GET en vez de POST
 - Conexión: Conexion::getInstance() usado correctamente — nunca PDO directo
@@ -305,7 +306,7 @@ Criterios de aceptación:
 - Seguir el patrón MVC del módulo ventas como referencia exacta
 - CSRF en todos los formularios POST y endpoints AJAX: csrfField()/csrfMetaTag() en la vista, requireCSRF() en el controlador
 - PDO preparado en todos los queries — sin concatenación de variables
-- htmlspecialchars() en vistas para todo output de usuario
+- htmlspecialchars() vía sanitizarDatos() del modelo al guardar (nunca al mostrar en la vista, ver CLAUDE.md)
 - Mensajes flash: $_SESSION['mensaje'] + $_SESSION['icono'] antes de redirect
 - DataTables para listados; SweetAlert2 para confirmaciones y notificaciones
 - Select2 para dropdowns; con dropdownParent si está dentro de un modal
@@ -330,5 +331,5 @@ Devuelve en este orden:
 
 ---
 
-_Última actualización: 2026-07-26_
+_Última actualización: 2026-07-28_
 _Mantener sincronizado con CLAUDE.md al hacer cambios de arquitectura._

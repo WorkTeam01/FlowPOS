@@ -7,6 +7,29 @@ y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.1.4] - 2026-07-28
+
+### Fixed
+
+- **IDOR en `controllers/ventas/anular_venta.php`**: solo verificaba el permiso de módulo `'ventas'`, sin comprobar que la venta perteneciera al usuario — un vendedor podía anular la venta de otro cambiando el `id` en el POST. Ahora valida propiedad (o rol administrador) antes de anular, mismo criterio que `views/ventas/show.php`. Agregado `VentaController::obtenerPorId()` para esta verificación.
+- **Autoría de venta falsificable**: `VentaController::prepararDatosVenta()` tomaba `idusuario` de `$_POST`, permitiendo atribuir una venta a otro vendedor editando el DOM. Ahora se usa siempre `$_SESSION['usuario_id']`; retirado el input oculto correspondiente en `views/ventas/create.php`.
+- **`views/ventas/recibo.php` sin verificación de propiedad**: cualquier usuario con permiso `'ventas'` podía generar el PDF de la venta de otro vendedor cambiando `?id=`. Agregada la misma validación de propiedad que `show.php`.
+- **Self-XSS en el modal de confirmación de `create-venta.js`**: el campo "Observaciones" se interpolaba sin escapar en el `html` de SweetAlert2 antes de enviar el formulario. Escapado en el cliente antes de interpolarse.
+- Eliminado un `error_log()` sin límite en `views/ventas/index.php` que registraba cada método de pago no reconocido, vector de flood del log del servidor.
+- Corregida precedencia rota de `??` en `views/ventas/recibo.php` (`usuario_registro`), que impedía que el fallback se aplicara realmente.
+
+### Changed
+
+- `views/ventas/show.php`: rediseño de layout (columna izquierda = resumen/acciones tipo `sidebar-sticky`, derecha = detalle), siguiendo el mismo patrón ya usado en `usuarios/show.php` y `productos/show.php`. La información general pasó de `form-group` a `list-group-unbordered`, con ícono y total destacado antes de la lista, y los botones Volver/Anular movidos a la misma card.
+- Tema visual unificado a `card-info` en las cards de `views/ventas/show.php` (Información General, Método de Pago, Productos Vendidos, Información Adicional).
+- Accesibilidad: agregado `aria-live="polite"` a los mensajes dinámicos de `views/ventas/create.php` (`#diferencia-pago`, `#cliente-feedback`) y `aria-label` a los botones de acción ícono-only del historial en `views/ventas/index.php` (ver, anular, imprimir).
+- Movida lógica de negocio fuera de las vistas de ventas hacia `VentaController`/`Venta`: `views/ventas/index.php` calculaba el texto/clase de badge del método de pago con un `switch` inline y hacía dos consultas por fila (`tienePagosMixtos()` + `obtenerMetodosPago()`, patrón N+1); `views/ventas/show.php` calculaba subtotal/descuento/total pagado y el mapeo ícono/badge por método de pago directamente en la vista. Ahora `VentaController::index()` adjunta pagos e información de método de pago ya calculada a cada venta (una sola consulta batch vía el nuevo `Venta::getMetodosPagoPorVentas()`), y `VentaController::calcularTotales()`/`obtenerIconoMetodoPago()` encapsulan el resto; las vistas solo consumen los datos ya resueltos.
+- `views/ventas/recibo.php` (generación de PDF) calculaba subtotal/descuento/neto por línea de producto, acumulaba subtotal/descuento general, sumaba recibido/cambio de los pagos, y determinaba "pago mixto" con un criterio (`count($pagos) > 1`) distinto y menos correcto que el ya centralizado (contaba pagos, no métodos distintos). Agregados `VentaController::calcularDesgloseDetalles()`, `calcularResumenPagos()` y `esPagoMixto()` (reutilizado también por `calcularInfoMetodoPago()`); verificado que el PDF generado es byte-idéntico en contenido antes/después del refactor.
+
+### Note
+
+- Documentado en `CLAUDE.md` el patrón "escape-at-storage" (`sanitizarDatos()` en los modelos escapa con `htmlspecialchars()` al guardar, no al mostrar) como deuda técnica conocida: las vistas no deben re-escapar esos campos al mostrarlos (produce doble escape), pero cualquier endpoint nuevo que escriba en esas tablas debe pasar por el `sanitizarDatos()` correspondiente para no dejar una vía de XSS almacenado.
+
 ## [1.1.3] - 2026-07-26
 
 ### Changed
