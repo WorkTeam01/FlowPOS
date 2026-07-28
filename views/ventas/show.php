@@ -54,7 +54,7 @@ include_once '../layouts/header.php';
 <!-- Content Header (Page header) -->
 <section class="content-header">
     <div class="container-fluid">
-        <div class="row mb-2">
+        <div class="row">
             <div class="col-sm-6">
                 <h1>Detalle de Venta #<?= str_pad($venta['idventa'], 6, '0', STR_PAD_LEFT); ?></h1>
             </div>
@@ -72,151 +72,123 @@ include_once '../layouts/header.php';
 <!-- Main content -->
 <section class="content">
     <div class="container-fluid">
+        <?php
+        $totales = $controller->calcularTotales($venta);
+        $subtotalGeneral = $totales['subtotal'];
+        $descuentoGeneral = $totales['descuento'];
+        $totalPagado = $totales['total_pagado'];
+        ?>
         <div class="row">
-            <div class="col-md-4">
-                <!-- Tarjeta de información básica -->
-                <div class="card card-primary card-outline">
-                    <div class="card-header">
-                        <h3 class="card-title">Información General</h3>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label>Código:</label>
-                            <p class="text-muted">VENT-<?= str_pad($venta['idventa'], 6, '0', STR_PAD_LEFT); ?></p>
+            <!-- Columna izquierda: contexto de la venta (quién, cuándo, cómo se pagó) y acciones -->
+            <div class="col-lg-4 mb-3">
+                <div class="sidebar-sticky">
+                    <!-- Tarjeta de información general -->
+                    <div class="card card-info card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">Información General</h3>
                         </div>
+                        <div class="card-body box-profile">
+                            <div class="text-center mb-3">
+                                <i class="fas fa-file-invoice-dollar fa-3x text-info"></i>
+                                <h3 class="mt-2 mb-0 text-info font-weight-bold">
+                                    <?= number_format($venta['totalventa'], 2); ?> <?= $appCurrency ?>
+                                </h3>
+                                <p class="text-muted mb-0">Total Venta</p>
+                            </div>
 
-                        <div class="form-group">
-                            <label>Fecha Venta:</label>
-                            <p class="text-muted"><?= date('d/m/Y H:i', strtotime($venta['fechacreacion'])); ?></p>
-                        </div>
+                            <ul class="list-group list-group-unbordered mb-3">
+                                <li class="list-group-item">
+                                    <b><i class="fas fa-hashtag mr-2"></i>Código</b>
+                                    <span class="float-right">VENT-<?= str_pad($venta['idventa'], 6, '0', STR_PAD_LEFT); ?></span>
+                                </li>
+                                <li class="list-group-item">
+                                    <b><i class="fas fa-calendar-alt mr-2"></i>Fecha Venta</b>
+                                    <span class="float-right"><?= date('d/m/Y H:i', strtotime($venta['fechacreacion'])); ?></span>
+                                </li>
+                                <li class="list-group-item">
+                                    <b><i class="fas fa-user mr-2"></i>Cliente</b>
+                                    <span class="float-right"><?= htmlspecialchars($venta['cliente_nombre'] ?? 'Consumidor Final'); ?></span>
+                                </li>
+                                <li class="list-group-item">
+                                    <b><i class="fas fa-user-tie mr-2"></i>Vendedor</b>
+                                    <span class="float-right"><?= htmlspecialchars($venta['usuario_nombre'] ?? 'Usuario no registrado'); ?></span>
+                                </li>
+                                <li class="list-group-item">
+                                    <b><i class="fas fa-toggle-on mr-2"></i>Estado</b>
+                                    <span class="float-right">
+                                        <?php if ($venta['estado'] == 1) : ?>
+                                            <span class="badge badge-success">Activa</span>
+                                        <?php else : ?>
+                                            <span class="badge badge-danger">Anulada</span>
+                                        <?php endif; ?>
+                                    </span>
+                                </li>
+                            </ul>
 
-                        <div class="form-group">
-                            <label>Cliente:</label>
-                            <p class="text-muted"><?= htmlspecialchars($venta['cliente_nombre'] ?? 'Consumidor Final'); ?></p>
-                        </div>
+                            <div class="d-flex justify-content-between">
+                                <a href="<?= $URL; ?>views/ventas/index.php" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Volver
+                                </a>
 
-                        <div class="form-group">
-                            <label>Vendedor:</label>
-                            <p class="text-muted"><?= htmlspecialchars($venta['usuario_nombre'] ?? 'Usuario no registrado'); ?></p>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Estado:</label>
-                            <p>
                                 <?php if ($venta['estado'] == 1) : ?>
-                                    <span class="badge badge-success">Activa</span>
-                                <?php else : ?>
-                                    <span class="badge badge-danger">Anulada</span>
+                                    <button type="button" class="btn btn-danger btn-anular-venta"
+                                        data-id="<?= $venta['idventa']; ?>"
+                                        data-nombre="Venta #<?= str_pad($venta['idventa'], 6, '0', STR_PAD_LEFT); ?>">
+                                        <i class="fas fa-ban"></i> Anular Venta
+                                    </button>
                                 <?php endif; ?>
-                            </p>
+                            </div>
                         </div>
+                    </div>
 
-                        <div class="form-group">
-                            <label>Total Venta:</label>
-                            <p class="text-primary font-weight-bold" style="font-size: 1.5rem;">
-                                <?= number_format($venta['totalventa'], 2); ?> <?= $appCurrency ?>
-                            </p>
-                        </div>
-
-                        <div class="d-flex justify-content-between mt-4">
-                            <a href="<?= $URL; ?>views/ventas/index.php" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Volver
-                            </a>
-
-                            <?php if ($venta['estado'] == 1) : ?>
-                                <button type="button" class="btn btn-danger btn-anular-venta"
-                                    data-id="<?= $venta['idventa']; ?>"
-                                    data-nombre="Venta #<?= str_pad($venta['idventa'], 6, '0', STR_PAD_LEFT); ?>">
-                                    <i class="fas fa-ban"></i> Anular Venta
+                    <!-- Tarjeta de métodos de pago -->
+                    <div class="card card-outline <?= $esPagoMixto ? 'card-purple' : 'card-info' ?>">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <?php if ($esPagoMixto) : ?>
+                                    <i class="fas fa-money-check-alt"></i> Pago Mixto
+                                <?php else : ?>
+                                    <i class="fas fa-money-bill-wave"></i> Método de Pago
+                                <?php endif; ?>
+                            </h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
                                 </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <?php foreach ($venta['pagos'] as $pago) :
+                                [$iconoMetodo, $claseMetodo] = $controller->obtenerIconoMetodoPago($pago['metodopago']);
+                            ?>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="badge <?= $claseMetodo ?>">
+                                        <i class="<?= $iconoMetodo ?>"></i> <?= ucfirst($pago['metodopago']) ?>
+                                    </span>
+                                    <span><?= number_format($pago['monto'], 2) ?> <?= $appCurrency ?></span>
+                                </div>
+                                <?php if ($pago['metodopago'] === 'efectivo' && $pago['cambio'] > 0) : ?>
+                                    <div class="d-flex justify-content-between text-muted small mb-2">
+                                        <span>Recibido <?= number_format($pago['pagorecibido'], 2) ?> <?= $appCurrency ?></span>
+                                        <span>Cambio <?= number_format($pago['cambio'], 2) ?> <?= $appCurrency ?></span>
+                                    </div>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                            <?php if ($esPagoMixto) : ?>
+                                <div class="d-flex justify-content-between font-weight-bold border-top pt-2 mt-1 mb-0">
+                                    <span>Total Pagado</span>
+                                    <span><?= number_format($totalPagado, 2) ?> <?= $appCurrency ?></span>
+                                </div>
                             <?php endif; ?>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Tarjeta de métodos de pago -->
-                <div class="card card-outline <?= $esPagoMixto ? 'card-purple' : 'card-success' ?>">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <?php if ($esPagoMixto): ?>
-                                <i class="fas fa-money-check-alt"></i> Pago Mixto
-                            <?php else: ?>
-                                <i class="fas fa-money-bill-wave"></i> Método de Pago
-                            <?php endif; ?>
-                        </h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Método</th>
-                                    <th class="text-right">Monto</th>
-                                    <th class="text-right">Recibido</th>
-                                    <th class="text-right">Cambio</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                $totalPagado = 0;
-                                foreach ($venta['pagos'] as $pago):
-                                    $totalPagado += $pago['monto'];
-
-                                    // Determinar ícono y clase para el método de pago
-                                    $iconoMetodo = 'fas fa-money-bill-alt';
-                                    $claseMetodo = 'badge-secondary';
-
-                                    switch ($pago['metodopago']) {
-                                        case 'efectivo':
-                                            $iconoMetodo = 'fas fa-money-bill-wave';
-                                            $claseMetodo = 'badge-success';
-                                            break;
-                                        case 'tarjeta':
-                                            $iconoMetodo = 'far fa-credit-card';
-                                            $claseMetodo = 'badge-primary';
-                                            break;
-                                        case 'qr':
-                                            $iconoMetodo = 'fas fa-qrcode';
-                                            $claseMetodo = 'badge-info';
-                                            break;
-                                        case 'transferencia':
-                                            $iconoMetodo = 'fas fa-exchange-alt';
-                                            $claseMetodo = 'badge-secondary';
-                                            break;
-                                    }
-                                ?>
-                                    <tr>
-                                        <td>
-                                            <span class="badge <?= $claseMetodo ?>">
-                                                <i class="<?= $iconoMetodo ?>"></i>
-                                                <?= ucfirst($pago['metodopago']) ?>
-                                            </span>
-                                        </td>
-                                        <td class="text-right"><?= number_format($pago['monto'], 2) ?> <?= $appCurrency ?></td>
-                                        <td class="text-right"><?= number_format($pago['pagorecibido'], 2) ?> <?= $appCurrency ?></td>
-                                        <td class="text-right"><?= number_format($pago['cambio'], 2) ?> <?= $appCurrency ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <th>Total Pagado:</th>
-                                    <th class="text-right"><?= number_format($totalPagado, 2) ?> <?= $appCurrency ?></th>
-                                    <th colspan="2"></th>
-                                </tr>
-                            </tfoot>
-                        </table>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-8">
+            <!-- Columna derecha: qué se vendió -->
+            <div class="col-lg-8">
                 <!-- Tarjeta de detalles de productos -->
-                <div class="card card-primary card-outline">
+                <div class="card card-info card-outline">
                     <div class="card-header">
                         <h3 class="card-title">Productos Vendidos</h3>
                         <div class="card-tools">
@@ -227,7 +199,7 @@ include_once '../layouts/header.php';
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-hover table-striped">
+                            <table class="table table-hover table-striped mb-0">
                                 <thead class="thead-light">
                                     <tr>
                                         <th>#</th>
@@ -241,17 +213,11 @@ include_once '../layouts/header.php';
                                 <tbody>
                                     <?php
                                     $contador = 1;
-                                    $subtotalGeneral = 0;
-                                    $descuentoGeneral = 0;
-
                                     foreach ($venta['detalles'] as $detalle) :
                                         $precioUnitario = $detalle['precioventa'];
                                         $cantidad = $detalle['cantidad'];
                                         $descuento = $detalle['descuento'];
                                         $subtotal = ($precioUnitario * $cantidad) - $descuento;
-
-                                        $subtotalGeneral += $subtotal;
-                                        $descuentoGeneral += $descuento;
                                     ?>
                                         <tr>
                                             <td><?= $contador++; ?></td>
@@ -264,11 +230,9 @@ include_once '../layouts/header.php';
                                             <td class="text-right"><?= number_format($precioUnitario, 2); ?> <?= $appCurrency ?></td>
                                             <td class="text-center"><?= $cantidad; ?></td>
                                             <td class="text-right">
-                                                <?php if ($descuento > 0): ?>
-                                                    <span class="text-danger">
-                                                        <?= number_format($descuento, 2); ?> <?= $appCurrency ?>
-                                                    </span>
-                                                <?php else: ?>
+                                                <?php if ($descuento > 0) : ?>
+                                                    <span class="text-danger">-<?= number_format($descuento, 2); ?> <?= $appCurrency ?></span>
+                                                <?php else : ?>
                                                     0.00 <?= $appCurrency ?>
                                                 <?php endif; ?>
                                             </td>
@@ -282,11 +246,13 @@ include_once '../layouts/header.php';
                                         <th class="text-right"><?= number_format($subtotalGeneral + $descuentoGeneral, 2); ?> <?= $appCurrency ?></th>
                                         <th></th>
                                     </tr>
-                                    <tr>
-                                        <th colspan="4" class="text-right">Descuento Total:</th>
-                                        <th class="text-right text-danger">-<?= number_format($descuentoGeneral, 2); ?> <?= $appCurrency ?></th>
-                                        <th></th>
-                                    </tr>
+                                    <?php if ($descuentoGeneral > 0) : ?>
+                                        <tr>
+                                            <th colspan="4" class="text-right">Descuento Total:</th>
+                                            <th class="text-right text-danger">-<?= number_format($descuentoGeneral, 2); ?> <?= $appCurrency ?></th>
+                                            <th></th>
+                                        </tr>
+                                    <?php endif; ?>
                                     <tr class="bg-light">
                                         <th colspan="5" class="text-right">Total:</th>
                                         <th class="text-right"><?= number_format($venta['totalventa'], 2); ?> <?= $appCurrency ?></th>
@@ -298,55 +264,36 @@ include_once '../layouts/header.php';
                 </div>
 
                 <!-- Tarjeta de información adicional -->
-                <div class="card card-secondary card-outline mt-3">
-                    <div class="card-header">
-                        <h3 class="card-title">Información Adicional</h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Fecha de Creación:</label>
-                                    <p class="text-muted">
-                                        <?= date('d/m/Y H:i', strtotime($venta['fechacreacion'])); ?>
-                                    </p>
-                                </div>
+                <?php if (!empty($venta['observacion']) || $venta['estado'] == 0) : ?>
+                    <div class="card card-info card-outline">
+                        <div class="card-header">
+                            <h3 class="card-title">Información Adicional</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
                             </div>
-                            <?php if (!empty($venta['fechaactualizacion'])) : ?>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>Última Actualización:</label>
-                                        <p class="text-muted">
-                                            <?= date('d/m/Y H:i', strtotime($venta['fechaactualizacion'])); ?>
-                                        </p>
+                        </div>
+                        <div class="card-body">
+                            <?php if (!empty($venta['observacion'])) : ?>
+                                <div class="form-group mb-0">
+                                    <label>Observaciones:</label>
+                                    <div class="p-2 bg-light rounded">
+                                        <?= nl2br($venta['observacion']); ?>
                                     </div>
                                 </div>
                             <?php endif; ?>
-                        </div>
 
-                        <?php if (!empty($venta['observacion'])) : ?>
-                            <div class="form-group">
-                                <label>Observaciones:</label>
-                                <div class="p-2 bg-light rounded">
-                                    <?= nl2br(htmlspecialchars($venta['observacion'])); ?>
+                            <?php if ($venta['estado'] == 0) : ?>
+                                <div class="alert alert-warning <?= !empty($venta['observacion']) ? 'mt-3' : '' ?> mb-0">
+                                    <i class="icon fas fa-info-circle"></i>
+                                    Esta venta fue anulada el <?= date('d/m/Y H:i', strtotime($venta['fechaactualizacion'])); ?>.
+                                    El stock de los productos fue restaurado.
                                 </div>
-                            </div>
-                        <?php endif; ?>
-
-                        <?php if ($venta['estado'] == 0) : ?>
-                            <div class="alert alert-warning">
-                                <i class="icon fas fa-info-circle"></i>
-                                Esta venta fue anulada el <?= date('d/m/Y H:i', strtotime($venta['fechaactualizacion'])); ?>.
-                                El stock de los productos fue restaurado.
-                            </div>
-                        <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>

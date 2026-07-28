@@ -30,7 +30,7 @@ $estadisticas = $controller->getEstadisticas();
 <!-- Content Header (Page header) -->
 <section class="content-header">
     <div class="container-fluid">
-        <div class="row mb-2">
+        <div class="row">
             <div class="col-sm-6">
                 <h1>Gestión de Ventas</h1>
             </div>
@@ -91,55 +91,6 @@ $estadisticas = $controller->getEstadisticas();
             </div>
         </div>
 
-        <!-- Segunda fila de estadísticas para métodos de pago -->
-        <div class="row">
-            <?php if (!empty($estadisticas['metodos_pago'])): ?>
-                <?php foreach ($estadisticas['metodos_pago'] as $metodoPago): ?>
-                    <div class="col-12 col-sm-6 col-md-3">
-                        <div class="info-box">
-                            <span class="info-box-icon bg-primary elevation-1">
-                                <?php
-                                $iconoMetodo = 'fas fa-money-bill-alt';
-                                switch ($metodoPago['metodopago']) {
-                                    case 'efectivo':
-                                        $iconoMetodo = 'fas fa-money-bill-wave';
-                                        break;
-                                    case 'tarjeta':
-                                        $iconoMetodo = 'far fa-credit-card';
-                                        break;
-                                    case 'qr':
-                                        $iconoMetodo = 'fas fa-qrcode';
-                                        break;
-                                    case 'transferencia':
-                                        $iconoMetodo = 'fas fa-exchange-alt';
-                                        break;
-                                }
-                                ?>
-                                <i class="<?= $iconoMetodo; ?>"></i>
-                            </span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">
-                                    <?= ucfirst($metodoPago['metodopago']); ?>
-                                </span>
-                                <span class="info-box-number">
-                                    <?= number_format($metodoPago['total'], 2); ?> <?= $appCurrency ?>
-                                </span>
-                                <span class="text-muted">
-                                    <?= $metodoPago['cantidad']; ?> transacciones
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <div class="col-12">
-                    <div class="alert alert-info">
-                        <i class="icon fas fa-info-circle"></i> No hay información de métodos de pago para hoy.
-                    </div>
-                </div>
-            <?php endif; ?>
-        </div>
-
         <div class="row">
             <div class="col-12">
                 <div class="card">
@@ -175,47 +126,13 @@ $estadisticas = $controller->getEstadisticas();
                                     <?php
                                     $contador = 1;
                                     foreach ($ventas as $venta) :
-                                        // Verificar si esta venta tiene pagos mixtos
-                                        $tienePagosMixtos = $controller->tienePagosMixtos($venta['idventa']);
+                                        // Info del método de pago ya calculada por el controlador (evita N+1 por fila)
+                                        $infoMetodo = $venta['info_metodo_pago'];
+                                        $tienePagosMixtos = $infoMetodo['es_mixto'];
+                                        $metodosPago = $venta['pagos'];
+                                        $texto_metodo = $infoMetodo['texto'];
+                                        $clase_badge = $infoMetodo['clase'];
 
-                                        // Obtener la lista de pagos (independientemente de si son mixtos o no)
-                                        $metodosPago = $controller->obtenerMetodosPago($venta['idventa']);
-
-                                        // Determinar texto y clase de badge para método de pago
-                                        $texto_metodo = '';
-                                        $clase_badge = '';
-
-                                        if ($tienePagosMixtos) {
-                                            $texto_metodo = 'Pago Mixto';
-                                            $clase_badge = 'badge-purple';
-                                        } else {
-                                            // Obtener el método de pago principal y asegurarse de que sea en minúsculas y sin espacios
-                                            $metodo_pago = strtolower(trim($metodosPago[0]['metodopago'] ?? 'efectivo'));
-
-                                            switch ($metodo_pago) {
-                                                case 'efectivo':
-                                                    $clase_badge = 'badge-success';
-                                                    $texto_metodo = 'Efectivo';
-                                                    break;
-                                                case 'qr':
-                                                    $clase_badge = 'badge-info';
-                                                    $texto_metodo = 'QR';
-                                                    break;
-                                                case 'tarjeta':
-                                                    $clase_badge = 'badge-primary';
-                                                    $texto_metodo = 'Tarjeta';
-                                                    break;
-                                                case 'transferencia':
-                                                    $clase_badge = 'badge-secondary';
-                                                    $texto_metodo = 'Transferencia';
-                                                    break;
-                                                default:
-                                                    $clase_badge = 'badge-secondary';
-                                                    $texto_metodo = ucfirst($metodo_pago);
-                                                    // Añadir log para métodos desconocidos
-                                                    error_log("Método de pago desconocido: '$metodo_pago'");
-                                            }
-                                        }
                                         // Estado de la venta
                                         $estado = $venta['estado'];
                                         $clase_estado = $estado ? 'badge-success' : 'badge-danger';
@@ -253,7 +170,7 @@ $estadisticas = $controller->getEstadisticas();
                                             </td>
                                             <td class="text-center">
                                                 <div class="btn-group">
-                                                    <a href="<?= $URL; ?>views/ventas/show.php?id=<?= $venta['idventa']; ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="Ver detalles">
+                                                    <a href="<?= $URL; ?>views/ventas/show.php?id=<?= $venta['idventa']; ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="Ver detalles" aria-label="Ver detalles">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
 
@@ -261,19 +178,19 @@ $estadisticas = $controller->getEstadisticas();
                                                         <button type="button" class="btn btn-danger btn-sm btn-anular-venta"
                                                             data-id="<?= $venta['idventa']; ?>"
                                                             data-titulo="VENT-<?= str_pad($venta['idventa'], 6, '0', STR_PAD_LEFT); ?>"
-                                                            data-toggle="tooltip" title="Anular venta">
+                                                            data-toggle="tooltip" title="Anular venta" aria-label="Anular venta">
                                                             <i class="fas fa-ban"></i>
                                                         </button>
                                                     <?php endif; ?>
 
                                                     <?php if ($venta['estado'] == 1) : ?>
                                                         <a href="<?= $URL; ?>views/ventas/recibo.php?id=<?= $venta['idventa']; ?>"
-                                                            class="btn btn-secondary btn-sm" target="_blank" data-toggle="tooltip" title="Imprimir comprobante">
+                                                            class="btn btn-secondary btn-sm" target="_blank" data-toggle="tooltip" title="Imprimir comprobante" aria-label="Imprimir comprobante">
                                                             <i class="fas fa-print"></i>
                                                         </a>
                                                     <?php else : ?>
                                                         <button type="button" class="btn btn-secondary btn-sm" disabled
-                                                            data-toggle="tooltip" title="No disponible para ventas anuladas">
+                                                            data-toggle="tooltip" title="No disponible para ventas anuladas" aria-label="Imprimir comprobante no disponible para ventas anuladas">
                                                             <i class="fas fa-print"></i>
                                                         </button>
                                                     <?php endif; ?>

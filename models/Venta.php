@@ -581,8 +581,7 @@ class Venta
                 'ventas_hoy' => 0,
                 'total_hoy' => 0,
                 'cliente_mas_compro' => null,
-                'producto_mas_vendido' => null,
-                'metodos_pago' => []
+                'producto_mas_vendido' => null
             ];
 
             // Obtener fecha actual
@@ -630,18 +629,6 @@ class Venta
             $stmt->execute();
             $estadisticas['producto_mas_vendido'] = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Métodos de pago utilizados hoy
-            $query = "SELECT metodopago, COUNT(*) as cantidad, SUM(monto) as total
-                     FROM {$this->tablaPago} pv
-                     JOIN {$this->tabla} v ON pv.idventa = v.idventa
-                     WHERE DATE(v.fechacreacion) = :hoy AND v.estado = 1 AND pv.estado = 1
-                     GROUP BY metodopago
-                     ORDER BY total DESC";
-            $stmt = $this->conexion->prepare($query);
-            $stmt->bindParam(':hoy', $hoy, PDO::PARAM_STR);
-            $stmt->execute();
-            $estadisticas['metodos_pago'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
             return $estadisticas;
         } catch (PDOException $e) {
             $this->lastError = $e->getMessage();
@@ -649,8 +636,7 @@ class Venta
                 'ventas_hoy' => 0,
                 'total_hoy' => 0,
                 'cliente_mas_compro' => null,
-                'producto_mas_vendido' => null,
-                'metodos_pago' => []
+                'producto_mas_vendido' => null
             ];
         }
     }
@@ -676,6 +662,38 @@ class Venta
         } catch (PDOException $e) {
             $this->lastError = $e->getMessage();
             return false;
+        }
+    }
+
+    /**
+     * Obtiene los métodos de pago de varias ventas en una sola consulta,
+     * agrupados por idventa (evita N+1 al listar ventas)
+     *
+     * @param array $idsVenta IDs de venta
+     * @return array Mapa idventa => lista de pagos
+     */
+    public function getMetodosPagoPorVentas(array $idsVenta)
+    {
+        if (empty($idsVenta)) {
+            return [];
+        }
+
+        try {
+            $placeholders = implode(',', array_fill(0, count($idsVenta), '?'));
+            $query = "SELECT * FROM {$this->tablaPago}
+                     WHERE idventa IN ($placeholders) AND estado = 1
+                     ORDER BY idpagoventa";
+            $stmt = $this->conexion->prepare($query);
+            $stmt->execute(array_values($idsVenta));
+
+            $pagosPorVenta = [];
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $pago) {
+                $pagosPorVenta[$pago['idventa']][] = $pago;
+            }
+            return $pagosPorVenta;
+        } catch (PDOException $e) {
+            $this->lastError = $e->getMessage();
+            return [];
         }
     }
 }

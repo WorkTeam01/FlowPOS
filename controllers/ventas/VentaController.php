@@ -34,12 +34,66 @@ class VentaController
      */
     public function index($idusuario = null)
     {
-        if ($idusuario !== null) {
-            return $this->modelo->getPorUsuario($idusuario);
+        $ventas = $idusuario !== null
+            ? $this->modelo->getPorUsuario($idusuario)
+            : $this->modelo->getAll();
+
+        return $this->adjuntarInfoMetodoPago($ventas);
+    }
+
+    /**
+     * Adjunta a cada venta sus pagos y la información de presentación
+     * del método de pago (texto, clase de badge, tooltip), evitando
+     * consultas N+1 por fila al listar ventas.
+     *
+     * @param array $ventas Lista de ventas (de getAll()/getPorUsuario())
+     * @return array Lista de ventas con las claves 'pagos' e 'info_metodo_pago' agregadas
+     */
+    private function adjuntarInfoMetodoPago(array $ventas)
+    {
+        $idsVenta = array_column($ventas, 'idventa');
+        $pagosPorVenta = $this->modelo->getMetodosPagoPorVentas($idsVenta);
+
+        foreach ($ventas as &$venta) {
+            $pagos = $pagosPorVenta[$venta['idventa']] ?? [];
+            $venta['pagos'] = $pagos;
+            $venta['info_metodo_pago'] = $this->calcularInfoMetodoPago($pagos);
         }
 
-        // Obtener todas las ventas
-        return $this->modelo->getAll();
+        return $ventas;
+    }
+
+    /**
+     * Determina el texto, la clase de badge y el tooltip a mostrar
+     * para el/los método(s) de pago de una venta.
+     *
+     * @param array $pagos Lista de pagos de la venta
+     * @return array ['texto', 'clase', 'tooltip', 'es_mixto']
+     */
+    private function calcularInfoMetodoPago(array $pagos)
+    {
+        $esMixto = $this->esPagoMixto($pagos);
+
+        if ($esMixto) {
+            $tooltip = '';
+            foreach ($pagos as $pago) {
+                $tooltip .= ucfirst($pago['metodopago']) . ': ' . number_format($pago['monto'], 2) . '<br>';
+            }
+            return ['texto' => 'Pago Mixto', 'clase' => 'badge-purple', 'tooltip' => $tooltip, 'es_mixto' => true];
+        }
+
+        $metodoPago = strtolower(trim($pagos[0]['metodopago'] ?? 'efectivo'));
+        $mapaMetodos = [
+            'efectivo' => ['texto' => 'Efectivo', 'clase' => 'badge-success'],
+            'qr' => ['texto' => 'QR', 'clase' => 'badge-info'],
+            'tarjeta' => ['texto' => 'Tarjeta', 'clase' => 'badge-primary'],
+            'transferencia' => ['texto' => 'Transferencia', 'clase' => 'badge-secondary'],
+        ];
+        $info = $mapaMetodos[$metodoPago] ?? ['texto' => ucfirst($metodoPago), 'clase' => 'badge-secondary'];
+        $info['tooltip'] = '';
+        $info['es_mixto'] = false;
+
+        return $info;
     }
 
     /**
@@ -79,7 +133,7 @@ class VentaController
         // Información básica de la venta
         $datos = [
             'idcliente' => isset($post_data['idcliente']) ? (int)$post_data['idcliente'] : null,
-            'idusuario' => isset($post_data['idusuario']) ? (int)$post_data['idusuario'] : 0,
+            'idusuario' => (int)($_SESSION['usuario_id'] ?? 0),
             'totalventa' => 0, // Se recalcula server-side a partir de los detalles
             'fechaventa' => isset($post_data['fechaventa']) ? trim($post_data['fechaventa']) : date('Y-m-d'),
             'observacion' => isset($post_data['observacion']) ? trim($post_data['observacion']) : null,
@@ -265,8 +319,146 @@ class VentaController
     }
 
     /**
+     * Obtiene una venta por ID sin redirigir si no existe
+     *
+     * @param int $id ID de la venta
+     * @return array|null Datos de la venta o null si no existe
+     */
+    public function obtenerPorId($id)
+    {
+        return $this->modelo->getById($id);
+    }
+
+    /**
+     * Calcula subtotal, descuento y total pagado de una venta a partir
+     * de sus detalles y pagos.
+     *
+     * @param array $venta Venta con 'detalles' y 'pagos' (de ver()/getById())
+     * @return array ['subtotal', 'descuento', 'total_pagado']
+     */
+    public function calcularTotales(array $venta)
+    {
+        $subtotal = 0;
+        $descuento = 0;
+
+        foreach ($venta['detalles'] ?? [] as $detalle) {
+            $subtotal += ($detalle['precioventa'] * $detalle['cantidad']) - $detalle['descuento'];
+            $descuento += $detalle['descuento'];
+        }
+
+        return [
+            'subtotal' => $subtotal,
+            'descuento' => $descuento,
+            'total_pagado' => array_sum(array_column($venta['pagos'] ?? [], 'monto')),
+        ];
+    }
+
+    /**
+     * Ícono FontAwesome y clase de badge asociados a un método de pago,
+     * para uso en el detalle de venta.
+     *
+     * @param string $metodoPago
+     * @return array [claseIcono, claseBadge]
+     */
+    public function obtenerIconoMetodoPago($metodoPago)
+    {
+        $mapa = [
+            'efectivo' => ['fas fa-money-bill-wave', 'badge-success'],
+            'tarjeta' => ['far fa-credit-card', 'badge-primary'],
+            'qr' => ['fas fa-qrcode', 'badge-info'],
+            'transferencia' => ['fas fa-exchange-alt', 'badge-secondary'],
+        ];
+
+        return $mapa[strtolower(trim($metodoPago ?? ''))] ?? ['fas fa-money-bill-alt', 'badge-secondary'];
+    }
+
+    /**
+     * Determina si una lista de pagos corresponde a un pago mixto
+     * (más de un método de pago distinto usado en la misma venta).
+     *
+     * @param array $pagos
+     * @return bool
+     */
+    public function esPagoMixto(array $pagos)
+    {
+        $metodosDistintos = array_unique(array_map(
+            fn($pago) => strtolower(trim($pago['metodopago'] ?? '')),
+            $pagos
+        ));
+
+        return count($metodosDistintos) > 1;
+    }
+
+    /**
+     * Desglosa una línea de detalle de venta en subtotal bruto, descuento
+     * total y neto, para uso en el recibo (donde se muestra el detalle
+     * por unidad además del total).
+     *
+     * @param array $detalle Línea de detalle (cantidad, precioventa, descuento)
+     * @return array ['subtotal', 'descuento_total', 'neto']
+     */
+    public function calcularDetalleLinea(array $detalle)
+    {
+        $cantidad = $detalle['cantidad'] ?? 0;
+        $precio = $detalle['precioventa'] ?? 0;
+        $descuentoUnitario = $detalle['descuento'] ?? 0;
+
+        $subtotal = $cantidad * $precio;
+        $descuentoTotal = $cantidad * $descuentoUnitario;
+
+        return [
+            'subtotal' => $subtotal,
+            'descuento_total' => $descuentoTotal,
+            'neto' => $subtotal - $descuentoTotal,
+        ];
+    }
+
+    /**
+     * Desglosa cada línea de detalle (vía calcularDetalleLinea()) y acumula
+     * los totales generales, para que el recibo solo itere sobre datos
+     * ya resueltos sin acumular manualmente.
+     *
+     * @param array $detalles Lista de líneas de detalle de la venta
+     * @return array ['lineas' => [[...detalle original, 'calculo' => [...]], ...], 'subtotal_general', 'descuento_general']
+     */
+    public function calcularDesgloseDetalles(array $detalles)
+    {
+        $subtotalGeneral = 0;
+        $descuentoGeneral = 0;
+        $lineas = [];
+
+        foreach ($detalles as $detalle) {
+            $calculo = $this->calcularDetalleLinea($detalle);
+            $subtotalGeneral += $calculo['subtotal'];
+            $descuentoGeneral += $calculo['descuento_total'];
+            $lineas[] = $detalle + ['calculo' => $calculo];
+        }
+
+        return [
+            'lineas' => $lineas,
+            'subtotal_general' => $subtotalGeneral,
+            'descuento_general' => $descuentoGeneral,
+        ];
+    }
+
+    /**
+     * Total recibido y cambio a partir de la lista de pagos de una venta,
+     * para uso en el recibo.
+     *
+     * @param array $pagos
+     * @return array ['total_recibido', 'total_cambio']
+     */
+    public function calcularResumenPagos(array $pagos)
+    {
+        return [
+            'total_recibido' => array_sum(array_column($pagos, 'pagorecibido')),
+            'total_cambio' => array_sum(array_column($pagos, 'cambio')),
+        ];
+    }
+
+    /**
      * Anula una venta
-     * 
+     *
      * @param int $id ID de la venta
      * @return array Resultado de la operación
      */
