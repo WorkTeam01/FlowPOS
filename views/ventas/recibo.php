@@ -29,13 +29,23 @@ function isMobile(): bool
     return false;
 }
 
-// Función para formatear moneda
+/**
+ * Formatea un valor numérico como moneda.
+ *
+ * @param float $valor El valor a formatear.
+ * @return string El valor formateado como moneda.
+ */
 function formatearMoneda($valor): string
 {
     return number_format($valor, 2, ',', '.');
 }
 
-// Función para formatear fechas
+/**
+ * Formatea una fecha en el formato "d/m/Y H:i".
+ * 
+ * @param string $fecha La fecha a formatear.
+ * @return string La fecha formateada.
+ */
 function formatearFecha($fecha): string
 {
     return date('d/m/Y H:i', strtotime($fecha));
@@ -102,25 +112,71 @@ try {
         die("Error: No se encontró la venta especificada");
     }
 
+    // Los usuarios no administradores solo pueden generar el recibo de sus propias ventas
+    if (!$authService->esAdministrador($idusuario) && (int)$venta['idusuario'] !== (int)$idusuario) {
+        die("Error: No tiene permisos para generar este recibo");
+    }
+
     // Validar estado de la venta
     if ($venta['estado'] != 1) {
         http_response_code(409);
-        ?>
+?>
         <!DOCTYPE html>
         <html lang="es">
+
         <head>
             <meta charset="UTF-8">
             <title>Comprobante no disponible</title>
             <style>
-                body { font-family: Arial, sans-serif; background: #f4f6f9; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-                .aviso { text-align: center; background: #fff; padding: 2.5rem 3rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,.1); }
-                .aviso i { font-size: 3rem; color: #dc3545; }
-                .aviso h1 { font-size: 1.25rem; margin: 1rem 0 .5rem; color: #333; }
-                .aviso p { color: #666; margin-bottom: 1.5rem; }
-                .aviso button { background: #6c757d; color: #fff; border: none; padding: .5rem 1.5rem; border-radius: 4px; cursor: pointer; }
-                .aviso button:hover { background: #5a6268; }
+                body {
+                    font-family: Arial, sans-serif;
+                    background: #f4f6f9;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    height: 100vh;
+                    margin: 0;
+                }
+
+                .aviso {
+                    text-align: center;
+                    background: #fff;
+                    padding: 2.5rem 3rem;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 10px rgba(0, 0, 0, .1);
+                }
+
+                .aviso i {
+                    font-size: 3rem;
+                    color: #dc3545;
+                }
+
+                .aviso h1 {
+                    font-size: 1.25rem;
+                    margin: 1rem 0 .5rem;
+                    color: #333;
+                }
+
+                .aviso p {
+                    color: #666;
+                    margin-bottom: 1.5rem;
+                }
+
+                .aviso button {
+                    background: #6c757d;
+                    color: #fff;
+                    border: none;
+                    padding: .5rem 1.5rem;
+                    border-radius: 4px;
+                    cursor: pointer;
+                }
+
+                .aviso button:hover {
+                    background: #5a6268;
+                }
             </style>
         </head>
+
         <body>
             <div class="aviso">
                 <i>&#9888;</i>
@@ -129,12 +185,16 @@ try {
                 <button onclick="window.close()">Cerrar</button>
             </div>
         </body>
+
         </html>
-        <?php
+<?php
         exit;
     }
 
     // Extraer datos principales con validación
+    // Nota: los campos de texto ya vienen escapados con htmlspecialchars() desde el modelo
+    // (sanitizarDatos() se aplica al guardar en Venta/Cliente/Producto/Usuario/Empresa/Sucursal),
+    // por lo que no deben volver a escaparse aquí para evitar mostrar entidades duplicadas (&amp;lt;).
     $cliente = $venta['cliente_nombre'] ?? 'Cliente no disponible';
     $documento_cliente = !empty($venta['numdocumento_cliente']) ? $venta['numdocumento_cliente'] : 'S/N';
 
@@ -142,7 +202,7 @@ try {
 
     // Crear arreglo de pagos
     $pagos = $venta['pagos'] ?? [];
-    $es_pago_mixto = count($pagos) > 1;
+    $es_pago_mixto = $ventaController->esPagoMixto($pagos);
 
     $estado = $venta['estado'] == 1 ? 'ACTIVA' : 'ANULADA';
     $observaciones = $venta['observacion'] ?? '';
@@ -164,7 +224,7 @@ try {
     ];
 
     // Obtener usuario que procesó
-    $usuario_registro = $venta['usuario_nombre'] . ' ' . $venta['usuario_apellido'] ?? $_SESSION['usuario_nombre'] . ' ' . $_SESSION['usuario_apellido'] ?? 'Usuario no disponible';
+    $usuario_registro = trim(($venta['usuario_nombre'] ?? '') . ' ' . ($venta['usuario_apellido'] ?? '')) ?: trim(($_SESSION['usuario_nombre'] ?? '') . ' ' . ($_SESSION['usuario_apellido'] ?? '')) ?: 'Usuario no disponible';
 
     // Create PDF
     $is_mobile = isMobile();
@@ -236,10 +296,12 @@ EOD;
     // Generate products HTML
     $html = '';
 
-    $subtotal_general = 0;
-    $descuento_general = 0;
+    // Desglose por línea (subtotal/descuento/neto) y totales generales, ya calculados en el controlador
+    $desglose = $ventaController->calcularDesgloseDetalles($detalles);
+    $subtotal_general = $desglose['subtotal_general'];
+    $descuento_general = $desglose['descuento_general'];
 
-    foreach ($detalles as $index => $detalle) {
+    foreach ($desglose['lineas'] as $index => $detalle) {
         $num = $index + 1;
         $producto = $detalle['producto_nombre'] ?? 'Producto no disponible';
         $codigo = $detalle['producto_codigo'] ?? '';
@@ -247,14 +309,9 @@ EOD;
         $precio = $detalle['precioventa'] ?? 0;
         $descuento = $detalle['descuento'] ?? 0;
 
-        // Calcular subtotal y descuento para este producto
-        $subtotal_producto = $cantidad * $precio;
-        $descuento_total_producto = $cantidad * $descuento;
-        $neto_producto = $subtotal_producto - $descuento_total_producto;
-
-        // Acumular totales
-        $subtotal_general += $subtotal_producto;
-        $descuento_general += $descuento_total_producto;
+        $subtotal_producto = $detalle['calculo']['subtotal'];
+        $descuento_total_producto = $detalle['calculo']['descuento_total'];
+        $neto_producto = $detalle['calculo']['neto'];
 
         $precio_formatted = formatearMoneda($precio);
         $subtotal_producto_formatted = formatearMoneda($subtotal_producto);
@@ -328,8 +385,9 @@ EOD;
     // Generar información de pagos
     $html = '<table class="items">';
 
-    $total_recibido = 0;
-    $total_cambio = 0;
+    $resumenPagos = $ventaController->calcularResumenPagos($pagos);
+    $total_recibido = $resumenPagos['total_recibido'];
+    $total_cambio = $resumenPagos['total_cambio'];
 
     foreach ($pagos as $pago) {
         $metodo = ucfirst($pago['metodopago'] ?? 'No especificado');
@@ -341,9 +399,6 @@ EOD;
         <td width="40%" style="text-align: right;">{$appCurrency} {$monto}</td>
     </tr>
 EOD;
-
-        $total_recibido += ($pago['pagorecibido'] ?? 0);
-        $total_cambio += ($pago['cambio'] ?? 0);
     }
 
     // Mostrar total recibido y cambio si corresponde

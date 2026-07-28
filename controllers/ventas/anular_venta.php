@@ -36,6 +36,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id'])) {
         exit;
     }
 
+    // Los usuarios no administradores solo pueden anular sus propias ventas
+    $venta = $controller->obtenerPorId($id_venta);
+    if (!$venta || (!$authService->esAdministrador($_SESSION['usuario_id']) && (int)$venta['idusuario'] !== (int)$_SESSION['usuario_id'])) {
+        $_SESSION['mensaje'] = 'No tiene permisos para anular esta venta.';
+        $_SESSION['icono'] = 'error';
+        header('Location: ' . $URL . 'views/ventas/index.php');
+        exit;
+    }
+
     // Ejecutar la acción de anulación
     $resultado = $controller->anular($id_venta);
 
