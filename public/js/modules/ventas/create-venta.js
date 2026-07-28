@@ -15,11 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Referencias a elementos del DOM
     // Elementos relacionados con productos
-    const buscarProductoInput = document.getElementById('buscar-producto');
-    const btnBuscarProducto = document.getElementById('btn-buscar-producto');
     const totalVentaSpan = document.getElementById('total-venta');
-    const totalVentaDisplay = document.getElementById('total-venta-display');
-    const totalVentaHidden = document.getElementById('totalventa-hidden');
 
     // Elementos relacionados con pagos
     const btnAgregarPago = document.getElementById('btn-agregar-pago');
@@ -45,11 +41,12 @@ document.addEventListener('DOMContentLoaded', function () {
     let totalVentaActual = 0;
     let totalPagado = 0;
 
-    // Inicializar Select2 en el método de pago único (utilidad compartida de common-utils.js)
-    initializeSelect2('#metodopago-unico');
-
     // Inicializar modo de pago único
     initPagoUnico();
+    initializeSelect2('#metodopago-unico');
+
+    // Estado inicial del carrito (sin productos)
+    actualizarVisibilidadCarritoVacio();
 
     // Evento para cambiar entre pago único y mixto
     btnPagoUnico.addEventListener('click', function () {
@@ -91,94 +88,106 @@ document.addEventListener('DOMContentLoaded', function () {
     // Añadir primer método de pago para el modo mixto
     btnAgregarPago.addEventListener('click', agregarMetodoPago);
 
-    // Buscar producto
-    btnBuscarProducto.addEventListener('click', function () {
-        const codigo = buscarProductoInput.value.trim();
-        if (!codigo) {
-            Swal.fire('Error', 'Ingrese un código de producto', 'error');
-            return;
-        }
+    // ---- Modal de productos ----
+    const modalProductos = $('#modal-productos');
+    const modalBuscarProducto = document.getElementById('modal-buscar-producto');
+    const listaProductosModal = document.getElementById('lista-productos-modal');
+    const sinResultadosProductos = document.getElementById('sin-resultados-productos');
 
-        const producto = buscarProductoPorCodigo(codigo);
-        if (producto) {
-            agregarProductoAlDetalle(producto);
-        } else {
-            Swal.fire('Producto no encontrado', 'No se encontró un producto con ese código', 'error');
-        }
+    modalProductos.on('shown.bs.modal', function () {
+        modalBuscarProducto.value = '';
+        renderizarListaProductos(productosDisponibles);
+        modalBuscarProducto.focus();
     });
 
-    // También buscar al presionar Enter
-    buscarProductoInput.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            btnBuscarProducto.click();
-        }
+    modalBuscarProducto.addEventListener('input', function () {
+        const termino = this.value.trim().toLowerCase();
+        const filtrados = termino.length === 0
+            ? productosDisponibles
+            : productosDisponibles.filter(p =>
+                (p.nombre && p.nombre.toLowerCase().includes(termino)) ||
+                (p.codigo && p.codigo.toLowerCase().includes(termino))
+            );
+        renderizarListaProductos(filtrados);
     });
 
-    // Evento para buscar cliente
-    const inputBuscarCliente = document.getElementById('buscar-cliente');
-    inputBuscarCliente.addEventListener('input', function () {
-        if (this.value.length >= 2) {
-            const resultados = buscarClientes(this.value);
-            mostrarSugerencias(resultados);
-        } else {
-            document.getElementById('sugerencias-clientes').style.display = 'none';
-            this.setAttribute('aria-expanded', 'false');
-            this.removeAttribute('aria-activedescendant');
-        }
+    function renderizarListaProductos(productos) {
+        listaProductosModal.innerHTML = '';
+        sinResultadosProductos.style.display = productos.length === 0 ? 'block' : 'none';
+
+        productos.forEach(producto => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+
+            const infoSpan = document.createElement('span');
+            const nombreStrong = document.createElement('strong');
+            nombreStrong.textContent = producto.nombre;
+            const detalleSmall = document.createElement('small');
+            detalleSmall.className = 'text-muted d-block';
+            detalleSmall.textContent = `Código: ${producto.codigo || 'N/A'} · Stock: ${producto.stock}`;
+            infoSpan.appendChild(nombreStrong);
+            infoSpan.appendChild(detalleSmall);
+
+            const precioBadge = document.createElement('span');
+            precioBadge.className = 'badge badge-primary badge-pill';
+            precioBadge.textContent = parseFloat(producto.precioventa).toFixed(2);
+
+            item.appendChild(infoSpan);
+            item.appendChild(precioBadge);
+
+            item.addEventListener('click', () => {
+                agregarProductoAlDetalle(producto);
+                modalProductos.modal('hide');
+            });
+            listaProductosModal.appendChild(item);
+        });
+    }
+
+    // ---- Modal de clientes ----
+    const modalClientes = $('#modal-clientes');
+    const modalBuscarCliente = document.getElementById('modal-buscar-cliente');
+    const listaClientesModal = document.getElementById('lista-clientes-modal');
+    const sinResultadosClientes = document.getElementById('sin-resultados-clientes');
+
+    modalClientes.on('shown.bs.modal', function () {
+        modalBuscarCliente.value = '';
+        renderizarListaClientes(clientesDisponibles);
+        modalBuscarCliente.focus();
     });
 
-    // Navegación por teclado en las sugerencias de cliente (patrón combobox ARIA)
-    inputBuscarCliente.addEventListener('keydown', function (e) {
-        const contenedor = document.getElementById('sugerencias-clientes');
-        if (contenedor.style.display === 'none') {
-            return;
-        }
-
-        const opciones = Array.from(contenedor.querySelectorAll('[role="option"]'));
-        if (opciones.length === 0) {
-            return;
-        }
-
-        const indiceActual = opciones.findIndex(op => op.classList.contains('active'));
-
-        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-            e.preventDefault();
-            const siguiente = e.key === 'ArrowDown'
-                ? (indiceActual + 1) % opciones.length
-                : (indiceActual - 1 + opciones.length) % opciones.length;
-
-            opciones.forEach(op => op.classList.remove('active'));
-            opciones[siguiente].classList.add('active');
-            opciones[siguiente].scrollIntoView({ block: 'nearest' });
-            this.setAttribute('aria-activedescendant', opciones[siguiente].id);
-        } else if (e.key === 'Enter') {
-            if (indiceActual >= 0) {
-                e.preventDefault();
-                opciones[indiceActual].click();
-            }
-        } else if (e.key === 'Escape') {
-            contenedor.style.display = 'none';
-            this.setAttribute('aria-expanded', 'false');
-            this.removeAttribute('aria-activedescendant');
-        }
+    modalBuscarCliente.addEventListener('input', function () {
+        const termino = this.value.trim();
+        const filtrados = termino.length === 0 ? clientesDisponibles : buscarClientes(termino);
+        renderizarListaClientes(filtrados);
     });
 
-    // Evento para quitar cliente seleccionado
-    document.getElementById('quitar-cliente').addEventListener('click', function () {
-        document.getElementById('idcliente').value = '';
-        document.getElementById('buscar-cliente').value = '';
-        document.getElementById('info-cliente-seleccionado').style.display = 'none';
-        document.getElementById('buscar-cliente').focus();
-    });
+    function renderizarListaClientes(clientes) {
+        listaClientesModal.innerHTML = '';
+        sinResultadosClientes.style.display = clientes.length === 0 ? 'block' : 'none';
 
-    // Ocultar sugerencias al hacer clic fuera
-    document.addEventListener('click', function (e) {
-        if (!e.target.closest('#buscar-cliente') && !e.target.closest('#sugerencias-clientes')) {
-            document.getElementById('sugerencias-clientes').style.display = 'none';
-            inputBuscarCliente.setAttribute('aria-expanded', 'false');
-            inputBuscarCliente.removeAttribute('aria-activedescendant');
-        }
+        clientes.forEach(cliente => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'list-group-item list-group-item-action';
+
+            const numDoc = document.createElement('strong');
+            numDoc.textContent = cliente.numdocumento;
+            item.appendChild(numDoc);
+            item.appendChild(document.createTextNode(
+                ` - ${cliente.nombres} ${cliente.apellidopaterno} ${cliente.apellidomaterno || ''}`
+            ));
+
+            item.addEventListener('click', () => {
+                seleccionarCliente(cliente);
+                modalClientes.modal('hide');
+            });
+            listaClientesModal.appendChild(item);
+        });
+    }
+
+    document.getElementById('btn-cambiar-cliente').addEventListener('click', function () {
+        modalClientes.modal('show');
     });
 
     /**
@@ -230,8 +239,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 toast: true
             });
 
-            // Hacer focus en el campo de búsqueda de cliente
-            document.getElementById('buscar-cliente').focus();
+            // Abrir el modal de selección de cliente
+            document.getElementById('cliente-feedback').style.setProperty('display', 'block', 'important');
+            $('#modal-clientes').modal('show');
 
             return false; // Detener el envío del formulario
         }
@@ -255,8 +265,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Obtener el valor de la observación
         const observacion = document.getElementById('observacion').value.trim();
+        const observacionCorta = observacion.length > 50 ? observacion.substring(0, 50) + '...' : observacion;
+        const observacionEscapada = document.createElement('div').appendChild(document.createTextNode(observacionCorta)).parentNode.innerHTML;
         const observacionHtml = observacion ?
-            `<p><strong>Observación:</strong> ${observacion.length > 50 ? observacion.substring(0, 50) + '...' : observacion}</p>` : '';
+            `<p><strong>Observación:</strong> ${observacionEscapada}</p>` : '';
 
         // Confirmación final
         Swal.fire({
@@ -385,9 +397,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Agregar al contenedor
         contenedorPagos.appendChild(nuevoMetodoPago);
-
-        // Inicializar Select2 en el select de método de pago de esta fila
         initializeSelect2($(nuevoMetodoPago).find('.select-metodo-pago'));
+        renumerarMetodosPago();
 
         // Configurar eventos
         const selectMetodo = nuevoMetodoPago.querySelector('.select-metodo-pago');
@@ -434,6 +445,7 @@ document.addEventListener('DOMContentLoaded', function () {
         btnEliminar.addEventListener('click', function () {
             if (document.querySelectorAll('.metodo-pago-item').length > 1) {
                 nuevoMetodoPago.remove();
+                renumerarMetodosPago();
                 calcularTotalPagado();
             } else {
                 Swal.fire('Atención', 'Debe haber al menos un método de pago', 'warning');
@@ -461,6 +473,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
         calcularTotalPagado();
         actualizarEstadoPago(nuevoMetodoPago);
+    }
+
+    /**
+     * Renumera los títulos "Método de pago #N" de las tarjetas de pago mixto
+     */
+    function renumerarMetodosPago() {
+        document.querySelectorAll('.metodo-pago-item').forEach((item, index) => {
+            item.querySelector('.metodo-pago-titulo').textContent = `Método de pago #${index + 1}`;
+        });
     }
 
     /**
@@ -558,15 +579,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /**
-     * Buscar producto por código
-     */
-    function buscarProductoPorCodigo(codigo) {
-        return productosDisponibles.find(producto =>
-            producto.codigo && producto.codigo.toLowerCase() === codigo.toLowerCase()
-        );
-    }
-
-    /**
      * Agregar producto al detalle
      */
     function agregarProductoAlDetalle(producto) {
@@ -620,24 +632,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.querySelector('#tabla-productos tbody').appendChild(nuevaFila);
 
+        actualizarVisibilidadCarritoVacio();
+
         // Calcular totales
         calcularTotalesVenta();
-
-        // Limpiar campo de búsqueda
-        buscarProductoInput.value = '';
-        buscarProductoInput.focus();
     }
 
     /**
      * Eliminar fila de producto
      */
     function eliminarFila() {
-        if (document.querySelectorAll('tr.fila-producto').length > 1) {
-            this.closest('tr').remove();
-            calcularTotalesVenta();
-        } else {
-            Swal.fire('Atención', 'Debe haber al menos un producto en la venta', 'warning');
-        }
+        this.closest('tr').remove();
+        actualizarVisibilidadCarritoVacio();
+        calcularTotalesVenta();
+    }
+
+    /**
+     * Muestra/oculta el mensaje de carrito vacío según haya o no productos agregados
+     */
+    function actualizarVisibilidadCarritoVacio() {
+        const hayProductos = document.querySelectorAll('tr.fila-producto').length > 0;
+        document.getElementById('carrito-vacio').style.display = hayProductos ? 'none' : 'block';
+        document.getElementById('tabla-productos').closest('.table-responsive').style.display = hayProductos ? '' : 'none';
     }
 
     /**
@@ -723,7 +739,6 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('descuento-total').textContent = descuentoTotal.toFixed(2);
         document.getElementById('total-venta').textContent = total.toFixed(2);
         document.getElementById('totalventa-hidden').value = total.toFixed(2);
-        document.getElementById('total-venta-display').textContent = total.toFixed(2) + ' Bs.';
 
         // Actualizar variable global
         totalVentaActual = total;
@@ -789,55 +804,15 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /**
-     * Mostrar sugerencias de clientes
-     */
-    function mostrarSugerencias(clientes) {
-        const contenedor = document.getElementById('sugerencias-clientes');
-        const inputBusqueda = document.getElementById('buscar-cliente');
-        contenedor.innerHTML = '';
-
-        if (clientes.length === 0) {
-            contenedor.style.display = 'none';
-            inputBusqueda.setAttribute('aria-expanded', 'false');
-            inputBusqueda.removeAttribute('aria-activedescendant');
-            return;
-        }
-
-        clientes.forEach((cliente, indice) => {
-            const item = document.createElement('button');
-            item.type = 'button';
-            item.id = `sugerencia-cliente-${indice}`;
-            item.setAttribute('role', 'option');
-            item.className = 'list-group-item list-group-item-action';
-
-            const numDoc = document.createElement('strong');
-            numDoc.textContent = cliente.numdocumento;
-            item.appendChild(numDoc);
-            item.appendChild(document.createTextNode(
-                ` - ${cliente.nombres} ${cliente.apellidopaterno} ${cliente.apellidomaterno || ''}`
-            ));
-
-            item.addEventListener('click', () => {
-                seleccionarCliente(cliente);
-            });
-            contenedor.appendChild(item);
-        });
-
-        contenedor.style.display = 'block';
-        inputBusqueda.setAttribute('aria-expanded', 'true');
-    }
-
-    /**
      * Seleccionar cliente
      */
     function seleccionarCliente(cliente) {
         document.getElementById('idcliente').value = cliente.idcliente;
-        document.getElementById('buscar-cliente').value = cliente.numdocumento;
         document.getElementById('nombre-cliente').textContent =
             `${cliente.nombres} ${cliente.apellidopaterno} ${cliente.apellidomaterno || ''}`;
+        document.getElementById('documento-cliente').textContent = cliente.numdocumento;
+        document.getElementById('sin-cliente-seleccionado').style.display = 'none';
         document.getElementById('info-cliente-seleccionado').style.display = 'block';
-        document.getElementById('sugerencias-clientes').style.display = 'none';
-        document.getElementById('buscar-cliente').setAttribute('aria-expanded', 'false');
-        document.getElementById('buscar-cliente').removeAttribute('aria-activedescendant');
+        document.getElementById('cliente-feedback').style.setProperty('display', 'none', 'important');
     }
 });

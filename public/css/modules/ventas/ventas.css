@@ -14,3 +14,56 @@
         padding: 0.5rem 0.75rem;
     }
 }
+
+/* Carrito de create.php (#tabla-productos): con muchos productos, el contenedor
+   crece indefinidamente y empuja el resto del formulario (pago, cliente, total)
+   fuera de vista. Se limita la altura y se habilita scroll propio; el thead queda
+   fijo (sticky) para no perder referencia de columnas al bajar. */
+.carrito-scroll {
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+.carrito-scroll thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+/* Tabla de productos de create.php: bajo 767.98px se convierte de tabla a lista de
+   tarjetas apiladas (una por fila) en vez de forzar scroll horizontal de 6 columnas. */
+@media (max-width: 767.98px) {
+    #tabla-productos thead {
+        display: none;
+    }
+
+    #tabla-productos,
+    #tabla-productos tbody,
+    #tabla-productos tr.fila-producto,
+    #tabla-productos tr.fila-producto td {
+        display: block;
+        width: 100% !important;
+    }
+
+    #tabla-productos tr.fila-producto {
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        margin-bottom: 0.75rem;
+        padding: 0.5rem;
+    }
+
+    #tabla-productos tr.fila-producto td {
+        border: none;
+        padding: 0.375rem 0.25rem;
+        text-align: left !important;
+    }
+
+    #tabla-productos tr.fila-producto td[data-label]:not([data-label=""])::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 0.75rem;
+        font-weight: bold;
+        color: #6c757d;
+        margin-bottom: 0.15rem;
+    }
+}
