@@ -7,9 +7,26 @@ y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.1.5] - 2026-08-09
+
 ### Seguridad
 
 - Eliminado `controllers/compras/actualizar_compra.php`: llamaba a `CompraController::completar()` con permiso y CSRF verificados pero sin el ownership check (comparar `idusuario`) que sí tiene `cambiar_estado_compra.php` — mismo IDOR ya corregido en ventas (1.1.4) y en el resto de compras. Confirmado endpoint huérfano (sin referencias en ningún JS ni vista) antes de eliminarlo.
+- `controllers/compras/cambiar_estado_compra.php` ahora verifica que la compra pertenezca al usuario (o rol administrador) antes de completar/cancelar, mismo criterio ya aplicado en ventas.
+
+### Fixed
+
+- Doble escape en `views/compras/show.php` (`usuario_nombre`, `observaciones`, `producto_nombre`, `producto_codigo`): estos campos ya se escapan al guardarse (`sanitizarDatos()`), volver a aplicar `htmlspecialchars()` en la vista producía entidades duplicadas (`&amp;lt;` en vez de `&lt;`).
+- `data-productos` en `views/compras/create.php` exponía el array completo de productos (incluyendo inactivos) tal como lo devuelve el modelo; ahora se filtra a productos activos y se proyectan solo los campos que usa el JS del carrito.
+- Reemplazado `FILTER_SANITIZE_STRING` (deprecado desde PHP 8.1) por una validación directa en `controllers/compras/cambiar_estado_compra.php`.
+- `views/compras/show.php` incluía `header.php` (que ya emite HTML) antes del ownership check; al no ser administrador el `header('Location: index.php')` fallaba silenciosamente (headers ya enviados) y dejaba una página en blanco en vez de redirigir con el mensaje flash. Reordenado para obtener la compra y validar propiedad antes de incluir `header.php`, mismo orden que `views/ventas/show.php`.
+
+### Changed
+
+- `CompraController`: agregados los métodos de cálculo puro `calcularDetalleLinea()`, `calcularDesgloseDetalles()`, `calcularTotales()` (con guarda contra división por cero) y `obtenerInfoEstado()`. `views/compras/show.php` e `views/compras/index.php` ya no calculan subtotales ni el mapeo estado→badge inline; consumen estos métodos.
+- `views/compras/create.php` / `create-compra.js`: la tabla de productos ahora clona una fila plantilla oculta (`#fila-base`) en vez de construir el HTML por concatenación de strings, mismo patrón que `views/ventas/create.php`. Quitados los inputs ocultos `totalcompra` y `estado` (ignorados server-side; el total se recalcula siempre en `CompraController::guardar()` y toda compra nueva nace en estado 1).
+- `public/css/modules/compras/compras.css`: quitadas las reglas `.d-none`, `.is-invalid`, `.invalid-feedback` e `input[readonly]` por duplicar estilos ya provistos por Bootstrap.
+- Corregido el docblock de `CompraController::completar()` para reflejar que es un no-op sin caso de uso actual (ningún flujo del sistema lo invoca).
 
 ## [1.1.4] - 2026-07-28
 
