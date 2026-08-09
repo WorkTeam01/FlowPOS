@@ -28,11 +28,20 @@ $accion = null;
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['id']) && isset($_POST['accion'])) {
     // Filtrar y validar los parámetros
     $id_compra = filter_var($_POST['id'], FILTER_VALIDATE_INT);
-    $accion = filter_var($_POST['accion'], FILTER_SANITIZE_STRING);
+    $accion = trim($_POST['accion']);
 
     // Verificar si los parámetros son válidos
     if ($id_compra === false || !in_array($accion, ['completar', 'cancelar'])) {
         $_SESSION['mensaje'] = 'Parámetros inválidos.';
+        $_SESSION['icono'] = 'error';
+        header('Location: ' . $URL . 'views/compras/index.php');
+        exit;
+    }
+
+    // Los usuarios no administradores solo pueden cambiar el estado de sus propias compras
+    $compra = $controller->ver($id_compra);
+    if (!$compra || (!$authService->esAdministrador($_SESSION['usuario_id']) && (int)$compra['idusuario'] !== (int)$_SESSION['usuario_id'])) {
+        $_SESSION['mensaje'] = 'No tiene permisos para modificar esta compra.';
         $_SESSION['icono'] = 'error';
         header('Location: ' . $URL . 'views/compras/index.php');
         exit;
