@@ -71,8 +71,8 @@ class CompraController
     private function prepararDatosCompra($post_data)
     {
         $datos = [
-            'idusuario' => isset($post_data['idusuario']) ? (int)$post_data['idusuario'] : 0,
-            'totalcompra' => isset($post_data['totalcompra']) ? (float)$post_data['totalcompra'] : 0,
+            'idusuario' => (int)($_SESSION['usuario_id'] ?? 0),
+            'totalcompra' => 0, // Se recalcula server-side a partir de los detalles
             'fechacompra' => isset($post_data['fechacompra']) ? trim($post_data['fechacompra']) : date('Y-m-d H:i:s'),
             'estado' => 1, // Por defecto activa (1)
             'observaciones' => isset($post_data['observaciones']) && !empty($post_data['observaciones']) ? trim($post_data['observaciones']) : null,
@@ -81,15 +81,24 @@ class CompraController
 
         // Procesar detalles de la compra
         if (isset($post_data['productos']) && is_array($post_data['productos'])) {
+            $total = 0;
+
             foreach ($post_data['productos'] as $key => $idProducto) {
                 if (!empty($idProducto)) {
+                    $cantidad = isset($post_data['cantidades'][$key]) ? (int)$post_data['cantidades'][$key] : 1;
+                    $preciocompra = isset($post_data['precios'][$key]) ? (float)$post_data['precios'][$key] : 0;
+
                     $datos['detalles'][] = [
                         'idproducto' => (int)$idProducto,
-                        'cantidad' => isset($post_data['cantidades'][$key]) ? (int)$post_data['cantidades'][$key] : 1,
-                        'preciocompra' => isset($post_data['precios'][$key]) ? (float)$post_data['precios'][$key] : 0
+                        'cantidad' => $cantidad,
+                        'preciocompra' => $preciocompra
                     ];
+
+                    $total += $cantidad * $preciocompra;
                 }
             }
+
+            $datos['totalcompra'] = $total;
         }
 
         return $datos;
@@ -122,36 +131,6 @@ class CompraController
             return ['success' => true, 'message' => 'Compra registrada correctamente', 'icon' => 'success', 'redirect' => 'index.php'];
         } else {
             return ['success' => false, 'message' => 'Error al registrar la compra: ' . $this->modelo->getLastError(), 'icon' => 'error', 'redirect' => 'create.php'];
-        }
-    }
-
-    /**
-     * Procesa el formulario para guardar una nueva compra (versión alternativa)
-     */
-    public function guardarr()
-    {
-        // Verificar si se envió el formulario
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-            return ['success' => false, 'message' => 'Acceso no permitido.', 'icon' => 'warning', 'redirect' => 'ingresar.php'];
-        }
-
-        // Preparar datos de la compra
-        $datos = $this->modelo->sanitizarDatos($this->prepararDatosCompra($_POST));
-
-        // Validar datos en el modelo
-        $errores = $this->modelo->validarDatos($datos);
-
-        if (!empty($errores)) {
-            return ['success' => false, 'message' => $errores[0], 'icon' => 'error', 'redirect' => 'ingresar.php'];
-        }
-
-        // Guardar compra usando el modelo
-        $idCompra = $this->modelo->crear($datos);
-        
-        if ($idCompra) {
-            return ['success' => true, 'message' => 'Compra registrada correctamente', 'icon' => 'success', 'redirect' => 'ingresar.php'];
-        } else {
-            return ['success' => false, 'message' => 'Error al registrar la compra: ' . $this->modelo->getLastError(), 'icon' => 'error', 'redirect' => 'ingresar.php'];
         }
     }
 
@@ -250,12 +229,93 @@ class CompraController
 
     /**
      * Obtiene compras por usuario
-     * 
+     *
      * @param int $idUsuario ID del usuario
      * @return array Lista de compras del usuario
      */
     public function obtenerPorUsuario($idUsuario)
     {
         return $this->modelo->getPorUsuario($idUsuario);
+    }
+
+    /**
+     * Desglosa una línea de detalle de compra en subtotal (cantidad × precio).
+     *
+     * @param array $detalle Línea de detalle (cantidad, preciocompra)
+     * @return array ['subtotal']
+     */
+    public function calcularDetalleLinea(array $detalle)
+    {
+        $cantidad = $detalle['cantidad'] ?? 0;
+        $precio = $detalle['preciocompra'] ?? 0;
+
+        return [
+            'subtotal' => $cantidad * $precio,
+        ];
+    }
+
+    /**
+     * Desglosa cada línea de detalle (vía calcularDetalleLinea()) y acumula
+     * el total general, para que la vista solo itere sobre datos ya resueltos.
+     *
+     * @param array $detalles Lista de líneas de detalle de la compra
+     * @return array ['lineas' => [[...detalle original, 'calculo' => [...]], ...], 'subtotal_general']
+     */
+    public function calcularDesgloseDetalles(array $detalles)
+    {
+        $subtotalGeneral = 0;
+        $lineas = [];
+
+        foreach ($detalles as $detalle) {
+            $calculo = $this->calcularDetalleLinea($detalle);
+            $subtotalGeneral += $calculo['subtotal'];
+            $lineas[] = $detalle + ['calculo' => $calculo];
+        }
+
+        return [
+            'lineas' => $lineas,
+            'subtotal_general' => $subtotalGeneral,
+        ];
+    }
+
+    /**
+     * Totales de una compra a partir de sus detalles (total y cantidad de
+     * unidades), con guarda contra división por cero cuando no hay detalles.
+     *
+     * @param array $compra Compra con 'detalles' (de ver()/getById())
+     * @return array ['total', 'unidades', 'precio_promedio']
+     */
+    public function calcularTotales(array $compra)
+    {
+        $detalles = $compra['detalles'] ?? [];
+        $total = 0;
+        $unidades = 0;
+
+        foreach ($detalles as $detalle) {
+            $unidades += $detalle['cantidad'] ?? 0;
+            $total += $this->calcularDetalleLinea($detalle)['subtotal'];
+        }
+
+        return [
+            'total' => $total,
+            'unidades' => $unidades,
+            'precio_promedio' => $unidades > 0 ? $total / $unidades : 0,
+        ];
+    }
+
+    /**
+     * Ícono, clase de badge y texto asociados a un estado de compra,
+     * para uso en index.php y show.php.
+     *
+     * @param int $estado Estado de la compra (1 = activa, 0 = cancelada)
+     * @return array ['clase', 'icono', 'texto']
+     */
+    public function obtenerInfoEstado($estado)
+    {
+        if ((int)$estado === 1) {
+            return ['clase' => 'success', 'icono' => 'check-circle', 'texto' => 'Activa'];
+        }
+
+        return ['clase' => 'danger', 'icono' => 'times-circle', 'texto' => 'Cancelada'];
     }
 }
