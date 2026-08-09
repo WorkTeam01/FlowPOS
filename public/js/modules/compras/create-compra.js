@@ -1,105 +1,130 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Mostrar/ocultar mensaje cuando no hay productos
-    function actualizarMensajeProductos() {
-        const filas = document.querySelectorAll('#tabla-productos tbody tr.fila-producto');
-        const mensaje = document.getElementById('mensaje-sin-productos');
+document.addEventListener('DOMContentLoaded', function () {
+    const datosCompra = document.getElementById('datos-compra');
+    const productosDisponibles = datosCompra ? ($(datosCompra).data('productos') || []) : [];
 
-        if (filas.length === 0) {
-            mensaje.classList.remove('d-none');
-        } else {
-            mensaje.classList.add('d-none');
-        }
+    // ---- Modal de productos ----
+    const modalProductos = $('#modal-productos');
+    const modalBuscarProducto = document.getElementById('modal-buscar-producto');
+    const listaProductosModal = document.getElementById('lista-productos-modal');
+    const sinResultadosProductos = document.getElementById('sin-resultados-productos');
+
+    modalProductos.on('shown.bs.modal', function () {
+        modalBuscarProducto.value = '';
+        renderizarListaProductos(productosDisponibles);
+        modalBuscarProducto.focus();
+    });
+
+    modalBuscarProducto.addEventListener('input', function () {
+        const termino = this.value.trim().toLowerCase();
+        const filtrados = termino.length === 0
+            ? productosDisponibles
+            : productosDisponibles.filter(p =>
+                (p.nombre && p.nombre.toLowerCase().includes(termino)) ||
+                (p.codigo && p.codigo.toLowerCase().includes(termino))
+            );
+        renderizarListaProductos(filtrados);
+    });
+
+    function renderizarListaProductos(productos) {
+        listaProductosModal.innerHTML = '';
+        sinResultadosProductos.style.display = productos.length === 0 ? 'block' : 'none';
+
+        productos.forEach(producto => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+
+            const infoSpan = document.createElement('span');
+            const nombreStrong = document.createElement('strong');
+            nombreStrong.textContent = producto.nombre;
+            const detalleSmall = document.createElement('small');
+            detalleSmall.className = 'text-muted d-block';
+            detalleSmall.textContent = `Código: ${producto.codigo || 'N/A'}`;
+            infoSpan.appendChild(nombreStrong);
+            infoSpan.appendChild(detalleSmall);
+
+            const precioBadge = document.createElement('span');
+            precioBadge.className = 'badge badge-primary badge-pill';
+            precioBadge.textContent = parseFloat(producto.preciocompra || 0).toFixed(2);
+
+            item.appendChild(infoSpan);
+            item.appendChild(precioBadge);
+
+            item.addEventListener('click', () => {
+                agregarProductoAlDetalle(producto);
+                modalProductos.modal('hide');
+            });
+            listaProductosModal.appendChild(item);
+        });
     }
 
-    // Función para agregar una nueva fila de producto
-    function agregarFilaProducto(producto) {
-        const tbody = document.querySelector('#tabla-productos tbody');
-
-        // Verificar si el producto ya está en la tabla
-        const filas = tbody.querySelectorAll('tr.fila-producto');
-        for (let fila of filas) {
-            const idProducto = fila.querySelector('input[name="productos[]"]').value;
-            if (idProducto == producto.idproducto) {
-                // Incrementar cantidad si el producto ya existe
+    /**
+     * Agregar producto al detalle (o incrementar cantidad si ya está agregado)
+     */
+    function agregarProductoAlDetalle(producto) {
+        const filasExistentes = document.querySelectorAll('tr.fila-producto');
+        for (const fila of filasExistentes) {
+            if (fila.querySelector('.idproducto').value == producto.idproducto) {
                 const inputCantidad = fila.querySelector('.cantidad');
                 inputCantidad.value = parseInt(inputCantidad.value) + 1;
                 calcularSubtotal(fila);
                 calcularTotal();
-                actualizarMensajeProductos();
+                actualizarVisibilidadCarritoVacio();
                 return;
             }
         }
 
-        // Crear nueva fila si el producto no existe
-        const nuevaFila = document.createElement('tr');
+        const filaBase = document.getElementById('fila-base');
+        const nuevaFila = filaBase.cloneNode(true);
+        nuevaFila.removeAttribute('id');
+        nuevaFila.style.display = '';
         nuevaFila.classList.add('fila-producto');
-        nuevaFila.innerHTML = `
-        <td>
-            <input type="hidden" name="productos[]" value="${producto.idproducto}">
-            <i class="fas fa-box-open mr-2 text-muted"></i>
-            ${producto.nombre} <small class="text-muted">(${producto.codigo || 'S/COD'})</small>
-        </td>
-        <td>
-            <div class="input-group">
-                <input type="number" class="form-control cantidad" name="cantidades[]"
-                    min="1" value="1" required>
-                <div class="input-group-append">
-                    <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
-                </div>
-            </div>
-        </td>
-        <td>
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <span class="input-group-text"><i class="fas fa-dollar-sign"></i></span>
-                </div>
-                <input type="number" class="form-control precio" name="precios[]"
-                    step="0.01" min="0.01" value="${parseFloat(producto.preciocompra || 0).toFixed(2)}" required>
-            </div>
-        </td>
-        <td class="text-right">
-            <span class="subtotal">${parseFloat(producto.preciocompra || 0).toFixed(2)}</span>
-        </td>
-        <td class="text-center">
-            <button type="button" class="btn btn-danger btn-sm btn-eliminar-fila">
-                <i class="fas fa-trash"></i>
-            </button>
-        </td>
-    `;
 
-        // Agregar eventos
+        nuevaFila.querySelector('.idproducto').value = producto.idproducto;
+        nuevaFila.querySelector('.nombre-producto').textContent = producto.nombre;
+        nuevaFila.querySelector('.codigo-producto').textContent = producto.codigo || 'S/COD';
+        nuevaFila.querySelector('.cantidad').value = 1;
+        nuevaFila.querySelector('.precio').value = parseFloat(producto.preciocompra || 0).toFixed(2);
+        nuevaFila.querySelector('.subtotal').textContent = parseFloat(producto.preciocompra || 0).toFixed(2);
+
         agregarEventosCalculo(nuevaFila);
 
-        // Evento para eliminar fila
-        nuevaFila.querySelector('.btn-eliminar-fila').addEventListener('click', function() {
+        nuevaFila.querySelector('.btn-eliminar-fila').addEventListener('click', function () {
             this.closest('tr').remove();
             calcularTotal();
-            actualizarMensajeProductos();
+            actualizarVisibilidadCarritoVacio();
         });
 
-        // Insertar en la tabla
-        tbody.appendChild(nuevaFila);
+        document.querySelector('#tabla-productos tbody').appendChild(nuevaFila);
+
+        actualizarVisibilidadCarritoVacio();
         calcularTotal();
-        actualizarMensajeProductos();
     }
 
-    // Función para agregar eventos de cálculo a una fila
+    /**
+     * Muestra/oculta el mensaje de carrito vacío según haya o no productos agregados
+     */
+    function actualizarVisibilidadCarritoVacio() {
+        const hayProductos = document.querySelectorAll('tr.fila-producto').length > 0;
+        document.getElementById('carrito-vacio').style.display = hayProductos ? 'none' : 'block';
+        document.getElementById('tabla-productos').closest('.table-responsive').style.display = hayProductos ? '' : 'none';
+    }
+
     function agregarEventosCalculo(fila) {
         const cantidad = fila.querySelector('.cantidad');
         const precio = fila.querySelector('.precio');
 
-        cantidad.addEventListener('input', function() {
+        cantidad.addEventListener('input', function () {
             calcularSubtotal(fila);
             calcularTotal();
         });
 
-        precio.addEventListener('input', function() {
+        precio.addEventListener('input', function () {
             calcularSubtotal(fila);
             calcularTotal();
         });
     }
 
-    // Calcular subtotal para una fila
     function calcularSubtotal(fila) {
         const cantidad = parseFloat(fila.querySelector('.cantidad').value) || 0;
         const precio = parseFloat(fila.querySelector('.precio').value) || 0;
@@ -107,7 +132,6 @@ document.addEventListener('DOMContentLoaded', function() {
         fila.querySelector('.subtotal').textContent = subtotal.toFixed(2);
     }
 
-    // Calcular total de la compra
     function calcularTotal() {
         let total = 0;
         document.querySelectorAll('.fila-producto').forEach(fila => {
@@ -115,75 +139,47 @@ document.addEventListener('DOMContentLoaded', function() {
             total += subtotal;
         });
         document.getElementById('total-compra').textContent = total.toFixed(2);
-        document.getElementById('input-total-compra').value = total.toFixed(2);
+        return total;
     }
 
-    // Buscar producto por código
-    function buscarProducto() {
-        const codigo = document.getElementById('buscar-producto').value.trim();
-        if (!codigo) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Por favor ingrese un código de producto',
+    /**
+     * Valida cantidad/precio de cada fila de producto y marca los campos inválidos
+     */
+    function validarFilasProductos() {
+        const filas = document.querySelectorAll('tr.fila-producto');
+        let esValido = filas.length > 0;
+
+        filas.forEach(fila => {
+            const cantidad = fila.querySelector('.cantidad');
+            const precio = fila.querySelector('.precio');
+
+            [cantidad, precio].forEach(input => {
+                if (!input.checkValidity()) {
+                    input.classList.add('is-invalid');
+                    esValido = false;
+                } else {
+                    input.classList.remove('is-invalid');
+                }
             });
-            return;
-        }
-
-        // Buscar en la lista de productos
-        const productos = $('#datos-compra').data('productos') || [];
-        const productoEncontrado = productos.find(p =>
-            p.codigo && p.codigo.toLowerCase() === codigo.toLowerCase() && p.estado == 1
-        );
-
-        if (productoEncontrado) {
-            agregarFilaProducto(productoEncontrado);
-            document.getElementById('buscar-producto').value = '';
-        } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Producto no encontrado',
-                text: 'No se encontró un producto activo con ese código',
-            });
-        }
-    }
-
-    // Evento para botón buscar
-    document.getElementById('btn-buscar-producto').addEventListener('click', buscarProducto);
-
-    // Permitir buscar con Enter
-    document.getElementById('buscar-producto').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            buscarProducto();
-        }
-    });
-
-    // Validar formulario antes de enviar
-    document.getElementById('form-compra').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        // Resetear errores
-        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-
-        let isValid = true;
-        let firstInvalidElement = null;
-
-        // Validar campos principales
-        const mainFields = ['fechacompra'];
-        mainFields.forEach(field => {
-            const element = document.getElementById(field);
-            if (!element.value) {
-                element.classList.add('is-invalid');
-                isValid = false;
-                if (!firstInvalidElement) firstInvalidElement = element;
-            }
         });
 
-        // Validar filas de productos
-        const filas = document.querySelectorAll('.fila-producto');
-        if (filas.length === 0) {
+        return esValido;
+    }
+
+    // Validar formulario antes de enviar
+    document.getElementById('form-compra').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+
+        const fechaCompra = document.getElementById('fechacompra');
+        let isValid = true;
+        if (!fechaCompra.value) {
+            fechaCompra.classList.add('is-invalid');
             isValid = false;
+        }
+
+        if (document.querySelectorAll('.fila-producto').length === 0) {
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
@@ -192,27 +188,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        filas.forEach((fila, index) => {
-            const cantidad = fila.querySelector('.cantidad');
-            const precio = fila.querySelector('.precio');
-
-            if (!cantidad.value || parseFloat(cantidad.value) <= 0) {
-                cantidad.classList.add('is-invalid');
-                isValid = false;
-                if (!firstInvalidElement) firstInvalidElement = cantidad;
-            }
-
-            if (!precio.value || parseFloat(precio.value) <= 0) {
-                precio.classList.add('is-invalid');
-                isValid = false;
-                if (!firstInvalidElement) firstInvalidElement = precio;
-            }
-        });
+        if (!validarFilasProductos()) {
+            isValid = false;
+        }
 
         if (!isValid) {
-            if (firstInvalidElement) {
-                firstInvalidElement.focus();
-            }
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
@@ -221,8 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Validar total
-        const total = parseFloat(document.getElementById('input-total-compra').value);
+        const total = calcularTotal();
         if (total <= 0) {
             Swal.fire({
                 icon: 'error',
@@ -232,10 +211,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Confirmación antes de enviar
         Swal.fire({
             title: '¿Confirmar compra?',
-            text: "¿Está seguro de registrar esta compra?",
+            text: '¿Está seguro de registrar esta compra?',
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -244,7 +222,6 @@ document.addEventListener('DOMContentLoaded', function() {
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Mostrar mensaje de carga
                 Swal.fire({
                     title: 'Procesando compra...',
                     html: 'Por favor espere mientras se registra la compra',
@@ -254,12 +231,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
 
-                // Enviar formulario
                 this.submit();
             }
         });
     });
 
-    // Inicializar mensaje de productos
-    actualizarMensajeProductos();
+    actualizarVisibilidadCarritoVacio();
 });
