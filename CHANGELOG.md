@@ -7,6 +7,10 @@ y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+### Seguridad
+
+- Eliminado `controllers/compras/actualizar_compra.php`: llamaba a `CompraController::completar()` con permiso y CSRF verificados pero sin el ownership check (comparar `idusuario`) que sí tiene `cambiar_estado_compra.php` — mismo IDOR ya corregido en ventas (1.1.4) y en el resto de compras. Confirmado endpoint huérfano (sin referencias en ningún JS ni vista) antes de eliminarlo.
+
 ## [1.1.4] - 2026-07-28
 
 ### Fixed
