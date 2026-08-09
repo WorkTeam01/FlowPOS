@@ -77,10 +77,11 @@ INSERT INTO producto (codigo, nombre, descripcion, stock, stockminimo, stockmaxi
 ('HER-002',  'Cinta Métrica 5m',      'Autoretráctil, gancho magnético', 30, 8, 60, 20.00,  40.00, 5);
 
 -- ─── Compras (reposición de stock) ───────────────────────────────────────────
+-- totalcompra = suma de cantidad*preciocompra de detallecompra (ver tabla más abajo)
 INSERT INTO compra (idusuario, fechacompra, observaciones, totalcompra) VALUES
-(1, DATE_SUB(NOW(), INTERVAL 25 DAY), 'Reposición inicial electrónica', 4800.00),
-(2, DATE_SUB(NOW(), INTERVAL 18 DAY), 'Reposición hogar y ropa',        3050.00),
-(1, DATE_SUB(NOW(), INTERVAL 10 DAY), 'Reposición alimentos y herramientas', 1800.00);
+(1, DATE_SUB(NOW(), INTERVAL 25 DAY), 'Reposición inicial electrónica', 4700.00),
+(2, DATE_SUB(NOW(), INTERVAL 18 DAY), 'Reposición hogar y ropa',        5085.00),
+(1, DATE_SUB(NOW(), INTERVAL 10 DAY), 'Reposición alimentos y herramientas', 2450.00);
 
 INSERT INTO detallecompra (idcompra, idproducto, cantidad, preciocompra) VALUES
 -- Compra 1
