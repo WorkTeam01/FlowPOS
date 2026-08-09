@@ -137,8 +137,79 @@ class Compra
     }
 
     /**
+     * Obtiene estadísticas de compras del día para los info boxes de index.php
+     *
+     * @return array ['compras_hoy', 'total_hoy', 'usuario_mas_compro', 'producto_mas_comprado']
+     */
+    public function getEstadisticas()
+    {
+        try {
+            $estadisticas = [
+                'compras_hoy' => 0,
+                'total_hoy' => 0,
+                'usuario_mas_compro' => null,
+                'producto_mas_comprado' => null
+            ];
+
+            $hoy = date('Y-m-d');
+
+            // Compras hoy (cantidad y monto total)
+            $query = "SELECT COUNT(*) as cantidad, SUM(totalcompra) as total
+                     FROM {$this->tabla}
+                     WHERE DATE(fechacompra) = :hoy AND estado = 1";
+            $stmt = $this->conexion->prepare($query);
+            $stmt->bindParam(':hoy', $hoy, PDO::PARAM_STR);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            $estadisticas['compras_hoy'] = $result['cantidad'] ?? 0;
+            $estadisticas['total_hoy'] = $result['total'] ?? 0;
+
+            // Usuario que más compró (por monto) hoy
+            $query = "SELECT u.idusuario, u.nombre as nombre_usuario,
+                     COUNT(c.idcompra) as compras, SUM(c.totalcompra) as total_gastado
+                     FROM {$this->tabla} c
+                     JOIN usuarios u ON c.idusuario = u.idusuario
+                     WHERE DATE(c.fechacompra) = :hoy AND c.estado = 1
+                     GROUP BY c.idusuario
+                     ORDER BY total_gastado DESC
+                     LIMIT 1";
+            $stmt = $this->conexion->prepare($query);
+            $stmt->bindParam(':hoy', $hoy, PDO::PARAM_STR);
+            $stmt->execute();
+            $estadisticas['usuario_mas_compro'] = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            // Producto más comprado hoy
+            $query = "SELECT p.idproducto, p.nombre as producto_nombre,
+                     SUM(dc.cantidad) as cantidad_comprada,
+                     SUM(dc.cantidad * dc.preciocompra) as total_comprado
+                     FROM {$this->tablaDetalle} dc
+                     JOIN {$this->tabla} c ON dc.idcompra = c.idcompra
+                     JOIN producto p ON dc.idproducto = p.idproducto
+                     WHERE DATE(c.fechacompra) = :hoy AND c.estado = 1
+                     GROUP BY dc.idproducto
+                     ORDER BY cantidad_comprada DESC
+                     LIMIT 1";
+            $stmt = $this->conexion->prepare($query);
+            $stmt->bindParam(':hoy', $hoy, PDO::PARAM_STR);
+            $stmt->execute();
+            $estadisticas['producto_mas_comprado'] = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return $estadisticas;
+        } catch (PDOException $e) {
+            $this->lastError = $e->getMessage();
+            return [
+                'compras_hoy' => 0,
+                'total_hoy' => 0,
+                'usuario_mas_compro' => null,
+                'producto_mas_comprado' => null
+            ];
+        }
+    }
+
+    /**
      * Crea una nueva compra con sus detalles
-     * 
+     *
      * @param array $datos Datos de la compra y sus detalles
      * @return int|bool ID de la nueva compra o false en caso de error
      */

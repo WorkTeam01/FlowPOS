@@ -186,8 +186,12 @@ class CompraController
     }
 
     /**
-     * Completa una compra (cambia estado a activa)
-     * 
+     * Marca una compra como activa (estado = 1). Sin caso de uso real hoy:
+     * toda compra ya nace en estado 1 y ningún flujo del sistema pasa
+     * accion=completar a cambiar_estado_compra.php; es efectivamente un
+     * no-op reservado para cuando exista un tercer estado (ver Fase Opcional A
+     * de docs/plan-refactor-compras.md).
+     *
      * @param int $id ID de la compra
      * @return array Resultado de la operación
      */
@@ -202,6 +206,16 @@ class CompraController
         } else {
             return ['success' => false, 'message' => 'Error al completar la compra: ' . $this->modelo->getLastError(), 'icon' => 'error'];
         }
+    }
+
+    /**
+     * Estadísticas de compras del día para los info boxes de index.php
+     *
+     * @return array ['compras_hoy', 'total_hoy', 'usuario_mas_compro', 'producto_mas_comprado']
+     */
+    public function getEstadisticas()
+    {
+        return $this->modelo->getEstadisticas();
     }
 
     /**

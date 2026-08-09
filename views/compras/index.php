@@ -17,24 +17,26 @@ if (!($authService->tienePermisoNombre($idusuario, 'compras')) && !($authService
 
 $skip_select2 = true;
 $module_scripts = ['compras/index-compras'];
+$module_styles = ['compras/compras'];
 include_once '../layouts/header.php';
 
 $esAdmin = $authService->esAdministrador($idusuario);
 
 $controller = new CompraController();
 $compras = $controller->index($esAdmin ? null : $idusuario);
+$estadisticas = $controller->getEstadisticas();
 ?>
 
 <!-- Content Header (Page header) -->
 <section class="content-header">
     <div class="container-fluid">
-        <div class="row mb-2">
+        <div class="row">
             <div class="col-sm-6">
                 <h1>Gestión de Compras</h1>
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
-                    <li class="breadcrumb-item"><a href="<?= $URL; ?>">Inicio</a></li>
+                    <li class="breadcrumb-item"><a href="<?= $URL; ?>"><i class="fas fa-home"></i> Inicio</a></li>
                     <li class="breadcrumb-item active">Compras</li>
                 </ol>
             </div>
@@ -45,6 +47,50 @@ $compras = $controller->index($esAdmin ? null : $idusuario);
 <!-- Main content -->
 <section class="content">
     <div class="container-fluid">
+        <!-- Info boxes -->
+        <div class="row">
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="info-box">
+                    <span class="info-box-icon bg-info elevation-1"><i class="fas fa-shopping-cart"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Compras Hoy</span>
+                        <span class="info-box-number"><?= $estadisticas['compras_hoy']; ?></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="info-box">
+                    <span class="info-box-icon bg-success elevation-1"><i class="fas fa-money-bill-wave"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Total Hoy</span>
+                        <span class="info-box-number"><?= number_format($estadisticas['total_hoy'], 2); ?> <?= $appCurrency ?></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="info-box">
+                    <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-user-tie"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Responsable Top</span>
+                        <span class="info-box-number">
+                            <?= $estadisticas['usuario_mas_compro'] ? htmlspecialchars($estadisticas['usuario_mas_compro']['nombre_usuario']) : 'N/A'; ?>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3">
+                <div class="info-box">
+                    <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-box-open"></i></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">Producto Top</span>
+                        <span class="info-box-number">
+                            <?= $estadisticas['producto_mas_comprado'] ? htmlspecialchars($estadisticas['producto_mas_comprado']['producto_nombre']) : 'N/A'; ?>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <div class="col-12">
                 <div class="card">
@@ -79,26 +125,16 @@ $compras = $controller->index($esAdmin ? null : $idusuario);
                                     $contador = 1;
                                     foreach ($compras as $compra) :
                                         $estado_actual = $compra['estado'];
-                                        $clase_badge = '';
-                                        $texto_estado = '';
-
-                                        // Adaptación para manejar estados como números (1 = activa, 0 = cancelada)
-                                        if ($estado_actual == 1) {
-                                            $clase_badge = 'badge-success';
-                                            $texto_estado = 'Activa';
-                                        } else {
-                                            $clase_badge = 'badge-danger';
-                                            $texto_estado = 'Cancelada';
-                                        }
+                                        $estadoInfo = $controller->obtenerInfoEstado($estado_actual);
                                     ?>
                                         <tr>
                                             <td class="text-center"><?= $contador++; ?></td>
                                             <td>COMP-<?= str_pad($compra['idcompra'], 6, '0', STR_PAD_LEFT); ?></td>
                                             <td><?= date('d/m/Y', strtotime($compra['fechacompra'])); ?></td>
-                                            <td><?= htmlspecialchars($compra['usuario_nombre'] ?? 'N/A'); ?></td>
-                                            <td class="text-right"><?= number_format($compra['totalcompra'], 2); ?></td>
+                                            <td><?= $compra['usuario_nombre'] ?? 'N/A'; ?></td>
+                                            <td class="text-right"><?= number_format($compra['totalcompra'], 2); ?> <?= $appCurrency ?></td>
                                             <td class="text-center">
-                                                <span class="badge <?= $clase_badge; ?>"><?= $texto_estado; ?></span>
+                                                <span class="badge badge-<?= $estadoInfo['clase']; ?>"><?= $estadoInfo['texto']; ?></span>
                                             </td>
                                             <td class="text-center">
                                                 <div class="btn-group">
