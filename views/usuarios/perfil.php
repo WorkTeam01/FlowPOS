@@ -75,21 +75,21 @@ $module_scripts = ['usuarios/perfil-usuario'];
                                 alt="User profile picture"
                                 style="width: 100px; height: 100px; object-fit: cover;">
                         </div>
-                        <h3 class="profile-username text-center"><?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidopaterno']); ?></h3>
-                        <p class="text-muted text-center"><?= htmlspecialchars($usuario['cargo'] ?? 'N/A'); ?></p>
+                        <h3 class="profile-username text-center"><?= $usuario['nombre'] . ' ' . $usuario['apellidopaterno']; ?></h3>
+                        <p class="text-muted text-center"><?= $usuario['cargo'] ?? 'N/A'; ?></p>
 
                         <ul class="list-group list-group-unbordered mb-3">
                             <li class="list-group-item">
-                                <b>Correo</b> <a class="float-right"><?= htmlspecialchars($usuario['correo'] ?? 'N/A'); ?></a>
+                                <b>Correo</b> <span class="float-right"><?= $usuario['correo'] ?? 'N/A'; ?></span>
                             </li>
                             <li class="list-group-item">
-                                <b>Teléfono</b> <a class="float-right"><?= htmlspecialchars($usuario['telefono'] ?? 'N/A'); ?></a>
+                                <b>Teléfono</b> <span class="float-right"><?= $usuario['telefono'] ?? 'N/A'; ?></span>
                             </li>
                             <li class="list-group-item">
-                                <b>Tipo Documento</b> <a class="float-right"><?= htmlspecialchars($usuario['tipodocumento'] ?? 'N/A'); ?></a>
+                                <b>Tipo Documento</b> <span class="float-right"><?= $usuario['tipodocumento'] ?? 'N/A'; ?></span>
                             </li>
                             <li class="list-group-item">
-                                <b>Documento</b> <a class="float-right"><?= htmlspecialchars($usuario['numdocumento'] ?? 'N/A'); ?></a>
+                                <b>Documento</b> <span class="float-right"><?= $usuario['numdocumento'] ?? 'N/A'; ?></span>
                             </li>
                         </ul>
                     </div>
@@ -100,15 +100,21 @@ $module_scripts = ['usuarios/perfil-usuario'];
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header p-2">
-                        <ul class="nav nav-pills">
-                            <li class="nav-item"><a class="nav-link active" href="#imagenPerfil" data-toggle="tab">Imagen de Perfil</a></li>
-                            <li class="nav-item"><a class="nav-link" href="#cambiarPassword" data-toggle="tab">Cambiar Contraseña</a></li>
+                        <ul class="nav nav-pills" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="tab-imagenPerfil" href="#imagenPerfil" data-toggle="tab"
+                                    role="tab" aria-controls="imagenPerfil" aria-selected="true">Imagen de Perfil</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="tab-cambiarPassword" href="#cambiarPassword" data-toggle="tab"
+                                    role="tab" aria-controls="cambiarPassword" aria-selected="false">Cambiar Contraseña</a>
+                            </li>
                         </ul>
                     </div><!-- /.card-header -->
                     <div class="card-body">
                         <div class="tab-content">
                             <!-- Tab Imagen de Perfil -->
-                            <div class="active tab-pane" id="imagenPerfil">
+                            <div class="active tab-pane" id="imagenPerfil" role="tabpanel" aria-labelledby="tab-imagenPerfil">
                                 <form action="<?= $URL; ?>controllers/usuarios/procesar_actualizar_imagen_perfil.php" method="POST" enctype="multipart/form-data">
                                     <?= csrfField() ?>
                                     <div class="row">
@@ -159,7 +165,7 @@ $module_scripts = ['usuarios/perfil-usuario'];
                             </div>
 
                             <!-- Tab Cambiar Contraseña -->
-                            <div class="tab-pane" id="cambiarPassword">
+                            <div class="tab-pane" id="cambiarPassword" role="tabpanel" aria-labelledby="tab-cambiarPassword">
                                 <form id="formCambiarPassword" action="javascript:void(0)">
                                     <div class="alert alert-info">
                                         <i class="fas fa-info-circle"></i> Al cambiar su contraseña, se cerrará su sesión y deberá iniciar sesión nuevamente.
@@ -168,19 +174,40 @@ $module_scripts = ['usuarios/perfil-usuario'];
                                     <div class="form-group row">
                                         <label for="clave_actual" class="col-sm-4 col-form-label">Contraseña Actual <span class="text-danger">*</span></label>
                                         <div class="col-sm-8">
-                                            <input type="password" class="form-control" id="clave_actual" name="clave_actual" placeholder="Contraseña Actual" autocomplete="off" required>
+                                            <div class="input-group">
+                                                <input type="password" class="form-control" id="clave_actual" name="clave_actual" placeholder="Contraseña Actual" autocomplete="off" required>
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-outline-secondary password-toggle" data-target="#clave_actual" aria-label="Mostrar contraseña" aria-pressed="false">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="form-group row">
                                         <label for="nueva_clave" class="col-sm-4 col-form-label">Nueva Contraseña <span class="text-danger">*</span></label>
                                         <div class="col-sm-8">
-                                            <input type="password" class="form-control" id="nueva_clave" name="nueva_clave" placeholder="Nueva Contraseña" autocomplete="off" required minlength="6">
+                                            <div class="input-group">
+                                                <input type="password" class="form-control" id="nueva_clave" name="nueva_clave" placeholder="Nueva Contraseña" autocomplete="off" required minlength="6">
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-outline-secondary password-toggle" data-target="#nueva_clave" aria-label="Mostrar contraseña" aria-pressed="false">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="form-group row">
                                         <label for="confirmar_nueva_clave" class="col-sm-4 col-form-label">Confirmar Nueva Contraseña <span class="text-danger">*</span></label>
                                         <div class="col-sm-8">
-                                            <input type="password" class="form-control" id="confirmar_nueva_clave" name="confirmar_nueva_clave" placeholder="Confirmar Nueva Contraseña" autocomplete="off" required minlength="6">
+                                            <div class="input-group">
+                                                <input type="password" class="form-control" id="confirmar_nueva_clave" name="confirmar_nueva_clave" placeholder="Confirmar Nueva Contraseña" autocomplete="off" required minlength="6">
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-outline-secondary password-toggle" data-target="#confirmar_nueva_clave" aria-label="Mostrar contraseña" aria-pressed="false">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="form-group row">

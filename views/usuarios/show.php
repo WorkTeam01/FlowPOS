@@ -10,7 +10,7 @@ $authService = new AuthorizationService();
 if (!($authService->tienePermisoNombre($idusuario, 'usuarios')) && !($authService->esAdministrador($idusuario))) {
     $_SESSION['mensaje'] = 'No tiene permisos para acceder a esta sección.';
     $_SESSION['icono'] = 'error';
-    header('Location: index.php');
+    header('Location: ' . $URL);
     exit;
 }
 
@@ -25,7 +25,7 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if (!$id) {
     $_SESSION['mensaje'] = 'ID de usuario no válido';
     $_SESSION['icono'] = 'error';
-    header('Location: index.php');
+    header('Location: ' . $URL);
     exit;
 }
 
@@ -36,7 +36,7 @@ $usuario = $controller->editar($id);
 if (!$usuario) {
     $_SESSION['mensaje'] = 'Usuario no encontrado';
     $_SESSION['icono'] = 'error';
-    header('Location: index.php');
+    header('Location: ' . $URL);
     exit;
 }
 
@@ -69,85 +69,76 @@ $esAdmin = $authService->esAdministrador($usuario['idusuario']);
         <div class="row">
             <!-- Columna de perfil -->
             <div class="col-md-4">
-              <div class="sidebar-sticky">
-                <!-- Tarjeta de perfil con imagen -->
-                <div class="card card-info card-outline">
-                    <div class="card-body box-profile">
-                        <div class="text-center position-relative mb-4">
-                            <?php if (!empty($usuario['imagen'])): ?>
-                                <img class="profile-user-img img-fluid img-circle"
-                                    src="<?= $URL; ?>public/uploads/usuarios/<?= htmlspecialchars($usuario['imagen']); ?>"
-                                    alt="Imagen de perfil">
-                            <?php else: ?>
-                                <img class="profile-user-img img-fluid img-circle"
-                                    src="<?= $URL; ?>public/uploads/usuarios/user_default.jpg"
-                                    alt="Imagen de perfil">
-                            <?php endif; ?>
+                <div class="sidebar-sticky">
+                    <!-- Tarjeta de perfil con imagen -->
+                    <div class="card card-info card-outline">
+                        <div class="card-body box-profile">
+                            <div class="text-center position-relative mb-4">
+                                <?php if (!empty($usuario['imagen'])): ?>
+                                    <img class="profile-user-img img-fluid img-circle"
+                                        src="<?= $URL; ?>public/uploads/usuarios/<?= htmlspecialchars($usuario['imagen']); ?>"
+                                        alt="Imagen de perfil">
+                                <?php else: ?>
+                                    <img class="profile-user-img img-fluid img-circle"
+                                        src="<?= $URL; ?>public/uploads/usuarios/user_default.jpg"
+                                        alt="Imagen de perfil">
+                                <?php endif; ?>
 
-                            <!-- Indicador de estado sobre la imagen -->
-                            <span id="avatarEstadoBadge" class="position-absolute badge <?= $usuario['estado'] == 1 ? 'badge-success' : 'badge-danger'; ?>"
-                                style="top: 0; right: 50%; transform: translateX(60px);">
-                                <i class="fas <?= $usuario['estado'] == 1 ? 'fa-check' : 'fa-times'; ?>"></i>
-                            </span>
-                        </div>
-
-                        <h3 class="profile-username text-center">
-                            <?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidopaterno']); ?>
-                        </h3>
-
-                        <p class="text-muted text-center">
-                            <?= htmlspecialchars($usuario['cargo'] ?? 'Sin cargo asignado'); ?>
-                        </p>
-
-                        <ul class="list-group list-group-unbordered mb-3">
-                            <li class="list-group-item">
-                                <b><i class="fas fa-id-card mr-2"></i><?= htmlspecialchars($usuario['tipodocumento']); ?></b>
-                                <span class="float-right"><?= htmlspecialchars($usuario['numdocumento']); ?></span>
-                            </li>
-                            <li class="list-group-item">
-                                <b><i class="fas fa-envelope mr-2"></i>Correo</b>
-                                <span class="float-right text-truncate" style="max-width: 170px;" title="<?= htmlspecialchars($usuario['correo'] ?? 'No registrado'); ?>">
-                                    <?= htmlspecialchars($usuario['correo'] ?? 'No registrado'); ?>
+                                <!-- Indicador de estado sobre la imagen -->
+                                <span id="avatarEstadoBadge" class="position-absolute badge <?= $usuario['estado'] == 1 ? 'badge-success' : 'badge-danger'; ?>"
+                                    style="top: 0; right: 50%; transform: translateX(60px);"
+                                    aria-label="<?= $usuario['estado'] == 1 ? 'Usuario activo' : 'Usuario inactivo'; ?>">
+                                    <i class="fas <?= $usuario['estado'] == 1 ? 'fa-check' : 'fa-times'; ?>"></i>
                                 </span>
-                            </li>
-                            <li class="list-group-item">
-                                <b><i class="fas fa-phone mr-2"></i>Teléfono</b>
-                                <span class="float-right"><?= htmlspecialchars($usuario['telefono'] ?? 'No registrado'); ?></span>
-                            </li>
-                            <li class="list-group-item">
-                                <b><i class="fas fa-calendar-alt mr-2"></i>Fecha Registro</b>
-                                <span class="float-right">
-                                    <?= isset($usuario['fechacreacion']) ? date('d/m/Y', strtotime($usuario['fechacreacion'])) : 'No disponible'; ?>
-                                </span>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+                            </div>
 
-                <!-- Tarjeta de acciones -->
-                <div class="card card-info">
-                    <div class="card-header">
-                        <h3 class="card-title"><i class="fas fa-cogs mr-2"></i>Acciones</h3>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="list-group list-group-flush">
-                            <a href="<?= $URL; ?>views/usuarios/update.php?id=<?= $usuario['idusuario']; ?>" class="list-group-item list-group-item-action">
-                                <i class="fas fa-edit mr-2 text-warning"></i> Editar usuario
+                            <h3 class="profile-username text-center">
+                                <?= $usuario['nombre'] . ' ' . $usuario['apellidopaterno']; ?>
+                            </h3>
+
+                            <p class="text-muted text-center">
+                                <?= $usuario['cargo'] ?? 'Sin cargo asignado'; ?>
+                            </p>
+
+                            <ul class="list-group list-group-unbordered mb-4">
+                                <li class="list-group-item">
+                                    <b><i class="fas fa-id-card mr-2"></i><?= $usuario['tipodocumento']; ?></b>
+                                    <span class="float-right"><?= $usuario['numdocumento']; ?></span>
+                                </li>
+                                <li class="list-group-item">
+                                    <b><i class="fas fa-envelope mr-2"></i>Correo</b>
+                                    <span class="float-right text-truncate" style="max-width: 170px;" title="<?= $usuario['correo'] ?? 'No registrado'; ?>">
+                                        <?= $usuario['correo'] ?? 'No registrado'; ?>
+                                    </span>
+                                </li>
+                                <li class="list-group-item">
+                                    <b><i class="fas fa-phone mr-2"></i>Teléfono</b>
+                                    <span class="float-right"><?= $usuario['telefono'] ?? 'No registrado'; ?></span>
+                                </li>
+                                <li class="list-group-item">
+                                    <b><i class="fas fa-calendar-alt mr-2"></i>Fecha Registro</b>
+                                    <span class="float-right">
+                                        <?= isset($usuario['fechacreacion']) ? date('d/m/Y', strtotime($usuario['fechacreacion'])) : 'No disponible'; ?>
+                                    </span>
+                                </li>
+                            </ul>
+
+                            <a href="<?= $URL; ?>views/usuarios/update.php?id=<?= $usuario['idusuario']; ?>" class="btn btn-warning btn-block">
+                                <i class="fas fa-edit mr-1"></i> Editar usuario
                             </a>
-                            <a href="#" id="btnCambiarEstado" class="list-group-item list-group-item-action"
+                            <button type="button" id="btnCambiarEstado" class="btn <?= $usuario['estado'] == 1 ? 'btn-danger' : 'btn-success'; ?> btn-block"
                                 data-id="<?= $usuario['idusuario']; ?>"
                                 data-estado="<?= $usuario['estado']; ?>"
-                                data-nombre="<?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidopaterno']); ?>">
-                                <i class="fas <?= $usuario['estado'] == 1 ? 'fa-user-slash text-danger' : 'fa-user-check text-success'; ?> mr-2"></i>
+                                data-nombre="<?= $usuario['nombre'] . ' ' . $usuario['apellidopaterno']; ?>">
+                                <i class="fas <?= $usuario['estado'] == 1 ? 'fa-user-slash' : 'fa-user-check'; ?> mr-1"></i>
                                 <span id="btnCambiarEstadoTexto"><?= $usuario['estado'] == 1 ? 'Desactivar usuario' : 'Activar usuario'; ?></span>
-                            </a>
-                            <a href="<?= $URL; ?>views/usuarios/index.php" class="list-group-item list-group-item-action">
-                                <i class="fas fa-list mr-2 text-primary"></i> Volver a la lista de usuarios
+                            </button>
+                            <a href="<?= $URL; ?>views/usuarios/index.php" class="btn btn-secondary btn-block mb-0">
+                                <i class="fas fa-list mr-1"></i> Volver a la lista de usuarios
                             </a>
                         </div>
                     </div>
                 </div>
-              </div>
             </div>
             <!-- /.col-md-4 -->
 
@@ -188,7 +179,7 @@ $esAdmin = $authService->esAdministrador($usuario['idusuario']);
                                             <div class="info-box-content">
                                                 <h5 class="info-box-text text-center text-muted">Nombre Completo</h5>
                                                 <h6 class="info-box-number text-center text-muted mb-0">
-                                                    <?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidopaterno'] . ' ' . $usuario['apellidomaterno']); ?>
+                                                    <?= $usuario['nombre'] . ' ' . $usuario['apellidopaterno'] . ' ' . $usuario['apellidomaterno']; ?>
                                                 </h6>
                                             </div>
                                         </div>
@@ -200,17 +191,17 @@ $esAdmin = $authService->esAdministrador($usuario['idusuario']);
                                         <tbody>
                                             <tr>
                                                 <th style="width: 30%"><i class="fas fa-id-badge mr-2"></i>Tipo Documento</th>
-                                                <td><?= htmlspecialchars($usuario['tipodocumento']); ?></td>
+                                                <td><?= $usuario['tipodocumento']; ?></td>
                                             </tr>
                                             <tr>
                                                 <th><i class="fas fa-hashtag mr-2"></i>Número Documento</th>
-                                                <td><?= htmlspecialchars($usuario['numdocumento']); ?></td>
+                                                <td><?= $usuario['numdocumento']; ?></td>
                                             </tr>
                                             <tr>
                                                 <th><i class="fas fa-map-marker-alt mr-2"></i>Dirección</th>
                                                 <td>
                                                     <?php if (!empty($usuario['direccion'])): ?>
-                                                        <?= htmlspecialchars($usuario['direccion']); ?>
+                                                        <?= $usuario['direccion']; ?>
                                                     <?php else: ?>
                                                         <span class="text-muted">No registrada</span>
                                                     <?php endif; ?>
@@ -231,8 +222,8 @@ $esAdmin = $authService->esAdministrador($usuario['idusuario']);
                                                 <span class="info-box-text">Correo Electrónico</span>
                                                 <span class="info-box-number">
                                                     <?php if (!empty($usuario['correo'])): ?>
-                                                        <a href="mailto:<?= htmlspecialchars($usuario['correo']); ?>" class="text-info">
-                                                            <?= htmlspecialchars($usuario['correo']); ?>
+                                                        <a href="mailto:<?= $usuario['correo']; ?>" class="text-info">
+                                                            <?= $usuario['correo']; ?>
                                                         </a>
                                                     <?php else: ?>
                                                         <span class="text-muted">No registrado</span>
@@ -248,8 +239,8 @@ $esAdmin = $authService->esAdministrador($usuario['idusuario']);
                                                 <span class="info-box-text">Teléfono</span>
                                                 <span class="info-box-number">
                                                     <?php if (!empty($usuario['telefono'])): ?>
-                                                        <a href="tel:<?= htmlspecialchars($usuario['telefono']); ?>" class="text-success">
-                                                            <?= htmlspecialchars($usuario['telefono']); ?>
+                                                        <a href="tel:<?= $usuario['telefono']; ?>" class="text-success">
+                                                            <?= $usuario['telefono']; ?>
                                                         </a>
                                                     <?php else: ?>
                                                         <span class="text-muted">No registrado</span>
@@ -342,7 +333,7 @@ $esAdmin = $authService->esAdministrador($usuario['idusuario']);
                                         <div class="timeline-item">
                                             <h3 class="timeline-header"><strong>Cargo en el Sistema</strong></h3>
                                             <div class="timeline-body">
-                                                <span class="badge badge-info"><?= htmlspecialchars($usuario['cargo'] ?? 'Sin cargo'); ?></span>
+                                                <span class="badge badge-info"><?= $usuario['cargo'] ?? 'Sin cargo'; ?></span>
                                                 <p class="mt-2">
                                                     <?php if ($esAdmin): ?>
                                                         Usuario con permisos completos para administrar el sistema.

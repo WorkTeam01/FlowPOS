@@ -59,76 +59,76 @@ $usuarios = $controller->index();
                     </div>
                     <!-- /.card-header -->
                     <div class="card-body">
-                        <div class="table-responsive">
-                            <table id="tablaUsuarios" class="table table-sm table-bordered table-hover table-striped">
-                                <thead>
+                        <table id="tablaUsuarios" class="table table-sm table-bordered table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nro</th>
+                                    <th>Nombre</th>
+                                    <th>Tipo Documento</th>
+                                    <th>Número Documento</th>
+                                    <th>Correo</th>
+                                    <th>Imágen</th>
+                                    <th>Cargo</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $contador = 1;
+                                foreach ($usuarios as $usuario) :
+                                    $estado_actual = $usuario['estado'];
+                                    $clase_boton_estado = $estado_actual == 1 ? 'btn-danger' : 'btn-success';
+                                    $icono_boton_estado = $estado_actual == 1 ? 'fa-user-slash' : 'fa-user-check';
+                                    $titulo_alerta = $estado_actual == 1 ? '¿Desactivar Usuario?' : '¿Activar Usuario?';
+                                    $texto_alerta = $estado_actual == 1 ? 'El usuario no podrá acceder al sistema.' : 'El usuario podrá acceder nuevamente al sistema.';
+                                    $confirm_button_text = $estado_actual == 1 ? 'Sí, desactivar' : 'Sí, activar';
+                                    $texto_boton_estado = $estado_actual == 1 ? 'Desactivar usuario' : 'Activar usuario';
+                                ?>
                                     <tr>
-                                        <th>Nro</th>
-                                        <th>Nombre</th>
-                                        <th>Tipo Documento</th>
-                                        <th>Número Documento</th>
-                                        <th>Correo</th>
-                                        <th>Imágen</th>
-                                        <th>Cargo</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
+                                        <td class="text-center"><?= $contador++; ?></td>
+                                        <td><?= $usuario['nombre'] . ' ' . $usuario['apellidopaterno']; ?></td>
+                                        <td><?= $usuario['tipodocumento']; ?></td>
+                                        <td><?= $usuario['numdocumento']; ?></td>
+                                        <td><?= $usuario['correo']; ?></td>
+                                        <td class="text-center">
+                                            <?php if (isset($usuario['imagen'])): ?>
+                                                <img src="<?= $URL; ?>public/uploads/usuarios/<?= $usuario['imagen']; ?>" loading="lazy" alt="Imagen" class="img-thumbnail" width="40">
+                                            <?php else : ?>
+                                                <img src="<?= $URL; ?>public/uploads/usuarios/user_default.jpg" loading="lazy" alt="Imagen" class="img-thumbnail" width="40">
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><?= (!empty($usuario['cargo'])) ? $usuario['cargo'] : 'N/A'; ?></td>
+                                        <td class="text-center">
+                                            <?php if ($estado_actual == 1) : ?>
+                                                <span class="badge badge-success badge-pill p-2">Activo</span>
+                                            <?php else : ?>
+                                                <span class="badge badge-danger badge-pill p-2">Inactivo</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <a href="<?= $URL; ?>views/usuarios/show.php?id=<?= $usuario['idusuario']; ?>" class="btn btn-info btn-sm" title="Ver detalles" data-toggle="tooltip" aria-label="Ver detalles de <?= $usuario['nombre']; ?>">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="<?= $URL; ?>views/usuarios/update.php?id=<?= $usuario['idusuario']; ?>" class="btn btn-warning btn-sm" title="Editar usuario" data-toggle="tooltip" aria-label="Editar usuario <?= $usuario['nombre']; ?>">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn <?= $clase_boton_estado; ?> btn-sm btn-cambiar-estado"
+                                                    data-id="<?= $usuario['idusuario']; ?>"
+                                                    data-estado="<?= $estado_actual; ?>"
+                                                    data-nombre="<?= $usuario['nombre']; ?>"
+                                                    title="<?= $texto_boton_estado; ?>"
+                                                    data-toggle="tooltip"
+                                                    aria-label="<?= $texto_boton_estado; ?> <?= $usuario['nombre']; ?>">
+                                                    <i class="fas <?= $icono_boton_estado; ?>"></i>
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    $contador = 1;
-                                    foreach ($usuarios as $usuario) :
-                                        $estado_actual = $usuario['estado'];
-                                        $clase_boton_estado = $estado_actual == 1 ? 'btn-danger' : 'btn-success';
-                                        $icono_boton_estado = $estado_actual == 1 ? 'fa-user-slash' : 'fa-user-check';
-                                        $titulo_alerta = $estado_actual == 1 ? '¿Desactivar Usuario?' : '¿Activar Usuario?';
-                                        $texto_alerta = $estado_actual == 1 ? 'El usuario no podrá acceder al sistema.' : 'El usuario podrá acceder nuevamente al sistema.';
-                                        $confirm_button_text = $estado_actual == 1 ? 'Sí, desactivar' : 'Sí, activar';
-                                        $texto_boton_estado = $estado_actual == 1 ? 'Desactivar usuario' : 'Activar usuario';
-                                    ?>
-                                        <tr>
-                                            <td class="text-center"><?= $contador++; ?></td>
-                                            <td><?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidopaterno']); ?></td>
-                                            <td><?= htmlspecialchars($usuario['tipodocumento']); ?></td>
-                                            <td><?= htmlspecialchars($usuario['numdocumento']); ?></td>
-                                            <td><?= htmlspecialchars($usuario['correo']); ?></td>
-                                            <td class="text-center">
-                                                <?php if (isset($usuario['imagen'])): ?>
-                                                    <img src="<?= $URL; ?>public/uploads/usuarios/<?= $usuario['imagen']; ?>" loading="lazy" alt="Imagen" class="img-thumbnail" width="40">
-                                                <?php else : ?>
-                                                    <img src="<?= $URL; ?>public/uploads/usuarios/user_default.jpg" loading="lazy" alt="Imagen" class="img-thumbnail" width="40">
-                                                <?php endif; ?>
-                                            </td>
-                                            <td><?= (!empty($usuario['cargo'])) ? htmlspecialchars($usuario['cargo']) : 'N/A'; ?></td>
-                                            <td class="text-center">
-                                                <?php if ($estado_actual == 1) : ?>
-                                                    <span class="badge badge-success badge-pill p-2">Activo</span>
-                                                <?php else : ?>
-                                                    <span class="badge badge-danger badge-pill p-2">Inactivo</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td class="text-center">
-                                                <div class="btn-group">
-                                                    <a href="<?= $URL; ?>views/usuarios/show.php?id=<?= $usuario['idusuario']; ?>" class="btn btn-info btn-sm" aria-label="Ver detalles de <?= htmlspecialchars($usuario['nombre']); ?>">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                    <a href="<?= $URL; ?>views/usuarios/update.php?id=<?= $usuario['idusuario']; ?>" class="btn btn-warning btn-sm" aria-label="Editar usuario <?= htmlspecialchars($usuario['nombre']); ?>">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <button type="button" class="btn <?= $clase_boton_estado; ?> btn-sm btn-cambiar-estado"
-                                                        data-id="<?= $usuario['idusuario']; ?>"
-                                                        data-estado="<?= $estado_actual; ?>"
-                                                        data-nombre="<?= htmlspecialchars($usuario['nombre']); ?>"
-                                                        aria-label="<?= $texto_boton_estado; ?> <?= htmlspecialchars($usuario['nombre']); ?>">
-                                                        <i class="fas <?= $icono_boton_estado; ?>"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
                     <!-- /.card-body -->
                 </div>
