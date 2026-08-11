@@ -4,17 +4,6 @@
     color: white;
 }
 
-/* Botones de acción de la tabla de ventas (ver/anular/imprimir): en dispositivos
-   táctiles, btn-sm queda bajo el mínimo de 44x44px recomendado por WCAG 2.5.5.
-   Se amplía solo para puntero táctil; en desktop se mantiene la densidad compacta. */
-@media (hover: none) and (pointer: coarse) {
-    #tablaVentas .btn-group .btn-sm {
-        min-width: 44px;
-        min-height: 44px;
-        padding: 0.5rem 0.75rem;
-    }
-}
-
 /* Carrito de create.php (#tabla-productos): con muchos productos, el contenedor
    crece indefinidamente y empuja el resto del formulario (pago, cliente, total)
    fuera de vista. Se limita la altura y se habilita scroll propio; el thead queda

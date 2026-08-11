@@ -22,7 +22,7 @@
     }
 
     .btn-group>.btn-sm+.btn-sm {
-        margin-left: 2px;
+        margin-left: -1px;
     }
 }
 
