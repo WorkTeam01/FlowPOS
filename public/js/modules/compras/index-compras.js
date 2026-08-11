@@ -269,10 +269,13 @@ $(document).ready(function () {
                 }
             }, // Estado
             { "orderable": false, "targets": 6 } // Acciones
-        ]
+        ],
+        "drawCallback": function () {
+            initializeTooltips();
+        }
     }).buttons().container().appendTo('#tablaCompras_wrapper .col-md-6:eq(0)');
 
-    $('[data-toggle="tooltip"]').tooltip();
+    initializeTooltips();
 
     document.querySelectorAll('.btn-cambiar-estado').forEach(boton => {
         boton.addEventListener('click', function () {

@@ -101,7 +101,7 @@ function initializeTooltips() {
     // Configuración de tooltips según el tipo de dispositivo
     $('[data-toggle="tooltip"]').tooltip({
         trigger: isTouchDevice ? 'click' : 'hover',
-        placement: 'auto',
+        placement: 'top',
         delay: isTouchDevice ? { show: 0, hide: 2000 } : { show: 50, hide: 100 }
     });
 

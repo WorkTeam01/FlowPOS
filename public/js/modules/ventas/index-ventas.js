@@ -177,11 +177,13 @@ $(document).ready(function () {
                 "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
                 "sSortDescending": ": Activar para ordenar la columna de manera descendente"
             }
+        },
+        "drawCallback": function () {
+            initializeTooltips();
         }
     }).buttons().container().appendTo('#tablaVentas_wrapper .col-md-6:eq(0)');
 
-    // Inicializar tooltips
-    $('[data-toggle="tooltip"]').tooltip();
+    initializeTooltips();
 
     // Botones de anulación
     document.querySelectorAll('.btn-anular-venta').forEach(boton => {

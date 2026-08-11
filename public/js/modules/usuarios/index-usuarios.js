@@ -156,8 +156,13 @@ $(document).ready(function () {
                 "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
                 "sSortDescending": ": Activar para ordenar la columna de manera descendente"
             }
+        },
+        "drawCallback": function () {
+            initializeTooltips();
         }
     }).buttons().container().appendTo('#tablaUsuarios_wrapper .col-md-6:eq(0)');
+
+    initializeTooltips();
 
     document.querySelectorAll('.btn-cambiar-estado').forEach(boton => {
         boton.addEventListener('click', function () {
