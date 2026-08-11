@@ -7,6 +7,28 @@ y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.1.6] - 2026-08-11
+
+### Seguridad
+
+- **Escalada de privilegios en `UsuarioController::guardar()`/`actualizar()`**: el campo `cargo` se tomaba crudo de `$_POST` sin whitelist ni chequeo de rol, permitiendo que cualquier usuario con el permiso granular `usuarios` (no solo `administrador`) se auto-asignara o asignara a otro `cargo=Administrador`. Ahora se valida contra `AuthorizationService::esAdministrador()`. `create.php`/`update.php` deshabilitan además la opción "Administrador" del `<select>` para quien no es admin (defensa en profundidad, no reemplaza la validación server-side).
+- Corolario del fix anterior: la validación original solo cubría el cargo _nuevo_ solicitado, dejando sin protección la modificación de una cuenta que _ya_ era Administrador (un no-admin podía degradarla enviando `cargo=Vendedor`, cambiarle la contraseña, o desactivarla vía `cambiarEstadoUsuario()`, evadiendo el check porque el valor nuevo ya no era "Administrador"). Ahora se valida **ambos lados** — cargo nuevo solicitado y cargo actual del registro objetivo — antes de permitir cualquier modificación en `actualizar()` y `cambiarEstadoUsuario()`.
+
+### Fixed
+
+- **Doble-toggle de estado en `views/usuarios/show.php`**: el botón "Activar/Desactivar" enviaba el estado ya invertido (`estadoActual == 1 ? 0 : 1`), pero `UsuarioController::cambiarEstadoUsuario()` espera el estado _actual_ y hace el toggle internamente. El resultado era que el backend volvía a invertirlo y el estado en BD quedaba sin cambios, aunque el mensaje flash indicara lo contrario. Corregido `show-usuario.js` para enviar el estado actual, igual que `index-usuarios.js`.
+- Doble escape (`htmlspecialchars()` sobre datos ya escapados por `sanitizarDatos()` al guardar) en `views/usuarios/perfil.php` y `views/usuarios/update.php` — mismo patrón "escape-at-storage" ya documentado para ventas/compras.
+- `views/usuarios/{create,update}.php` redirigían con `header('Location: index.php')` (ruta relativa dependiente del directorio actual) en vez de `$URL`, igual que el resto del proyecto.
+- Tooltips con `placement: 'auto'` en tablas de acciones (`btn-group` de la última columna) eran inconsistentes cerca de los bordes de la card. `initializeTooltips()` ahora usa `placement: 'top'` fijo.
+- Tooltips de `usuarios/index.php`, `ventas/index.php` y `compras/index.php` dejaban de inicializarse tras la primera página del paginador de DataTables; agregado `drawCallback` que reinvoca `initializeTooltips()` en cada redibujado.
+- `.btn-group>.btn-sm+.btn-sm` en `common.css` usaba `margin-left: 2px`, rompiendo el empalme sin costuras entre botones que Bootstrap/AdminLTE logra con `-1px`.
+
+### Changed
+
+- Eliminado `UsuarioController::actualizarClavePerfilAjax()`, endpoint de cambio de contraseña de perfil no referenciado (código muerto duplicando el flujo real de `perfil-usuario.js`).
+- `views/usuarios/perfil.php`: agregados atributos ARIA (`role="tab"`/`role="tabpanel"`, `aria-controls`, `aria-selected`) a las pestañas de Bootstrap y botón de mostrar/ocultar contraseña en los campos de cambio de clave.
+- Eliminada la regla de touch targets duplicada en `public/css/modules/ventas/ventas.css` (`@media (hover: none) and (pointer: coarse)`); ya cubierta globalmente por `common.css` para cualquier `.btn-group>.btn-sm`.
+
 ## [1.1.5] - 2026-08-09
 
 ### Seguridad
@@ -174,6 +196,12 @@ y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 - Configuración por variables de entorno (`.env`).
 - Compatibilidad con PHP 7.4+, MariaDB/MySQL y frontend AdminLTE/Bootstrap.
 
+[1.1.6]: https://github.com/WorkTeam01/FlowPOS/compare/1.1.5...1.1.6
+[1.1.5]: https://github.com/WorkTeam01/FlowPOS/compare/1.1.4...1.1.5
+[1.1.4]: https://github.com/WorkTeam01/FlowPOS/compare/1.1.3...1.1.4
+[1.1.3]: https://github.com/WorkTeam01/FlowPOS/compare/1.1.2...1.1.3
+[1.1.2]: https://github.com/WorkTeam01/FlowPOS/compare/1.1.1...1.1.2
+[1.1.1]: https://github.com/WorkTeam01/FlowPOS/compare/1.1.0...1.1.1
 [1.1.0]: https://github.com/WorkTeam01/FlowPOS/compare/1.0.1...1.1.0
 [1.0.1]: https://github.com/WorkTeam01/FlowPOS/compare/1.0.0...1.0.1
 [1.0.0]: https://github.com/WorkTeam01/FlowPOS/releases/tag/1.0.0

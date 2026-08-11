@@ -82,7 +82,7 @@ Variables principales:
 | Variable       | Descripción                      | Ejemplo                            |
 | -------------- | -------------------------------- | ---------------------------------- |
 | `APP_NAME`     | Nombre visible de la aplicación  | `FlowPOS`             |
-| `APP_VERSION`  | Versión actual de la aplicación  | `1.1.5`                            |
+| `APP_VERSION`  | Versión actual de la aplicación  | `1.1.6`                            |
 | `APP_CURRENCY` | Símbolo de moneda                | `Bs`, `$`, `€`, `S/`               |
 | `APP_URL`      | URL base (debe terminar con `/`) | `http://localhost/FlowPOS/` |
 | `TIMEZONE`     | Zona horaria PHP                 | `America/La_Paz`                   |
@@ -165,6 +165,7 @@ FlowPOS/
 - Corregido acceso no autorizado (IDOR) al detalle de ventas/compras de otros usuarios y desactivados permisos redundantes tras filtrar el historial por usuario; ver `CHANGELOG.md` [1.1.3].
 - Corregido IDOR al anular ventas y al generar el comprobante PDF de ventas ajenas, y la autoría de venta (antes tomada de un campo de formulario, ahora siempre de la sesión); ver `CHANGELOG.md` [1.1.4].
 - Nivelado el módulo de compras al mismo estándar de seguridad de ventas: eliminado endpoint huérfano vulnerable a IDOR, agregado ownership check en el cambio de estado, corregido doble escape en el detalle y payload de productos filtrado a solo activos en el formulario de creación; ver `CHANGELOG.md` [1.1.5].
+- Corregida escalada de privilegios en el módulo de usuarios: un usuario no-administrador podía asignarse (o asignar a otro) el cargo Administrador, y podía degradar, cambiar la contraseña o desactivar una cuenta que ya era Administrador; ahora se valida tanto el cargo nuevo solicitado como el cargo actual del registro objetivo; ver `CHANGELOG.md` [1.1.6].
 
 ## Changelog
 
