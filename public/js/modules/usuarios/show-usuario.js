@@ -39,7 +39,7 @@ $(document).ready(function() {
 
             submitCsrfForm(baseUrl + 'controllers/usuarios/desactivar_usuario.php', {
                 id: usuarioId,
-                estado: estadoActual == 1 ? 0 : 1
+                estado: estadoActual
             });
         });
     });

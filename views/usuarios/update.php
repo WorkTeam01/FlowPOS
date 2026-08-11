@@ -10,7 +10,7 @@ $authService = new AuthorizationService();
 if (!($authService->tienePermisoNombre($idusuario, 'usuarios')) && !($authService->esAdministrador($idusuario))) {
     $_SESSION['mensaje'] = 'No tiene permisos para acceder a esta sección.';
     $_SESSION['icono'] = 'error';
-    header('Location: index.php');
+    header('Location: ' . $URL);
     exit;
 }
 
@@ -25,7 +25,7 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if (!$id) {
     $_SESSION['mensaje'] = 'ID de usuario no válido';
     $_SESSION['icono'] = 'error';
-    header('Location: index.php');
+    header('Location: ' . $URL);
     exit;
 }
 
@@ -37,7 +37,7 @@ $usuario = $controller->editar($id);
 if (!$usuario) {
     $_SESSION['mensaje'] = 'Usuario no encontrado';
     $_SESSION['icono'] = 'error';
-    header('Location: index.php');
+    header('Location: ' . $URL);
     exit;
 }
 ?>
@@ -83,7 +83,7 @@ if (!$usuario) {
                                     <div class="form-group">
                                         <label for="nombre">Nombre <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="nombre" name="nombre"
-                                            placeholder="Ingrese el nombre" value="<?= htmlspecialchars($usuario['nombre']); ?>" required>
+                                            placeholder="Ingrese el nombre" value="<?= $usuario['nombre']; ?>" required>
                                     </div>
                                 </div>
 
@@ -92,7 +92,7 @@ if (!$usuario) {
                                     <div class="form-group">
                                         <label for="apellidopaterno">Apellido Paterno <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="apellidopaterno" name="apellidopaterno"
-                                            placeholder="Ingrese el apellido paterno" value="<?= htmlspecialchars($usuario['apellidopaterno']); ?>" required>
+                                            placeholder="Ingrese el apellido paterno" value="<?= $usuario['apellidopaterno']; ?>" required>
                                     </div>
                                 </div>
 
@@ -101,7 +101,7 @@ if (!$usuario) {
                                     <div class="form-group">
                                         <label for="apellidomaterno">Apellido Materno</label>
                                         <input type="text" class="form-control" id="apellidomaterno" name="apellidomaterno"
-                                            placeholder="Ingrese el apellido materno" value="<?= htmlspecialchars($usuario['apellidomaterno'] ?? ''); ?>">
+                                            placeholder="Ingrese el apellido materno" value="<?= $usuario['apellidomaterno'] ?? ''; ?>">
                                     </div>
                                 </div>
                             </div>
@@ -127,7 +127,7 @@ if (!$usuario) {
                                     <div class="form-group">
                                         <label for="numdocumento">Número de Documento <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="numdocumento" name="numdocumento"
-                                            placeholder="Ingrese el número de documento" value="<?= htmlspecialchars($usuario['numdocumento']); ?>"
+                                            placeholder="Ingrese el número de documento" value="<?= $usuario['numdocumento']; ?>"
                                             maxlength="25" required>
                                     </div>
                                 </div>
@@ -139,7 +139,7 @@ if (!$usuario) {
                                     <div class="form-group">
                                         <label for="direccion">Dirección</label>
                                         <textarea class="form-control" id="direccion" name="direccion" rows="2"
-                                            placeholder="Ingrese la dirección"><?= htmlspecialchars($usuario['direccion'] ?? ''); ?></textarea>
+                                            placeholder="Ingrese la dirección"><?= $usuario['direccion'] ?? ''; ?></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -162,7 +162,7 @@ if (!$usuario) {
                                                 <span class="input-group-text"><i class="fas fa-phone"></i></span>
                                             </div>
                                             <input type="tel" class="form-control" id="telefono" name="telefono"
-                                                placeholder="Ingrese el teléfono" value="<?= htmlspecialchars($usuario['telefono'] ?? ''); ?>"
+                                                placeholder="Ingrese el teléfono" value="<?= $usuario['telefono'] ?? ''; ?>"
                                                 maxlength="20">
                                         </div>
                                     </div>
@@ -177,7 +177,7 @@ if (!$usuario) {
                                                 <span class="input-group-text"><i class="fas fa-envelope"></i></span>
                                             </div>
                                             <input type="email" class="form-control" id="correo" name="correo"
-                                                placeholder="ejemplo@correo.com" value="<?= htmlspecialchars($usuario['correo']); ?>"
+                                                placeholder="ejemplo@correo.com" value="<?= $usuario['correo']; ?>"
                                                 required>
                                         </div>
                                     </div>
@@ -187,12 +187,16 @@ if (!$usuario) {
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label for="cargo">Cargo <span class="text-danger">*</span></label>
+                                        <?php $puedeAsignarAdmin = $authService->esAdministrador($idusuario); ?>
                                         <select class="form-control select2" id="cargo" name="cargo" required>
                                             <option value="">Seleccione un cargo</option>
-                                            <option value="Administrador" <?= $usuario['cargo'] == 'Administrador' ? 'selected' : ''; ?>>Administrador</option>
+                                            <option value="Administrador" <?= $usuario['cargo'] == 'Administrador' ? 'selected' : ''; ?> <?= $puedeAsignarAdmin ? '' : 'disabled'; ?>>Administrador</option>
                                             <option value="Supervisor" <?= $usuario['cargo'] == 'Supervisor' ? 'selected' : ''; ?>>Supervisor</option>
                                             <option value="Vendedor" <?= $usuario['cargo'] == 'Vendedor' ? 'selected' : ''; ?>>Vendedor</option>
                                         </select>
+                                        <?php if (!$puedeAsignarAdmin && $usuario['cargo'] == 'Administrador'): ?>
+                                            <small class="form-text text-muted">Solo un administrador puede reasignar el cargo de un Administrador.</small>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>

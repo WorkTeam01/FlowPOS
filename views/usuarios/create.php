@@ -9,7 +9,7 @@ $authService = new AuthorizationService();
 if (!($authService->tienePermisoNombre($idusuario, 'usuarios')) && !($authService->esAdministrador($idusuario))) {
     $_SESSION['mensaje'] = 'No tiene permisos para acceder a esta sección.';
     $_SESSION['icono'] = 'error';
-    header('Location: index.php');
+    header('Location: ' . $URL);
     exit;
 }
 
@@ -160,12 +160,16 @@ include_once '../layouts/header.php';
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label for="cargo">Cargo <span class="text-danger">*</span></label>
+                                        <?php $puedeAsignarAdmin = $authService->esAdministrador($idusuario); ?>
                                         <select class="form-control select2" id="cargo" name="cargo" required>
                                             <option value="">Seleccione un cargo</option>
-                                            <option value="Administrador">Administrador</option>
+                                            <option value="Administrador" <?= $puedeAsignarAdmin ? '' : 'disabled'; ?>>Administrador</option>
                                             <option value="Supervisor">Supervisor</option>
                                             <option value="Vendedor">Vendedor</option>
                                         </select>
+                                        <?php if (!$puedeAsignarAdmin): ?>
+                                            <small class="form-text text-muted">Solo un administrador puede asignar el cargo de Administrador.</small>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>

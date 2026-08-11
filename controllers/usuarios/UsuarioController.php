@@ -10,6 +10,7 @@
 
 // Incluir el servicio de imágenes
 require_once __DIR__ . '/../../services/ImagenService.php';
+require_once __DIR__ . '/../../services/AuthorizationService.php';
 
 class UsuarioController
 {
@@ -26,6 +27,12 @@ class UsuarioController
     private $imagenService;
 
     /**
+     * Servicio de autorización
+     * @var AuthorizationService
+     */
+    private $authService;
+
+    /**
      * Constructor de la clase
      */
     public function __construct()
@@ -36,6 +43,8 @@ class UsuarioController
 
         // Inicializar el servicio de imágenes
         $this->imagenService = new ImagenService(__DIR__ . '/../../public/uploads/usuarios/');
+
+        $this->authService = new AuthorizationService();
     }
 
     /**
@@ -94,6 +103,11 @@ class UsuarioController
 
         // Preparar datos del usuario
         $datos = $this->modelo->sanitizarDatos($this->prepararDatosUsuario($_POST));
+
+        // Solo un administrador puede asignar el cargo Administrador
+        if (strcasecmp($datos['cargo'], 'Administrador') === 0 && !$this->authService->esAdministrador($_SESSION['usuario_id'])) {
+            return ['success' => false, 'message' => 'No tiene permisos para asignar el cargo de Administrador', 'icon' => 'error', 'redirect' => 'create.php'];
+        }
 
         // Validar datos en el modelo
         $errores = $this->modelo->validarDatos($datos);
@@ -187,6 +201,11 @@ class UsuarioController
             return ['success' => false, 'message' => 'Usuario no encontrado para actualizar', 'icon' => 'error', 'redirect' => 'index.php'];
         }
 
+        // Solo un administrador puede modificar una cuenta que ya es Administrador
+        if (strcasecmp($usuario_actual['cargo'], 'Administrador') === 0 && !$this->authService->esAdministrador($_SESSION['usuario_id'])) {
+            return ['success' => false, 'message' => 'No tiene permisos para modificar una cuenta de Administrador', 'icon' => 'error', 'redirect' => "update.php?id=$id"];
+        }
+
         // Guardar imagen actual para posible eliminación posterior
         $imagen_antigua = $usuario_actual['imagen'];
 
@@ -203,6 +222,11 @@ class UsuarioController
 
         // Sanitizar los datos
         $datos = $this->modelo->sanitizarDatos($datos);
+
+        // Solo un administrador puede asignar o conservar el cargo Administrador
+        if (strcasecmp($datos['cargo'], 'Administrador') === 0 && !$this->authService->esAdministrador($_SESSION['usuario_id'])) {
+            return ['success' => false, 'message' => 'No tiene permisos para asignar el cargo de Administrador', 'icon' => 'error', 'redirect' => "update.php?id=$id"];
+        }
 
         // Establecer la imagen anterior por defecto
         $datos['imagen'] = $imagen_antigua;
@@ -374,56 +398,6 @@ class UsuarioController
     }
 
     /**
-     * Procesa el formulario para actualizar la contraseña del perfil con AJAX
-     * 
-     * @return array Respuesta con el resultado de la operación
-     */
-    public function actualizarClavePerfilAjax()
-    {
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-            return ['success' => false, 'message' => 'Acceso no permitido.'];
-        }
-
-        if (!isset($_SESSION['usuario_id'])) {
-            return ['success' => false, 'message' => 'Sesión no iniciada.'];
-        }
-
-        $id = $_SESSION['usuario_id'];
-
-        // Validar datos
-        $clave_actual = isset($_POST['clave_actual']) ? trim($_POST['clave_actual']) : '';
-        $nueva_clave = isset($_POST['nueva_clave']) ? trim($_POST['nueva_clave']) : '';
-        $confirmar_nueva_clave = isset($_POST['confirmar_nueva_clave']) ? trim($_POST['confirmar_nueva_clave']) : '';
-
-        if (empty($clave_actual) || empty($nueva_clave) || empty($confirmar_nueva_clave)) {
-            return ['success' => false, 'message' => 'Todos los campos de contraseña son obligatorios.'];
-        }
-
-        // Verificar contraseña actual
-        $usuario_data = $this->modelo->getById($id);
-        if (!$usuario_data || !password_verify($clave_actual, $usuario_data['clave'])) {
-            return ['success' => false, 'message' => 'La contraseña actual es incorrecta.'];
-        }
-
-        if ($nueva_clave !== $confirmar_nueva_clave) {
-            return ['success' => false, 'message' => 'Las nuevas contraseñas no coinciden.'];
-        }
-
-        if (strlen($nueva_clave) < 6) {
-            return ['success' => false, 'message' => 'La nueva contraseña debe tener al menos 6 caracteres.'];
-        }
-
-        if ($this->modelo->actualizarClave($id, $nueva_clave)) {
-            return [
-                'success' => true,
-                'message' => 'Contraseña actualizada correctamente.'
-            ];
-        } else {
-            return ['success' => false, 'message' => 'Error al actualizar la contraseña: ' . $this->modelo->getLastError()];
-        }
-    }
-
-    /**
      * Cambia el estado de un usuario (activa/desactiva)
      * 
      * @param int $id ID del usuario
@@ -434,6 +408,11 @@ class UsuarioController
     {
         if ($id === null || $estado_actual === null) {
             return ['success' => false, 'message' => 'ID de usuario o estado no válido', 'icon' => 'error'];
+        }
+
+        $usuario_objetivo = $this->modelo->getById($id);
+        if ($usuario_objetivo && strcasecmp($usuario_objetivo['cargo'], 'Administrador') === 0 && !$this->authService->esAdministrador($_SESSION['usuario_id'])) {
+            return ['success' => false, 'message' => 'No tiene permisos para cambiar el estado de una cuenta de Administrador', 'icon' => 'error'];
         }
 
         $nuevo_estado = $estado_actual == 1 ? 0 : 1; // Cambia el estado
