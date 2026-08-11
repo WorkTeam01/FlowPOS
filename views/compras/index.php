@@ -73,7 +73,7 @@ $estadisticas = $controller->getEstadisticas();
                     <div class="info-box-content">
                         <span class="info-box-text">Responsable Top</span>
                         <span class="info-box-number">
-                            <?= $estadisticas['usuario_mas_compro'] ? htmlspecialchars($estadisticas['usuario_mas_compro']['nombre_usuario']) : 'N/A'; ?>
+                            <?= $estadisticas['usuario_mas_compro'] ? $estadisticas['usuario_mas_compro']['nombre_usuario'] : 'N/A'; ?>
                         </span>
                     </div>
                 </div>
@@ -84,7 +84,7 @@ $estadisticas = $controller->getEstadisticas();
                     <div class="info-box-content">
                         <span class="info-box-text">Producto Top</span>
                         <span class="info-box-number">
-                            <?= $estadisticas['producto_mas_comprado'] ? htmlspecialchars($estadisticas['producto_mas_comprado']['producto_nombre']) : 'N/A'; ?>
+                            <?= $estadisticas['producto_mas_comprado'] ? $estadisticas['producto_mas_comprado']['producto_nombre'] : 'N/A'; ?>
                         </span>
                     </div>
                 </div>
@@ -107,57 +107,55 @@ $estadisticas = $controller->getEstadisticas();
                     </div>
                     <!-- /.card-header -->
                     <div class="card-body">
-                        <div class="table-responsive">
-                            <table id="tablaCompras" class="table table-sm table-bordered table-hover table-striped">
-                                <thead>
+                        <table id="tablaCompras" class="table table-sm table-bordered table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nro</th>
+                                    <th>Código</th>
+                                    <th>Fecha</th>
+                                    <th>Usuario</th>
+                                    <th>Total</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $contador = 1;
+                                foreach ($compras as $compra) :
+                                    $estado_actual = $compra['estado'];
+                                    $estadoInfo = $controller->obtenerInfoEstado($estado_actual);
+                                ?>
                                     <tr>
-                                        <th>Nro</th>
-                                        <th>Código</th>
-                                        <th>Fecha</th>
-                                        <th>Usuario</th>
-                                        <th>Total</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    $contador = 1;
-                                    foreach ($compras as $compra) :
-                                        $estado_actual = $compra['estado'];
-                                        $estadoInfo = $controller->obtenerInfoEstado($estado_actual);
-                                    ?>
-                                        <tr>
-                                            <td class="text-center"><?= $contador++; ?></td>
-                                            <td>COMP-<?= str_pad($compra['idcompra'], 6, '0', STR_PAD_LEFT); ?></td>
-                                            <td><?= date('d/m/Y', strtotime($compra['fechacompra'])); ?></td>
-                                            <td><?= $compra['usuario_nombre'] ?? 'N/A'; ?></td>
-                                            <td class="text-right"><?= number_format($compra['totalcompra'], 2); ?> <?= $appCurrency ?></td>
-                                            <td class="text-center">
-                                                <span class="badge badge-<?= $estadoInfo['clase']; ?>"><?= $estadoInfo['texto']; ?></span>
-                                            </td>
-                                            <td class="text-center">
-                                                <div class="btn-group">
-                                                    <a href="<?= $URL; ?>views/compras/show.php?id=<?= $compra['idcompra']; ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="Ver detalles">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
+                                        <td class="text-center"><?= $contador++; ?></td>
+                                        <td>COMP-<?= str_pad($compra['idcompra'], 6, '0', STR_PAD_LEFT); ?></td>
+                                        <td><?= date('d/m/Y', strtotime($compra['fechacompra'])); ?></td>
+                                        <td><?= $compra['usuario_nombre'] ?? 'N/A'; ?></td>
+                                        <td class="text-right"><?= number_format($compra['totalcompra'], 2); ?> <?= $appCurrency ?></td>
+                                        <td class="text-center">
+                                            <span class="badge badge-<?= $estadoInfo['clase']; ?>"><?= $estadoInfo['texto']; ?></span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <a href="<?= $URL; ?>views/compras/show.php?id=<?= $compra['idcompra']; ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="Ver detalles">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
 
-                                                    <?php if ($estado_actual == 1): ?>
-                                                        <button type="button" class="btn btn-danger btn-sm btn-cambiar-estado"
-                                                            data-id="<?= $compra['idcompra']; ?>"
-                                                            data-accion="cancelar"
-                                                            data-titulo="COMP-<?= str_pad($compra['idcompra'], 6, '0', STR_PAD_LEFT); ?>"
-                                                            data-toggle="tooltip" title="Cancelar compra">
-                                                            <i class="fas fa-times"></i>
-                                                        </button>
-                                                    <?php endif; ?>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
+                                                <?php if ($estado_actual == 1): ?>
+                                                    <button type="button" class="btn btn-danger btn-sm btn-cambiar-estado"
+                                                        data-id="<?= $compra['idcompra']; ?>"
+                                                        data-accion="cancelar"
+                                                        data-titulo="COMP-<?= str_pad($compra['idcompra'], 6, '0', STR_PAD_LEFT); ?>"
+                                                        data-toggle="tooltip" title="Cancelar compra">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
                     <!-- /.card-body -->
                 </div>
