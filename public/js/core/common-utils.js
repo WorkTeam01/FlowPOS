@@ -367,6 +367,40 @@ $(document).on('shown.bs.tab', '[data-toggle="tab"]', function (e) {
 });
 
 /**
+ * Confirma con SweetAlert2 un cambio de estado (activar/desactivar) y, si se confirma,
+ * envía el formulario CSRF hacia el endpoint correspondiente.
+ *
+ * El controlador de destino siempre espera el estado ACTUAL del registro (no el deseado);
+ * internamente hace el toggle. Ver CLAUDE.md sobre UsuarioController::cambiarEstadoUsuario
+ * para el bug que motivó esta convención.
+ *
+ * @param {object} opciones
+ * @param {string|number} opciones.id - ID del registro a modificar
+ * @param {string|number} opciones.estadoActual - Estado actual (1 = activo, 0 = inactivo)
+ * @param {string} opciones.titulo - Título del diálogo de confirmación
+ * @param {string} opciones.texto - Texto descriptivo del diálogo
+ * @param {string} opciones.actionUrl - URL del controlador que procesa el cambio
+ */
+function confirmarCambioEstado({ id, estadoActual, titulo, texto, actionUrl }) {
+    const activo = estadoActual == 1;
+
+    Swal.fire({
+        title: titulo,
+        text: texto,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: activo ? '#d33' : '#28a745',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: activo ? 'Sí, desactivar' : 'Sí, activar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            submitCsrfForm(actionUrl, { id: id, estado: estadoActual });
+        }
+    });
+}
+
+/**
  * Envía un formulario POST construido dinámicamente con el token CSRF incluido.
  * Construye el DOM de forma segura (sin innerHTML) para evitar XSS.
  *
