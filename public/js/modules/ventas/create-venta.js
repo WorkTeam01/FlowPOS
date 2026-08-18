@@ -13,6 +13,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const productosDisponibles = datosVenta ? ($(datosVenta).data('productos') || []) : [];
     const clientesDisponibles = datosVenta ? ($(datosVenta).data('clientes') || []) : [];
 
+    // Preseleccionar cliente si se llegó desde su ficha (views/clientes/show.php?id=...&cliente=... => ?cliente=idcliente)
+    const idClientePreseleccionado = new URLSearchParams(window.location.search).get('cliente');
+    if (idClientePreseleccionado) {
+        const clientePreseleccionado = clientesDisponibles.find(
+            c => String(c.idcliente) === String(idClientePreseleccionado)
+        );
+        if (clientePreseleccionado) {
+            seleccionarCliente(clientePreseleccionado);
+        }
+    }
+
     // Referencias a elementos del DOM
     // Elementos relacionados con productos
     const totalVentaSpan = document.getElementById('total-venta');
