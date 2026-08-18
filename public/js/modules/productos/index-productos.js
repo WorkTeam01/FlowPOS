@@ -172,39 +172,25 @@ $(document).ready(function () {
                 "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
                 "sSortDescending": ": Activar para ordenar la columna de manera descendente"
             }
+        },
+        "drawCallback": function () {
+            initializeTooltips();
         }
     }).buttons().container().appendTo('#tablaProductos_wrapper .col-md-6:eq(0)');
 
-    $('[data-toggle="tooltip"]').tooltip();
+    initializeTooltips();
 
-    document.querySelectorAll('.btn-cambiar-estado').forEach(boton => {
-        boton.addEventListener('click', function () {
-            const productoId = this.dataset.id;
-            const estadoActual = this.dataset.estado;
-            const nombreProducto = this.dataset.nombre;
+    $('#tablaProductos').on('click', '.btn-cambiar-estado', function () {
+        const estadoActual = this.dataset.estado;
+        const nombreProducto = this.dataset.nombre;
+        const activo = estadoActual == 1;
 
-            const tituloAlerta = estadoActual == 1 ? `¿Desactivar ${nombreProducto}?` : `¿Activar ${nombreProducto}?`;
-            const textoAlerta = estadoActual == 1 ? 'El producto no estará disponible para venta.' : 'El producto estará disponible para venta.';
-            const confirmButtonText = estadoActual == 1 ? 'Sí, desactivar' : 'Sí, activar';
-            const cancelButtonText = 'Cancelar';
-
-            Swal.fire({
-                title: tituloAlerta,
-                text: textoAlerta,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: estadoActual == 1 ? '#d33' : '#3085d6',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: confirmButtonText,
-                cancelButtonText: cancelButtonText
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    submitCsrfForm(`${baseUrl}controllers/productos/desactivar_producto.php`, {
-                        id: productoId,
-                        estado: estadoActual
-                    });
-                }
-            });
+        confirmarCambioEstado({
+            id: this.dataset.id,
+            estadoActual: estadoActual,
+            titulo: activo ? `¿Desactivar ${nombreProducto}?` : `¿Activar ${nombreProducto}?`,
+            texto: activo ? 'El producto no estará disponible para venta.' : 'El producto estará disponible para venta.',
+            actionUrl: `${baseUrl}controllers/productos/desactivar_producto.php`
         });
     });
 });

@@ -2,6 +2,8 @@ $(document).ready(function() {
     // Inicializar Select2
     initializeSelect2();
 
+    initVistaPreviaProducto();
+
     // Actualizar etiqueta del archivo seleccionado
     $('.custom-file-input').on('change', function() {
         let fileName = $(this).val().split('\\').pop();
@@ -13,6 +15,7 @@ $(document).ready(function() {
             reader.onload = function(e) {
                 $('#preview-image').attr('src', e.target.result);
                 $('#preview-container').show();
+                $('#preview-vista-imagen').attr('src', e.target.result);
             }
             reader.readAsDataURL(this.files[0]);
         }

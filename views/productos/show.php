@@ -42,20 +42,6 @@ if (!$producto) {
 }
 ?>
 
-<style>
-    /* Color info para el texto de las pestañas no activas */
-    #detail-tabs .nav-link:not(.active) {
-        color: #17a2b8;
-        /* Color info */
-    }
-
-    /* Opcional: Color info más intenso al pasar el mouse por pestañas no activas */
-    #detail-tabs .nav-link:not(.active):hover {
-        color: #138496;
-        /* Un tono más oscuro de info */
-    }
-</style>
-
 <!-- Content Header (Page header) -->
 <section class="content-header">
     <div class="container-fluid">
@@ -147,23 +133,12 @@ if (!$producto) {
                             </li>
                         </ul>
 
-                        <div class="d-flex justify-content-between">
-                            <a href="<?= $URL; ?>views/productos/update.php?id=<?= $producto['idproducto']; ?>" class="btn btn-warning">
-                                <i class="fas fa-edit"></i> Editar
-                            </a>
-                            <a href="<?= $URL; ?>views/productos/index.php" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Volver
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Acciones adicionales -->
-                <div class="card card-info">
-                    <div class="card-header">
-                        <h3 class="card-title"><i class="fas fa-cogs mr-2"></i>Acciones</h3>
-                    </div>
-                    <div class="card-body">
+                        <a href="<?= $URL; ?>views/productos/update.php?id=<?= $producto['idproducto']; ?>" class="btn btn-warning btn-block">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        <a href="<?= $URL; ?>views/productos/index.php" class="btn btn-secondary btn-block">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
                         <button type="button" class="btn btn-block <?= $producto['estado'] == 1 ? 'btn-danger' : 'btn-success'; ?>" id="btnCambiarEstado"
                             data-id="<?= $producto['idproducto']; ?>"
                             data-estado="<?= $producto['estado']; ?>"
@@ -178,7 +153,7 @@ if (!$producto) {
             <!-- Columna derecha - Información detallada en tabs -->
             <div class="col-md-8">
                 <!-- Información detallada en pestañas -->
-                <div class="card card-info card-outline card-tabs">
+                <div class="card card-info card-outline card-outline-tabs">
                     <div class="card-header p-0 border-bottom-0">
                         <ul class="nav nav-tabs" id="detail-tabs" role="tablist">
                             <li class="nav-item">

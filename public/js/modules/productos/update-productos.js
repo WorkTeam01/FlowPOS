@@ -1,25 +1,28 @@
-$(document).ready(function() {
+$(document).ready(function () {
     // Inicializar Select2
     initializeSelect2();
 
+    initVistaPreviaProducto();
+
     // Actualizar etiqueta del archivo seleccionado
-    $('.custom-file-input').on('change', function() {
+    $('.custom-file-input').on('change', function () {
         let fileName = $(this).val().split('\\').pop();
         $(this).next('.custom-file-label').addClass("selected").html(fileName);
 
         // Mostrar vista previa de la imagen
         if (this.files && this.files[0]) {
             let reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 $('#preview-image').attr('src', e.target.result);
                 $('#preview-container').show();
+                $('#preview-vista-imagen').attr('src', e.target.result);
             }
             reader.readAsDataURL(this.files[0]);
         }
     });
 
     // Validación de precios
-    $('#precioventa, #preciocompra').on('input', function() {
+    $('#precioventa, #preciocompra').on('input', function () {
         let precioCompra = parseFloat($('#preciocompra').val()) || 0;
         let precioVenta = parseFloat($('#precioventa').val()) || 0;
 
@@ -60,7 +63,7 @@ $(document).ready(function() {
     $('#precioventa').trigger('input');
 
     // Validación de stock mínimo/máximo
-    $('#stockminimo, #stockmaximo').on('input', function() {
+    $('#stockminimo, #stockmaximo').on('input', function () {
         let stockMinimo = parseInt($('#stockminimo').val()) || 0;
         let stockMaximo = parseInt($('#stockmaximo').val()) || 0;
 
@@ -92,7 +95,7 @@ $(document).ready(function() {
     }
 
     // Validación del formulario antes de enviar
-    $('#formEditarProducto').on('submit', function(e) {
+    $('#formEditarProducto').on('submit', function (e) {
         let precioCompra = parseFloat($('#preciocompra').val()) || 0;
         let precioVenta = parseFloat($('#precioventa').val()) || 0;
         let stockMinimo = parseInt($('#stockminimo').val()) || 0;
@@ -141,44 +144,6 @@ $(document).ready(function() {
             allowOutsideClick: false,
             didOpen: () => {
                 Swal.showLoading();
-            }
-        });
-    });
-
-    // SweetAlert2 para confirmar cambio de estado
-    $('.cambiar-estado-link').on('click', function(e) {
-        e.preventDefault();
-
-        const productoId = $(this).data('producto-id');
-        const estadoActual = $(this).data('estado-actual');
-        const nombreProducto = $(this).data('nombre-producto');
-
-        const tituloAlerta = estadoActual == 1 ?
-            `¿Desactivar producto "${nombreProducto}"?` :
-            `¿Activar producto "${nombreProducto}"?`;
-
-        const textoAlerta = estadoActual == 1 ?
-            'El producto no estará disponible para venta hasta que sea activado nuevamente.' :
-            'El producto estará disponible nuevamente para venta.';
-
-        const confirmButtonText = estadoActual == 1 ? 'Sí, desactivar' : 'Sí, activar';
-        const cancelButtonText = 'Cancelar';
-
-        Swal.fire({
-            title: tituloAlerta,
-            text: textoAlerta,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: estadoActual == 1 ? '#d33' : '#3085d6',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: confirmButtonText,
-            cancelButtonText: cancelButtonText
-        }).then((result) => {
-            if (result.isConfirmed) {
-                submitCsrfForm(baseUrl + 'controllers/productos/desactivar_producto.php', {
-                    id: productoId,
-                    estado: estadoActual
-                });
             }
         });
     });
