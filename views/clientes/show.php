@@ -36,6 +36,12 @@ if (!$cliente) {
     exit;
 }
 
+$compras = $controller->getHistorialCompras($id);
+$comprasValidas = array_values(array_filter($compras, fn($v) => $v['estado'] == 1));
+$totalCompras = count($comprasValidas);
+$montoTotal = array_sum(array_column($comprasValidas, 'totalventa'));
+$ultimaCompra = !empty($compras) ? $compras[0]['fechacreacion'] : null;
+
 $skip_datatables = true; // Evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
 $skip_select2 = true;
 $module_scripts = ['clientes/show-cliente'];
@@ -64,209 +70,33 @@ include_once '../layouts/header.php';
 <section class="content">
     <div class="container-fluid">
         <div class="row">
-            <!-- Columna izquierda (8 columnas) -->
-            <div class="col-md-8">
-                <div class="card card-primary">
-                    <div class="card-header">
-                        <h3 class="card-title">Información Detallada del Cliente</h3>
-                    </div>
-                    <div class="card-body">
-                        <!-- Información Personal -->
-                        <div class="card card-outline card-info mb-3">
-                            <div class="card-header">
-                                <h3 class="card-title">Información Personal</h3>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-user"></i> Nombre Completo:</label>
-                                            <p class="lead">
-                                                <?= htmlspecialchars($cliente['nombres'] . ' ' . $cliente['apellidopaterno'] . ' ' . ($cliente['apellidomaterno'] ?? '')); ?>
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-venus-mars"></i> Género:</label>
-                                            <p class="lead">
-                                                <?= !empty($cliente['genero']) ? htmlspecialchars($cliente['genero']) : '<span class="text-muted">No especificado</span>'; ?>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Documentación -->
-                        <div class="card card-outline card-info mb-3">
-                            <div class="card-header">
-                                <h3 class="card-title">Documentación</h3>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-id-card"></i> Tipo de Documento:</label>
-                                            <p class="lead">
-                                                <?= htmlspecialchars($cliente['tipodocumento']); ?>
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-hashtag"></i> Número de Documento:</label>
-                                            <p class="lead">
-                                                <?= htmlspecialchars($cliente['numdocumento']); ?>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Información de Contacto -->
-                        <div class="card card-outline card-info mb-3">
-                            <div class="card-header">
-                                <h3 class="card-title">Información de Contacto</h3>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-map-marker-alt"></i> Dirección:</label>
-                                            <p class="lead">
-                                                <?= !empty($cliente['direccion']) ? htmlspecialchars($cliente['direccion']) : '<span class="text-muted">No registrada</span>'; ?>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-mobile-alt"></i> Celular:</label>
-                                            <p class="lead">
-                                                <?php if (!empty($cliente['celular'])): ?>
-                                                    <a href="tel:<?= htmlspecialchars($cliente['celular']); ?>">
-                                                        <?= htmlspecialchars($cliente['celular']); ?>
-                                                    </a>
-                                                <?php else: ?>
-                                                    <span class="text-muted">No registrado</span>
-                                                <?php endif; ?>
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-envelope"></i> Email:</label>
-                                            <p class="lead">
-                                                <?php if (!empty($cliente['email'])): ?>
-                                                    <a href="mailto:<?= htmlspecialchars($cliente['email']); ?>">
-                                                        <?= htmlspecialchars($cliente['email']); ?>
-                                                    </a>
-                                                <?php else: ?>
-                                                    <span class="text-muted">No registrado</span>
-                                                <?php endif; ?>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Información del Sistema -->
-                        <div class="card card-outline card-info">
-                            <div class="card-header">
-                                <h3 class="card-title">Información del Sistema</h3>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-toggle-on"></i> Estado:</label>
-                                            <p>
-                                                <?php if ($cliente['estado'] == 1): ?>
-                                                    <span class="badge badge-success">Activo</span>
-                                                <?php else: ?>
-                                                    <span class="badge badge-danger">Inactivo</span>
-                                                <?php endif; ?>
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-calendar-plus"></i> Fecha de Registro:</label>
-                                            <p class="text-muted">
-                                                <?= date('d/m/Y H:i', strtotime($cliente['fechacreacion'])); ?>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label><i class="fas fa-calendar-check"></i> Última Actualización:</label>
-                                            <p class="text-muted">
-                                                <?= !empty($cliente['fechaactualizacion']) ? date('d/m/Y H:i', strtotime($cliente['fechaactualizacion'])) : 'Sin actualizaciones'; ?>
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <!-- Botones de acción principales -->
-                        <div class="row g-1">
-                            <div class="col-12 col-sm-auto">
-                                <a href="<?= $URL; ?>views/clientes/update.php" class="btn btn-warning w-100">
-                                    <i class="fas fa-edit mr-1"></i> Editar Cliente
-                                </a>
-                            </div>
-                            <div class="col-12 col-sm-auto">
-                                <a href="<?= $URL; ?>views/ventas/create.php" class="btn btn-success w-100">
-                                    <i class="fas fa-shopping-cart mr-1"></i> Nueva Venta
-                                </a>
-                            </div>
-                            <div class="col-12 col-sm-auto">
-                                <a href="<?= $URL; ?>views/clientes" class="btn btn-secondary w-100">
-                                    <i class="fas fa-arrow-left mr-1"></i> Volver
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- /.col-md-8 -->
-
-            <!-- Columna derecha - Perfil y acciones rápidas (4 columnas) -->
+            <!-- Columna izquierda - Perfil y acciones (4 columnas) -->
             <div class="col-md-4">
-                <!-- Tarjeta de perfil del cliente -->
-                <div class="card card-primary card-outline">
+                <div class="card card-info card-outline">
                     <div class="card-body box-profile">
                         <div class="text-center">
-                            <i class="fas fa-user-circle fa-5x text-primary mb-3"></i>
+                            <i class="fas fa-user-circle fa-5x text-info mb-3"></i>
                         </div>
 
                         <h3 class="profile-username text-center">
-                            <?= htmlspecialchars($cliente['nombres'] . ' ' . $cliente['apellidopaterno']); ?>
+                            <?= $cliente['nombres'] . ' ' . $cliente['apellidopaterno']; ?>
                         </h3>
 
                         <p class="text-muted text-center">Cliente desde <?= date('d/m/Y', strtotime($cliente['fechacreacion'])); ?></p>
 
-                        <ul class="list-group list-group-unbordered mb-3">
+                        <ul class="list-group list-group-unbordered mb-4">
                             <li class="list-group-item">
-                                <b><i class="fas fa-id-card mr-1"></i> <?= htmlspecialchars($cliente['tipodocumento']); ?></b>
-                                <span class="float-right"><?= htmlspecialchars($cliente['numdocumento']); ?></span>
+                                <b><i class="fas fa-id-card mr-1"></i> <?= $cliente['tipodocumento']; ?></b>
+                                <span class="float-right"><?= $cliente['numdocumento']; ?></span>
                             </li>
                             <li class="list-group-item">
                                 <b><i class="fas fa-phone mr-1"></i> Celular</b>
-                                <span class="float-right"><?= htmlspecialchars($cliente['celular'] ?? 'No registrado'); ?></span>
+                                <span class="float-right"><?= $cliente['celular'] ?? 'No registrado'; ?></span>
                             </li>
                             <li class="list-group-item">
                                 <b><i class="fas fa-envelope mr-1"></i> Email</b>
-                                <span class="float-right text-truncate" style="max-width: 150px;" title="<?= htmlspecialchars($cliente['email'] ?? 'No registrado'); ?>">
-                                    <?= htmlspecialchars($cliente['email'] ?? 'No registrado'); ?>
+                                <span class="float-right text-truncate" style="max-width: 150px;" title="<?= $cliente['email'] ?? 'No registrado'; ?>">
+                                    <?= $cliente['email'] ?? 'No registrado'; ?>
                                 </span>
                             </li>
                             <li class="list-group-item">
@@ -280,64 +110,243 @@ include_once '../layouts/header.php';
                                 </span>
                             </li>
                         </ul>
-                    </div>
-                </div>
 
-                <!-- Tarjeta de acciones rápidas -->
-                <div class="card card-success">
-                    <div class="card-header">
-                        <h3 class="card-title">Acciones Rápidas</h3>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="list-group">
-                            <?php if ($cliente['estado'] == 1): ?>
-                                <button type="button" class="list-group-item list-group-item-action"
-                                    onclick="cambiarEstado(<?= $cliente['idcliente']; ?>, 0);">
-                                    <i class="fas fa-user-slash mr-2"></i> Desactivar Cliente
-                                </button>
-                            <?php else: ?>
-                                <button type="button" class="list-group-item list-group-item-action"
-                                    onclick="cambiarEstado(<?= $cliente['idcliente']; ?>, 1);">
-                                    <i class="fas fa-user-check mr-2"></i> Activar Cliente
-                                </button>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tarjeta de estadísticas (opcional, implementar si existe la funcionalidad) -->
-                <div class="card card-info">
-                    <div class="card-header">
-                        <h3 class="card-title">Estadísticas del Cliente</h3>
-                    </div>
-                    <div class="card-body p-0">
-                        <table class="table table-striped">
-                            <tbody>
-                                <tr>
-                                    <td><i class="fas fa-shopping-bag mr-1"></i> Total Compras</td>
-                                    <td>0</td>
-                                </tr>
-                                <tr>
-                                    <td><i class="fas fa-money-bill-wave mr-1"></i> Monto Total</td>
-                                    <td>Bs 0.00</td>
-                                </tr>
-                                <tr>
-                                    <td><i class="fas fa-calendar-day mr-1"></i> Última Compra</td>
-                                    <td><span class="text-muted">No hay compras</span></td>
-                                </tr>
-                                <tr>
-                                    <td><i class="fas fa-star mr-1"></i> Categoría Cliente</td>
-                                    <td><span class="badge badge-secondary">Nuevo</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="card-footer bg-light">
-                        <small class="text-muted">Las estadísticas se actualizan con cada compra</small>
+                        <a href="<?= $URL; ?>views/clientes/update.php?id=<?= $cliente['idcliente']; ?>" class="btn btn-warning btn-block">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        <a href="<?= $URL; ?>views/ventas/create.php?cliente=<?= $cliente['idcliente']; ?>" class="btn btn-primary btn-block">
+                            <i class="fas fa-shopping-cart"></i> Nueva Venta
+                        </a>
+                        <a href="<?= $URL; ?>views/clientes" class="btn btn-secondary btn-block">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                        <button type="button" class="btn btn-block btn-cambiar-estado <?= $cliente['estado'] == 1 ? 'btn-danger' : 'btn-success'; ?>"
+                            data-id="<?= $cliente['idcliente']; ?>"
+                            data-estado="<?= $cliente['estado']; ?>"
+                            data-nombre="<?= $cliente['nombres'] . ' ' . $cliente['apellidopaterno']; ?>">
+                            <i class="fas <?= $cliente['estado'] == 1 ? 'fa-user-slash' : 'fa-user-check'; ?> mr-2"></i>
+                            <?= $cliente['estado'] == 1 ? 'Desactivar Cliente' : 'Activar Cliente'; ?>
+                        </button>
                     </div>
                 </div>
             </div>
             <!-- /.col-md-4 -->
+
+            <!-- Columna derecha - Información detallada en tabs (8 columnas) -->
+            <div class="col-md-8">
+                <div class="card card-info card-outline card-outline-tabs">
+                    <div class="card-header p-0 border-bottom-0">
+                        <ul class="nav nav-tabs" id="detail-tabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="tab-general" data-toggle="pill" href="#general" role="tab"
+                                    aria-controls="general" aria-selected="true">
+                                    <i class="fas fa-info-circle mr-1"></i> Información General
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="tab-compras" data-toggle="pill" href="#compras" role="tab"
+                                    aria-controls="compras" aria-selected="false">
+                                    <i class="fas fa-shopping-bag mr-1"></i> Historial de Compras
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="detail-tabs-content">
+                            <!-- Tab Información General -->
+                            <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="tab-general">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header bg-light">
+                                                <h3 class="card-title">Datos Personales</h3>
+                                            </div>
+                                            <div class="card-body p-0">
+                                                <table class="table table-hover">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><i class="fas fa-signature mr-2"></i>Nombre Completo:</td>
+                                                            <td><?= $cliente['nombres'] . ' ' . $cliente['apellidopaterno'] . ' ' . ($cliente['apellidomaterno'] ?? ''); ?></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><i class="fas fa-venus-mars mr-2"></i>Género:</td>
+                                                            <td><?= !empty($cliente['genero']) ? $cliente['genero'] : '<span class="text-muted">No especificado</span>'; ?></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><i class="fas fa-id-card mr-2"></i>Documento:</td>
+                                                            <td><?= $cliente['tipodocumento']; ?> <?= $cliente['numdocumento']; ?></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header bg-light">
+                                                <h3 class="card-title">Contacto</h3>
+                                            </div>
+                                            <div class="card-body p-0">
+                                                <table class="table table-hover">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><i class="fas fa-map-marker-alt mr-2"></i>Dirección:</td>
+                                                            <td><?= !empty($cliente['direccion']) ? $cliente['direccion'] : '<span class="text-muted">No registrada</span>'; ?></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><i class="fas fa-mobile-alt mr-2"></i>Celular:</td>
+                                                            <td>
+                                                                <?php if (!empty($cliente['celular'])): ?>
+                                                                    <a href="tel:<?= $cliente['celular']; ?>"><?= $cliente['celular']; ?></a>
+                                                                <?php else: ?>
+                                                                    <span class="text-muted">No registrado</span>
+                                                                <?php endif; ?>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><i class="fas fa-envelope mr-2"></i>Email:</td>
+                                                            <td>
+                                                                <?php if (!empty($cliente['email'])): ?>
+                                                                    <a href="mailto:<?= $cliente['email']; ?>"><?= $cliente['email']; ?></a>
+                                                                <?php else: ?>
+                                                                    <span class="text-muted">No registrado</span>
+                                                                <?php endif; ?>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header bg-light">
+                                                <h3 class="card-title">Información del Sistema</h3>
+                                            </div>
+                                            <div class="card-body p-0">
+                                                <table class="table table-hover">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><i class="fas fa-calendar-plus mr-2"></i>Fecha Registro:</td>
+                                                            <td><?= date('d/m/Y H:i', strtotime($cliente['fechacreacion'])); ?></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><i class="fas fa-calendar-check mr-2"></i>Última Actualización:</td>
+                                                            <td><?= !empty($cliente['fechaactualizacion']) ? date('d/m/Y H:i', strtotime($cliente['fechaactualizacion'])) : 'Sin actualizaciones'; ?></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><i class="fas fa-toggle-on mr-2"></i>Estado:</td>
+                                                            <td>
+                                                                <?php if ($cliente['estado'] == 1): ?>
+                                                                    <span class="badge badge-success">Activo</span>
+                                                                <?php else: ?>
+                                                                    <span class="badge badge-danger">Inactivo</span>
+                                                                <?php endif; ?>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab Historial de Compras -->
+                            <div class="tab-pane fade" id="compras" role="tabpanel" aria-labelledby="tab-compras">
+                                <div class="row">
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="small-box bg-info">
+                                            <div class="inner">
+                                                <h3><?= $totalCompras; ?></h3>
+                                                <p>Compras Realizadas</p>
+                                            </div>
+                                            <div class="icon">
+                                                <i class="fas fa-shopping-bag"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="small-box bg-success">
+                                            <div class="inner">
+                                                <h3><?= $appCurrency; ?> <?= number_format($montoTotal, 2); ?></h3>
+                                                <p>Monto Total Comprado</p>
+                                            </div>
+                                            <div class="icon">
+                                                <i class="fas fa-money-bill-wave"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-6">
+                                        <div class="small-box bg-warning">
+                                            <div class="inner">
+                                                <h3><?= $ultimaCompra ? date('d/m/Y', strtotime($ultimaCompra)) : 'N/A'; ?></h3>
+                                                <p>Última Compra</p>
+                                            </div>
+                                            <div class="icon">
+                                                <i class="fas fa-calendar-day"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Ventas Registradas</h3>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <?php if (!empty($compras)): ?>
+                                            <div class="table-responsive">
+                                                <table class="table table-striped table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Fecha</th>
+                                                            <th>Total</th>
+                                                            <th>Estado</th>
+                                                            <th>Atendido por</th>
+                                                            <th></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php foreach ($compras as $venta): ?>
+                                                            <tr>
+                                                                <td><?= date('d/m/Y H:i', strtotime($venta['fechacreacion'])); ?></td>
+                                                                <td><?= $appCurrency; ?> <?= number_format($venta['totalventa'], 2); ?></td>
+                                                                <td>
+                                                                    <?php if ($venta['estado'] == 1): ?>
+                                                                        <span class="badge badge-success">Completada</span>
+                                                                    <?php else: ?>
+                                                                        <span class="badge badge-danger">Anulada</span>
+                                                                    <?php endif; ?>
+                                                                </td>
+                                                                <td><?= $venta['usuario_nombre']; ?></td>
+                                                                <td class="text-center">
+                                                                    <a href="<?= $URL; ?>views/ventas/show.php?id=<?= $venta['idventa']; ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="Ver venta">
+                                                                        <i class="fas fa-eye"></i>
+                                                                    </a>
+                                                                </td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        <?php else: ?>
+                                            <p class="text-muted p-3 mb-0">Este cliente aún no tiene compras registradas.</p>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /.col-md-8 -->
         </div>
         <!-- /.row -->
     </div>

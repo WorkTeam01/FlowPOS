@@ -8,9 +8,6 @@
  * @version 1.0
  */
 
-// Incluir el servicio de imágenes
-require_once __DIR__ . '/../../services/ImagenService.php';
-
 class ClienteController
 {
     /**
@@ -20,12 +17,6 @@ class ClienteController
     private $modelo;
 
     /**
-     * Servicio de imágenes
-     * @var ImagenService
-     */
-    private $imagenService;
-
-    /**
      * Constructor de la clase
      */
     public function __construct()
@@ -33,9 +24,6 @@ class ClienteController
         // Incluir el modelo de Cliente
         require_once __DIR__ . '/../../models/Cliente.php';
         $this->modelo = new Cliente();
-
-        // Inicializar el servicio de imágenes
-        $this->imagenService = new ImagenService(__DIR__ . '/../../public/uploads/clientes/');
     }
 
     /**
@@ -218,12 +206,25 @@ class ClienteController
 
     /**
      * Busca clientes según criterios
-     * 
+     *
      * @param array $criterios Criterios de búsqueda
      * @return array Resultados de la búsqueda
      */
     public function buscar($criterios)
     {
         return $this->modelo->buscar($criterios);
+    }
+
+    /**
+     * Obtiene el historial de ventas de un cliente
+     *
+     * @param int $idcliente ID del cliente
+     * @return array Lista de ventas del cliente, más reciente primero
+     */
+    public function getHistorialCompras($idcliente)
+    {
+        require_once __DIR__ . '/../../models/Venta.php';
+        $ventaModelo = new Venta();
+        return $ventaModelo->getPorCliente($idcliente);
     }
 }

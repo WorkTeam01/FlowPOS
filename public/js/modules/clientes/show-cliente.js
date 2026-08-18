@@ -1,28 +1,34 @@
-function cambiarEstado(clienteId, nuevoEstado) {
-    // El controlador espera el estado actual, no el nuevo
-    const estadoActual = nuevoEstado == 0 ? 1 : 0;
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.btn-cambiar-estado').forEach(function (boton) {
+        boton.addEventListener('click', function () {
+            const estadoActual = this.dataset.estado;
+            const nombreCliente = this.dataset.nombre;
+            const activo = estadoActual == 1;
 
-    const tituloAlerta = nuevoEstado == 1 ? '¿Activar cliente?' : '¿Desactivar cliente?';
-    const textoAlerta = nuevoEstado == 1 ?
-        "El cliente podrá realizar nuevas compras." :
-        "El cliente no podrá realizar compras hasta que sea activado nuevamente.";
-    const confirmButtonText = nuevoEstado == 1 ? 'Sí, activar' : 'Sí, desactivar';
-
-    Swal.fire({
-        title: tituloAlerta,
-        text: textoAlerta,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: nuevoEstado == 1 ? '#28a745' : '#dc3545',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: confirmButtonText,
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            submitCsrfForm(`${baseUrl}controllers/clientes/desactivar_cliente.php`, {
-                id: clienteId,
-                estado: estadoActual
+            confirmarCambioEstado({
+                id: this.dataset.id,
+                estadoActual: estadoActual,
+                titulo: activo ? `¿Desactivar a ${nombreCliente}?` : `¿Activar a ${nombreCliente}?`,
+                texto: activo
+                    ? 'El cliente no podrá realizar compras hasta que sea activado nuevamente.'
+                    : 'El cliente podrá realizar nuevas compras.',
+                actionUrl: `${baseUrl}controllers/clientes/desactivar_cliente.php`
             });
-        }
+        });
     });
-}
+});
+
+$(document).ready(function () {
+    initializeTooltips();
+
+    // Guardar la pestaña activa en el almacenamiento local
+    $('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
+        localStorage.setItem('lastClientDetailTab', $(e.target).attr('id'));
+    });
+
+    // Restaurar la pestaña activa del almacenamiento local
+    var lastTab = localStorage.getItem('lastClientDetailTab');
+    if (lastTab) {
+        $('#' + lastTab).tab('show');
+    }
+});
