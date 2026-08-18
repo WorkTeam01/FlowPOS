@@ -79,18 +79,18 @@ cp .env.example .env
 
 Variables principales:
 
-| Variable       | Descripción                      | Ejemplo                            |
-| -------------- | -------------------------------- | ---------------------------------- |
-| `APP_NAME`     | Nombre visible de la aplicación  | `FlowPOS`             |
-| `APP_VERSION`  | Versión actual de la aplicación  | `1.1.6`                            |
-| `APP_CURRENCY` | Símbolo de moneda                | `Bs`, `$`, `€`, `S/`               |
+| Variable       | Descripción                      | Ejemplo                     |
+| -------------- | -------------------------------- | --------------------------- |
+| `APP_NAME`     | Nombre visible de la aplicación  | `FlowPOS`                   |
+| `APP_VERSION`  | Versión actual de la aplicación  | `1.1.7`                     |
+| `APP_CURRENCY` | Símbolo de moneda                | `Bs`, `$`, `€`, `S/`        |
 | `APP_URL`      | URL base (debe terminar con `/`) | `http://localhost/FlowPOS/` |
-| `TIMEZONE`     | Zona horaria PHP                 | `America/La_Paz`                   |
-| `DB_HOST`      | Host de base de datos            | `localhost`                        |
+| `TIMEZONE`     | Zona horaria PHP                 | `America/La_Paz`            |
+| `DB_HOST`      | Host de base de datos            | `localhost`                 |
 | `DB_NAME`      | Nombre de base de datos          | `flowpos`                   |
-| `DB_USER`      | Usuario de base de datos         | `root`                             |
-| `DB_PASS`      | Contraseña de base de datos      | ``                                 |
-| `DEBUG`        | Modo debug (`true`/`false`)      | `false`                            |
+| `DB_USER`      | Usuario de base de datos         | `root`                      |
+| `DB_PASS`      | Contraseña de base de datos      | ``                          |
+| `DEBUG`        | Modo debug (`true`/`false`)      | `false`                     |
 
 ### 3. Crear base de datos e importar esquema
 
@@ -166,6 +166,7 @@ FlowPOS/
 - Corregido IDOR al anular ventas y al generar el comprobante PDF de ventas ajenas, y la autoría de venta (antes tomada de un campo de formulario, ahora siempre de la sesión); ver `CHANGELOG.md` [1.1.4].
 - Nivelado el módulo de compras al mismo estándar de seguridad de ventas: eliminado endpoint huérfano vulnerable a IDOR, agregado ownership check en el cambio de estado, corregido doble escape en el detalle y payload de productos filtrado a solo activos en el formulario de creación; ver `CHANGELOG.md` [1.1.5].
 - Corregida escalada de privilegios en el módulo de usuarios: un usuario no-administrador podía asignarse (o asignar a otro) el cargo Administrador, y podía degradar, cambiar la contraseña o desactivar una cuenta que ya era Administrador; ahora se valida tanto el cargo nuevo solicitado como el cargo actual del registro objetivo; ver `CHANGELOG.md` [1.1.6].
+- Productos y clientes migrados al mismo formato de formulario (cards por sección) y estandarizada la confirmación de activar/desactivar en un único helper compartido, reduciendo la superficie de código duplicado entre módulos; ver `CHANGELOG.md` [1.1.7].
 
 ## Changelog
 

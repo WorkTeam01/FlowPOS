@@ -7,6 +7,22 @@ y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.1.7] - 2026-08-18
+
+### Added
+
+- **Preselección de cliente al crear una venta desde su ficha**: el botón "Nueva Venta" en `views/clientes/show.php` enlaza a `views/ventas/create.php?cliente=<idcliente>`; `create-venta.js` lee ese parámetro y preselecciona el cliente correspondiente en el formulario si existe entre los disponibles.
+
+### Changed
+
+- **`views/productos/update.php` migrado al formato de cards por sección** usado en `create.php` (1.1.6): reemplaza el formulario monolítico anterior por secciones agrupadas (datos generales, precios/stock, imagen, estado), con la misma card "Vista Previa" dinámica en el sidebar.
+- **`public/js/modules/productos/vista-previa-producto.js` (nuevo)**: lógica de la card "Vista Previa" extraída a un archivo compartido entre `create-producto.js` y `update-productos.js` (ambos formularios usan los mismos IDs de campo), evitando duplicar el listener de `input`/`change`.
+- **`views/clientes/{create,update,show}.php` migrados al mismo formato de cards por sección** que productos (sin card de Vista Previa — decisión explícita, clientes no tiene un preview visual equivalente al de producto). `views/clientes/index.php` ajustado a la misma línea visual.
+- **`views/productos/partials/vista_previa.php` (nuevo)**: markup de la card "Vista Previa" extraído a un partial incluido por `create.php` y `update.php`, mismo criterio de no duplicar HTML entre ambos formularios.
+- **`ClienteController::getHistorialCompras($idcliente)` (nuevo)**: delega en `Venta::getPorCliente()`; alimenta la pestaña de historial de compras real en `views/clientes/show.php` (antes placeholder).
+- **`confirmarCambioEstado()` (nuevo, `public/js/core/common-utils.js`)**: helper compartido que reemplaza el bloque de confirmación SweetAlert2 + `submitCsrfForm` duplicado en `show-producto.js` e `index-productos.js`/`index-clientes.js` para activar/desactivar registros. Sigue la misma convención de `UsuarioController::cambiarEstadoUsuario()`: el endpoint espera el estado **actual**, no el deseado.
+- `ClienteController`: eliminada la dependencia de `ImagenService` (no usada — clientes no maneja subida de imágenes), detectada como código muerto en la auditoría de seguridad de clientes (2026-08-18).
+
 ## [1.1.6] - 2026-08-11
 
 ### Seguridad
