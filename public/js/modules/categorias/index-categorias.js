@@ -8,9 +8,6 @@
 const mensajeErrorDesactivar = "No se puede desactivar la categoría porque tiene productos asociados";
 
 $(document).ready(function () {
-    // Inicializar tooltips
-    $('[data-toggle="tooltip"]').tooltip();
-
     // Inicializar DataTable
     const tabla = $("#tablaCategorias").DataTable({
         "responsive": true,
@@ -23,7 +20,7 @@ $(document).ready(function () {
                 text: 'Copiar',
                 extend: 'copy',
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5]
+                    columns: [0, 1, 2, 3]
                 }
             }, {
                 extend: 'pdf',
@@ -31,7 +28,7 @@ $(document).ready(function () {
                 filename: 'categorias_' + new Date().toISOString().slice(0, 10),
                 pageSize: 'LETTER',
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5]
+                    columns: [0, 1, 2, 3]
                 },
                 customize: function (doc) {
                     // Estilo básico
@@ -103,7 +100,7 @@ $(document).ready(function () {
                 messageTop: 'Registro de categorías del sistema',
                 messageBottom: 'Documento generado el ' + new Date().toLocaleDateString('es-BO'),
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5],
+                    columns: [0, 1, 2, 3],
                     format: {
                         body: function (data, row, column, node) {
                             if (column === 3) {
@@ -117,7 +114,7 @@ $(document).ready(function () {
                 extend: 'csv',
                 text: 'CSV',
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5]
+                    columns: [0, 1, 2, 3]
                 }
             }, {
                 extend: 'print',
@@ -125,7 +122,7 @@ $(document).ready(function () {
                 title: 'Categorías',
                 messageTop: 'Reporte generado el ' + new Date().toLocaleDateString('es-BO'),
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5]
+                    columns: [0, 1, 2, 3]
                 },
                 customize: function (win) {
                     $(win.document.body).find('table')
@@ -167,11 +164,17 @@ $(document).ready(function () {
                 "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
                 "sSortDescending": ": Activar para ordenar la columna de manera descendente"
             }
+        },
+        "drawCallback": function () {
+            initializeTooltips();
         }
     });
 
     // Agregar botones a la tabla
     tabla.buttons().container().appendTo('#tablaCategorias_wrapper .col-md-6:eq(0)');
+
+    initializeTooltips();
+    initializeSelect2();
 
     // Botón para crear nueva categoría
     $('#btnNuevaCategoria').on('click', function () {
@@ -221,7 +224,7 @@ $(document).ready(function () {
         e.preventDefault();
 
         const action = $('#categoriaAction').val();
-        
+
         const formData = $(this).serialize();
         let url, loadingMsg, successBtn;
 
@@ -339,6 +342,7 @@ $(document).ready(function () {
     // Limpiar modal al cerrarlo para evitar problemas en dispositivos móviles
     $('#modalCategoria').on('hidden.bs.modal', function () {
         $('#formCategoria')[0].reset();
+        $('.select2').val('1').trigger('change');
 
         // Asegurar que no queden validaciones o estados de error
         $('.is-invalid').removeClass('is-invalid');
@@ -357,6 +361,8 @@ $(document).ready(function () {
     $('#modalCategoria').on('shown.bs.modal', function () {
         // Asegurar que el scroll funcione correctamente en móviles
         $('.modal-body').css('overflow-y', 'auto');
+
+        initializeSelect2('.select2', { dropdownParent: $('#modalCategoria') });
 
         // Enfocar el primer campo del formulario
         $('#nombre').trigger('focus');

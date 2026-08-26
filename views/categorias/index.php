@@ -16,7 +16,6 @@ if (!($auth->tienePermisoNombre($idusuario, 'categorias')) && !($auth->esAdminis
     exit;
 }
 
-$skip_select2 = true;
 $module_scripts = ['categorias/index-categorias'];
 include_once '../layouts/header.php';
 
@@ -104,62 +103,62 @@ $estadisticas = $controller->getEstadisticas();
                         </div>
                     </div>
                     <div class="card-body" style="display: block;">
-                        <div class="table-responsive">
-                            <table id="tablaCategorias" class="table table-bordered table-hover table-striped table-sm">
-                                <thead>
+                        <table id="tablaCategorias" class="table table-bordered table-hover table-striped table-sm">
+                            <thead>
+                                <tr>
+                                    <th class="text-center" style="width: 5%">Nro</th>
+                                    <th class="text-center" style="width: 30%">Nombre</th>
+                                    <th class="text-center" style="width: 15%">Productos</th>
+                                    <th class="text-center" style="width: 10%">Estado</th>
+                                    <th class="text-center" style="width: 10%">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $contador = 1;
+                                foreach ($categorias as $categoria) :
+                                    $estado_actual = $categoria['estado'];
+                                    $clase_estado = $estado_actual == 1 ? 'badge-success' : 'badge-danger';
+                                    $texto_estado = $estado_actual == 1 ? 'Activo' : 'Inactivo';
+                                    $total_productos = $categoria['total_productos'] ?? 0;
+                                    $clase_productos = $total_productos > 0 ? 'badge-primary' : 'badge-secondary';
+                                ?>
                                     <tr>
-                                        <th class="text-center" style="width: 5%">Nro</th>
-                                        <th class="text-center" style="width: 30%">Nombre</th>
-                                        <th class="text-center" style="width: 15%">Productos</th>
-                                        <th class="text-center" style="width: 10%">Estado</th>
-                                        <th class="text-center" style="width: 10%">Acciones</th>
+                                        <td class="text-center"><?= $contador++; ?></td>
+                                        <td><?= htmlspecialchars($categoria['nombre']); ?></td>
+                                        <td class="text-center">
+                                            <span class="badge <?= $clase_productos; ?>">
+                                                <?= $total_productos; ?> producto<?= $total_productos != 1 ? 's' : ''; ?>
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge <?= $clase_estado; ?>"><?= $texto_estado; ?></span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-warning btn-sm btn-editar"
+                                                    data-id="<?= $categoria['idcategoria']; ?>"
+                                                    data-nombre="<?= htmlspecialchars($categoria['nombre']); ?>"
+                                                    data-estado="<?= $categoria['estado']; ?>"
+                                                    data-toggle="tooltip" title="Editar categoría"
+                                                    aria-label="Editar categoría <?= htmlspecialchars($categoria['nombre']); ?>">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button" class="btn <?= $estado_actual == 1 ? 'btn-danger' : 'btn-success'; ?> btn-sm cambiar-estado"
+                                                    data-id="<?= $categoria['idcategoria']; ?>"
+                                                    data-estado-actual="<?= $estado_actual; ?>"
+                                                    data-productos="<?= $total_productos; ?>"
+                                                    data-toggle="tooltip"
+                                                    title="<?= $estado_actual == 1 ? 'Desactivar' : 'Activar'; ?>"
+                                                    aria-label="<?= $estado_actual == 1 ? 'Desactivar' : 'Activar'; ?> categoría <?= htmlspecialchars($categoria['nombre']); ?>">
+                                                    <i class="fas <?= $estado_actual == 1 ? 'fa-times' : 'fa-check'; ?>"></i>
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    $contador = 1;
-                                    foreach ($categorias as $categoria) :
-                                        $estado_actual = $categoria['estado'];
-                                        $clase_estado = $estado_actual == 1 ? 'badge-success' : 'badge-danger';
-                                        $texto_estado = $estado_actual == 1 ? 'Activo' : 'Inactivo';
-                                        $total_productos = $categoria['total_productos'] ?? 0;
-                                        $clase_productos = $total_productos > 0 ? 'badge-primary' : 'badge-secondary';
-                                    ?>
-                                        <tr>
-                                            <td class="text-center"><?= $contador++; ?></td>
-                                            <td><?= htmlspecialchars($categoria['nombre']); ?></td>
-                                            <td class="text-center">
-                                                <span class="badge <?= $clase_productos; ?>">
-                                                    <?= $total_productos; ?> producto<?= $total_productos != 1 ? 's' : ''; ?>
-                                                </span>
-                                            </td>
-                                            <td class="text-center">
-                                                <span class="badge <?= $clase_estado; ?>"><?= $texto_estado; ?></span>
-                                            </td>
-                                            <td class="text-center">
-                                                <div class="btn-group">
-                                                    <button type="button" class="btn btn-warning btn-sm btn-editar"
-                                                        data-id="<?= $categoria['idcategoria']; ?>"
-                                                        data-nombre="<?= htmlspecialchars($categoria['nombre']); ?>"
-                                                        data-estado="<?= $categoria['estado']; ?>"
-                                                        data-toggle="tooltip" title="Editar categoría">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button type="button" class="btn <?= $estado_actual == 1 ? 'btn-danger' : 'btn-success'; ?> btn-sm cambiar-estado"
-                                                        data-id="<?= $categoria['idcategoria']; ?>"
-                                                        data-estado-actual="<?= $estado_actual; ?>"
-                                                        data-productos="<?= $total_productos; ?>"
-                                                        data-toggle="tooltip"
-                                                        title="<?= $estado_actual == 1 ? 'Desactivar' : 'Activar'; ?>">
-                                                        <i class="fas <?= $estado_actual == 1 ? 'fa-times' : 'fa-check'; ?>"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -189,7 +188,7 @@ $estadisticas = $controller->getEstadisticas();
                     </div>
                     <div class="form-group">
                         <label for="estado">Estado <span class="text-danger">*</span></label>
-                        <select class="form-control" id="estado" name="estado" required>
+                        <select class="form-control select2" id="estado" name="estado" required>
                             <option value="1">Activo</option>
                             <option value="0">Inactivo</option>
                         </select>
@@ -212,4 +211,3 @@ $estadisticas = $controller->getEstadisticas();
 include_once '../layouts/mensajes.php';
 include_once '../layouts/footer.php';
 ?>
-
