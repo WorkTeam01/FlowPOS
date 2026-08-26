@@ -12,11 +12,8 @@ const mensajeErrorDesactivar = "No se puede desactivar la sucursal porque tiene 
 
 $(document).ready(function () {
     // Inicializar tooltips y Select2
-    $('[data-toggle="tooltip"]').tooltip();
-    $('.select2').select2({
-        theme: 'bootstrap4',
-        width: '100%'
-    });
+    initializeTooltips();
+    initializeSelect2();
 
     // Inicializar DataTable
     const tabla = $("#tablaSucursales").DataTable({
@@ -32,7 +29,7 @@ $(document).ready(function () {
                         text: 'Copiar',
                         extend: 'copy',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: [0, 1, 2, 3, 4]
                         }
                     },
                     {
@@ -41,7 +38,7 @@ $(document).ready(function () {
                         filename: 'sucursales_' + new Date().toISOString().slice(0, 10),
                         pageSize: 'LETTER',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: [0, 1, 2, 3, 4]
                         },
                         customize: function (doc) {
                             doc.defaultStyle.fontSize = 10;
@@ -108,7 +105,7 @@ $(document).ready(function () {
                         messageTop: 'Registro de sucursales del sistema',
                         messageBottom: 'Documento generado el ' + new Date().toLocaleDateString('es-BO'),
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5],
+                            columns: [0, 1, 2, 3, 4],
                             format: {
                                 body: function (data, row, column, node) {
                                     if (column === 3 || column === 4) {
@@ -123,7 +120,7 @@ $(document).ready(function () {
                         extend: 'csv',
                         text: 'CSV',
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: [0, 1, 2, 3, 4]
                         }
                     },
                     {
@@ -132,7 +129,7 @@ $(document).ready(function () {
                         title: 'Sucursales',
                         messageTop: 'Reporte generado el ' + new Date().toLocaleDateString('es-BO'),
                         exportOptions: {
-                            columns: [0, 1, 2, 3, 4, 5]
+                            columns: [0, 1, 2, 3, 4]
                         },
                         customize: function (win) {
                             $(win.document.body).find('table')
@@ -175,6 +172,9 @@ $(document).ready(function () {
                 "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
                 "sSortDescending": ": Activar para ordenar la columna de manera descendente"
             }
+        },
+        "drawCallback": function () {
+            initializeTooltips();
         }
     });
 
@@ -191,7 +191,7 @@ $(document).ready(function () {
         $('#sucursalAction').val('create');
         $('#idSucursal').val('');
         $('#nombre').val('');
-        $('#estado').val('1');
+        $('#estado').val('1').trigger('change');
 
         // Cambiar apariencia del modal
         $('#modalSucursalHeader').removeClass('bg-warning').addClass('bg-primary');
@@ -215,7 +215,7 @@ $(document).ready(function () {
         $('#idSucursal').val(id);
         $('#nombre').val(nombre);
         $('#idempresa').val(idempresa).trigger('change');
-        $('#estado').val(estado);
+        $('#estado').val(estado).trigger('change');
 
         // Cambiar apariencia del modal
         $('#modalSucursalHeader').removeClass('bg-primary').addClass('bg-warning');
@@ -346,18 +346,15 @@ $(document).ready(function () {
 
     // Mejorar manejo del modal
     $('#modalSucursal').on('shown.bs.modal', function () {
-        $('.select2').select2({
-            theme: 'bootstrap4',
-            width: '100%',
-            dropdownParent: $('#modalSucursal')
-        });
+        initializeSelect2('.select2', { dropdownParent: $('#modalSucursal') });
         $('#nombre').trigger('focus');
     });
 
     $('#modalSucursal').on('hidden.bs.modal', function () {
         $('#formSucursal')[0].reset();
         $('.is-invalid').removeClass('is-invalid');
-        $('.select2').val('').trigger('change');
+        $('#idempresa').val('').trigger('change');
+        $('#estado').val('1').trigger('change');
         $('[data-toggle="tooltip"]').tooltip('hide');
     });
 

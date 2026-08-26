@@ -113,8 +113,7 @@ $estadisticas = $controller->getEstadisticas();
                         </div>
                     </div>
                     <div class="card-body" style="display: block;">
-                        <div class="table-responsive">
-                            <table id="tablaSucursales" class="table table-bordered table-hover table-striped table-sm">
+                        <table id="tablaSucursales" class="table table-bordered table-hover table-striped table-sm">
                                 <thead>
                                     <tr>
                                         <th class="text-center" style="width: 5%">Nro</th>
@@ -171,7 +170,6 @@ $estadisticas = $controller->getEstadisticas();
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -213,7 +211,7 @@ $estadisticas = $controller->getEstadisticas();
                     </div>
                     <div class="form-group">
                         <label for="estado">Estado <span class="text-danger">*</span></label>
-                        <select class="form-control" id="estado" name="estado" required>
+                        <select class="form-control select2" id="estado" name="estado" required>
                             <option value="1">Activo</option>
                             <option value="0">Inactivo</option>
                         </select>
