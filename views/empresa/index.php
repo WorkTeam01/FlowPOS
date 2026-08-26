@@ -21,7 +21,6 @@ if (!($auth->tienePermisoNombre($idusuario, 'empresa')) && !($auth->esAdministra
     exit;
 }
 
-$skip_select2 = true;
 $module_scripts = ['empresas/index-empresas'];
 include_once '../layouts/header.php';
 
@@ -109,69 +108,67 @@ $estadisticas = $controller->getEstadisticas();
                         </div>
                     </div>
                     <div class="card-body" style="display: block;">
-                        <div class="table-responsive">
-                            <table id="tablaEmpresas" class="table table-bordered table-hover table-striped table-sm">
-                                <thead>
+                        <table id="tablaEmpresas" class="table table-bordered table-hover table-striped table-sm">
+                            <thead>
+                                <tr>
+                                    <th class="text-center" style="width: 5%">Nro</th>
+                                    <th class="text-center" style="width: 20%">Nombre</th>
+                                    <th class="text-center" style="width: 15%">NIT</th>
+                                    <th class="text-center" style="width: 15%">Sucursales</th>
+                                    <th class="text-center" style="width: 10%">Estado</th>
+                                    <th class="text-center" style="width: 10%">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $contador = 1;
+                                foreach ($empresas as $empresa) :
+                                    $estado_actual = $empresa['estado'];
+                                    $clase_estado = $estado_actual == 1 ? 'badge-success' : 'badge-danger';
+                                    $texto_estado = $estado_actual == 1 ? 'Activo' : 'Inactivo';
+                                    $total_sucursales = $empresa['total_sucursales'] ?? 0;
+                                    $clase_sucursales = $total_sucursales > 0 ? 'badge-primary' : 'badge-secondary';
+                                ?>
                                     <tr>
-                                        <th class="text-center" style="width: 5%">Nro</th>
-                                        <th class="text-center" style="width: 20%">Nombre</th>
-                                        <th class="text-center" style="width: 15%">NIT</th>
-                                        <th class="text-center" style="width: 15%">Sucursales</th>
-                                        <th class="text-center" style="width: 10%">Estado</th>
-                                        <th class="text-center" style="width: 10%">Acciones</th>
+                                        <td class="text-center"><?= $contador++; ?></td>
+                                        <td><?= htmlspecialchars($empresa['nombre']); ?></td>
+                                        <td class="text-center"><?= htmlspecialchars($empresa['nit']); ?></td>
+                                        <td class="text-center">
+                                            <span class="badge <?= $clase_sucursales; ?>">
+                                                <?= $total_sucursales; ?> sucursal<?= $total_sucursales != 1 ? 'es' : ''; ?>
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge <?= $clase_estado; ?>"><?= $texto_estado; ?></span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-warning btn-sm btn-editar"
+                                                    data-id="<?= $empresa['idempresa']; ?>"
+                                                    data-nombre="<?= htmlspecialchars($empresa['nombre']); ?>"
+                                                    data-nit="<?= htmlspecialchars($empresa['nit']); ?>"
+                                                    data-direccion="<?= htmlspecialchars($empresa['direccion']); ?>"
+                                                    data-telefono="<?= htmlspecialchars($empresa['telefono']); ?>"
+                                                    data-email="<?= htmlspecialchars($empresa['email']); ?>"
+                                                    data-imagen="<?= htmlspecialchars($empresa['imagen']); ?>"
+                                                    data-estado="<?= $empresa['estado']; ?>"
+                                                    data-toggle="tooltip" title="Editar empresa">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button" class="btn <?= $estado_actual == 1 ? 'btn-danger' : 'btn-success'; ?> btn-sm cambiar-estado"
+                                                    data-id="<?= $empresa['idempresa']; ?>"
+                                                    data-estado-actual="<?= $estado_actual; ?>"
+                                                    data-sucursales="<?= $total_sucursales; ?>"
+                                                    data-toggle="tooltip"
+                                                    title="<?= $estado_actual == 1 ? 'Desactivar' : 'Activar'; ?>">
+                                                    <i class="fas <?= $estado_actual == 1 ? 'fa-times' : 'fa-check'; ?>"></i>
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    $contador = 1;
-                                    foreach ($empresas as $empresa) :
-                                        $estado_actual = $empresa['estado'];
-                                        $clase_estado = $estado_actual == 1 ? 'badge-success' : 'badge-danger';
-                                        $texto_estado = $estado_actual == 1 ? 'Activo' : 'Inactivo';
-                                        $total_sucursales = $empresa['total_sucursales'] ?? 0;
-                                        $clase_sucursales = $total_sucursales > 0 ? 'badge-primary' : 'badge-secondary';
-                                    ?>
-                                        <tr>
-                                            <td class="text-center"><?= $contador++; ?></td>
-                                            <td><?= htmlspecialchars($empresa['nombre']); ?></td>
-                                            <td class="text-center"><?= htmlspecialchars($empresa['nit']); ?></td>
-                                            <td class="text-center">
-                                                <span class="badge <?= $clase_sucursales; ?>">
-                                                    <?= $total_sucursales; ?> sucursal<?= $total_sucursales != 1 ? 'es' : ''; ?>
-                                                </span>
-                                            </td>
-                                            <td class="text-center">
-                                                <span class="badge <?= $clase_estado; ?>"><?= $texto_estado; ?></span>
-                                            </td>
-                                            <td class="text-center">
-                                                <div class="btn-group">
-                                                    <button type="button" class="btn btn-warning btn-sm btn-editar"
-                                                        data-id="<?= $empresa['idempresa']; ?>"
-                                                        data-nombre="<?= htmlspecialchars($empresa['nombre']); ?>"
-                                                        data-nit="<?= htmlspecialchars($empresa['nit']); ?>"
-                                                        data-direccion="<?= htmlspecialchars($empresa['direccion']); ?>"
-                                                        data-telefono="<?= htmlspecialchars($empresa['telefono']); ?>"
-                                                        data-email="<?= htmlspecialchars($empresa['email']); ?>"
-                                                        data-imagen="<?= htmlspecialchars($empresa['imagen']); ?>"
-                                                        data-estado="<?= $empresa['estado']; ?>"
-                                                        data-toggle="tooltip" title="Editar empresa">
-                                                        <i class="fas fa-edit"></i>
-                                                    </button>
-                                                    <button type="button" class="btn <?= $estado_actual == 1 ? 'btn-danger' : 'btn-success'; ?> btn-sm cambiar-estado"
-                                                        data-id="<?= $empresa['idempresa']; ?>"
-                                                        data-estado-actual="<?= $estado_actual; ?>"
-                                                        data-sucursales="<?= $total_sucursales; ?>"
-                                                        data-toggle="tooltip"
-                                                        title="<?= $estado_actual == 1 ? 'Desactivar' : 'Activar'; ?>">
-                                                        <i class="fas <?= $estado_actual == 1 ? 'fa-times' : 'fa-check'; ?>"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -231,7 +228,7 @@ $estadisticas = $controller->getEstadisticas();
                     </div>
                     <div class="form-group">
                         <label for="estado">Estado <span class="text-danger">*</span></label>
-                        <select class="form-control" id="estado" name="estado" required>
+                        <select class="form-control select2" id="estado" name="estado" required>
                             <option value="1">Activo</option>
                             <option value="0">Inactivo</option>
                         </select>

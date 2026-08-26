@@ -167,6 +167,9 @@ $(document).ready(function () {
                 "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
                 "sSortDescending": ": Activar para ordenar la columna de manera descendente"
             }
+        },
+        drawCallback: function () {
+            $('[data-toggle="tooltip"]').tooltip();
         }
     });
 
@@ -388,6 +391,7 @@ $(document).ready(function () {
     $('#modalEmpresa').on('hidden.bs.modal', function () {
         $('#formEmpresa')[0].reset();
         $('#previewImagen').empty();
+        $('#estado').val('1').trigger('change');
 
         // Asegurar que no queden validaciones o estados de error
         $('.is-invalid').removeClass('is-invalid');
@@ -406,6 +410,8 @@ $(document).ready(function () {
     $('#modalEmpresa').on('shown.bs.modal', function () {
         // Asegurar que el scroll funcione correctamente en móviles
         $('.modal-body').css('overflow-y', 'auto');
+
+        initializeSelect2('.select2', { dropdownParent: $('#modalEmpresa') });
 
         // Enfocar el primer campo del formulario
         $('#nombre').trigger('focus');

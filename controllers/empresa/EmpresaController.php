@@ -160,6 +160,14 @@ class EmpresaController
             return ['success' => false, 'message' => $errores[0]];
         }
 
+        // Verificar si la empresa tiene sucursales antes de desactivar
+        if ($empresa_actual['estado'] == 1 && $datos['estado'] == 0 && $this->modelo->contarSucursales($id) > 0) {
+            return [
+                'success' => false,
+                'message' => 'No se puede desactivar la empresa porque tiene sucursales asociadas'
+            ];
+        }
+
         // Actualizar empresa
         if ($this->modelo->actualizar($id, $datos)) {
             return [
