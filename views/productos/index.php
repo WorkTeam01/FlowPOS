@@ -59,81 +59,79 @@ $productos = $controller->index();
                     </div>
                     <!-- /.card-header -->
                     <div class="card-body">
-                        <div class="table-responsive">
-                            <table id="tablaProductos" class="table table-sm table-bordered table-hover table-striped">
-                                <thead>
+                        <table id="tablaProductos" class="table table-sm table-bordered table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nro</th>
+                                    <th>Código</th>
+                                    <th>Nombre</th>
+                                    <th>Categoría</th>
+                                    <th>Imagen</th>
+                                    <th>Precio Venta</th>
+                                    <th>Stock</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $contador = 1;
+                                foreach ($productos as $producto) :
+                                    $estado_actual = $producto['estado'];
+                                    $clase_boton_estado = $estado_actual == 1 ? 'btn-danger' : 'btn-success';
+                                    $icono_boton_estado = $estado_actual == 1 ? 'fa-ban' : 'fa-check';
+                                    $titulo_alerta = $estado_actual == 1 ? '¿Desactivar Producto?' : '¿Activar Producto?';
+                                    $texto_alerta = $estado_actual == 1 ? 'El producto no estará disponible para venta.' : 'El producto estará disponible para venta.';
+                                    $confirm_button_text = $estado_actual == 1 ? 'Sí, desactivar' : 'Sí, activar';
+                                    $texto_boton_estado = $estado_actual == 1 ? 'Desactivar producto' : 'Activar producto';
+                                ?>
                                     <tr>
-                                        <th>Nro</th>
-                                        <th>Código</th>
-                                        <th>Nombre</th>
-                                        <th>Categoría</th>
-                                        <th>Imagen</th>
-                                        <th>Precio Venta</th>
-                                        <th>Stock</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
+                                        <td><?= $contador++; ?></td>
+                                        <td><?= htmlspecialchars($producto['codigo'] ?? 'N/A'); ?></td>
+                                        <td><?= htmlspecialchars($producto['nombre']); ?></td>
+                                        <td><?= htmlspecialchars($producto['categoria_nombre']); ?></td>
+                                        <td class="text-center">
+                                            <?php if (!empty($producto['imagen'])): ?>
+                                                <img src="<?= $URL; ?>public/uploads/productos/<?= $producto['imagen']; ?>" loading="lazy" alt="Imagen" class="img-thumbnail" width="50">
+                                            <?php else : ?>
+                                                <img src="<?= $URL; ?>public/uploads/productos/producto_default.png" loading="lazy" alt="Imagen" class="img-thumbnail" width="50">
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="text-right"><?= number_format($producto['precioventa'], 2); ?></td>
+                                        <td class="text-center <?= $producto['stock'] < $producto['stockminimo'] ? 'text-danger font-weight-bold' : '' ?>">
+                                            <?= $producto['stock']; ?>
+                                            <?php if ($producto['stock'] < $producto['stockminimo']): ?>
+                                                <i class="fas fa-exclamation-triangle ml-1" title="Stock bajo"></i>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="text-center">
+                                            <?php if ($estado_actual == 1) : ?>
+                                                <span class="badge badge-success">Activo</span>
+                                            <?php else : ?>
+                                                <span class="badge badge-danger">Inactivo</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <a href="<?= $URL; ?>views/productos/show.php?id=<?= $producto['idproducto']; ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="Ver detalles">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="<?= $URL; ?>views/productos/update.php?id=<?= $producto['idproducto']; ?>" class="btn btn-warning btn-sm" data-toggle="tooltip" title="Editar producto">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn <?= $clase_boton_estado; ?> btn-sm btn-cambiar-estado"
+                                                    data-id="<?= $producto['idproducto']; ?>"
+                                                    data-estado="<?= $estado_actual; ?>"
+                                                    data-nombre="<?= htmlspecialchars($producto['nombre']); ?>"
+                                                    data-toggle="tooltip" title="<?= $texto_boton_estado; ?>">
+                                                    <i class="fas <?= $icono_boton_estado; ?>"></i>
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    $contador = 1;
-                                    foreach ($productos as $producto) :
-                                        $estado_actual = $producto['estado'];
-                                        $clase_boton_estado = $estado_actual == 1 ? 'btn-danger' : 'btn-success';
-                                        $icono_boton_estado = $estado_actual == 1 ? 'fa-ban' : 'fa-check';
-                                        $titulo_alerta = $estado_actual == 1 ? '¿Desactivar Producto?' : '¿Activar Producto?';
-                                        $texto_alerta = $estado_actual == 1 ? 'El producto no estará disponible para venta.' : 'El producto estará disponible para venta.';
-                                        $confirm_button_text = $estado_actual == 1 ? 'Sí, desactivar' : 'Sí, activar';
-                                        $texto_boton_estado = $estado_actual == 1 ? 'Desactivar producto' : 'Activar producto';
-                                    ?>
-                                        <tr>
-                                            <td><?= $contador++; ?></td>
-                                            <td><?= htmlspecialchars($producto['codigo'] ?? 'N/A'); ?></td>
-                                            <td><?= htmlspecialchars($producto['nombre']); ?></td>
-                                            <td><?= htmlspecialchars($producto['categoria_nombre']); ?></td>
-                                            <td class="text-center">
-                                                <?php if (!empty($producto['imagen'])): ?>
-                                                    <img src="<?= $URL; ?>public/uploads/productos/<?= $producto['imagen']; ?>" loading="lazy" alt="Imagen" class="img-thumbnail" width="50">
-                                                <?php else : ?>
-                                                    <img src="<?= $URL; ?>public/uploads/productos/producto_default.png" loading="lazy" alt="Imagen" class="img-thumbnail" width="50">
-                                                <?php endif; ?>
-                                            </td>
-                                            <td class="text-right"><?= number_format($producto['precioventa'], 2); ?></td>
-                                            <td class="text-center <?= $producto['stock'] < $producto['stockminimo'] ? 'text-danger font-weight-bold' : '' ?>">
-                                                <?= $producto['stock']; ?>
-                                                <?php if ($producto['stock'] < $producto['stockminimo']): ?>
-                                                    <i class="fas fa-exclamation-triangle ml-1" title="Stock bajo"></i>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td class="text-center">
-                                                <?php if ($estado_actual == 1) : ?>
-                                                    <span class="badge badge-success">Activo</span>
-                                                <?php else : ?>
-                                                    <span class="badge badge-danger">Inactivo</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td class="text-center">
-                                                <div class="btn-group">
-                                                    <a href="<?= $URL; ?>views/productos/show.php?id=<?= $producto['idproducto']; ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="Ver detalles">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                    <a href="<?= $URL; ?>views/productos/update.php?id=<?= $producto['idproducto']; ?>" class="btn btn-warning btn-sm" data-toggle="tooltip" title="Editar producto">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <button type="button" class="btn <?= $clase_boton_estado; ?> btn-sm btn-cambiar-estado"
-                                                        data-id="<?= $producto['idproducto']; ?>"
-                                                        data-estado="<?= $estado_actual; ?>"
-                                                        data-nombre="<?= htmlspecialchars($producto['nombre']); ?>"
-                                                        data-toggle="tooltip" title="<?= $texto_boton_estado; ?>">
-                                                        <i class="fas <?= $icono_boton_estado; ?>"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
                     <!-- /.card-body -->
                 </div>

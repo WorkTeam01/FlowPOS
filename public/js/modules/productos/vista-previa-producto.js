@@ -14,7 +14,7 @@ function actualizarVistaPreviaProducto() {
     $('#preview-vista-codigo').text(codigo !== '' ? codigo : '—');
 
     let precioVenta = parseFloat($('#precioventa').val());
-    $('#preview-vista-precio').text(!isNaN(precioVenta) ? `${window.APP.currency} ${precioVenta.toFixed(2)}` : '—');
+    $('#preview-vista-precio').text(!isNaN(precioVenta) ? formatCurrency(precioVenta) : '—');
 
     let stock = $('#stock').val();
     $('#preview-vista-stock').text(stock !== '' ? `${stock} unidades` : '—');

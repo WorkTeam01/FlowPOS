@@ -40,7 +40,7 @@ $compras = $controller->getHistorialCompras($id);
 $comprasValidas = array_values(array_filter($compras, fn($v) => $v['estado'] == 1));
 $totalCompras = count($comprasValidas);
 $montoTotal = array_sum(array_column($comprasValidas, 'totalventa'));
-$ultimaCompra = !empty($compras) ? $compras[0]['fechacreacion'] : null;
+$ultimaCompra = !empty($comprasValidas) ? $comprasValidas[0]['fechacreacion'] : null;
 
 $skip_datatables = true; // Evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
 $skip_select2 = true;

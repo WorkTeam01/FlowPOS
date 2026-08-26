@@ -343,6 +343,7 @@ include_once '../layouts/header.php';
                 </div>
             </div>
         </div>
+    </div>
 </section>
 <!-- /.content -->
 

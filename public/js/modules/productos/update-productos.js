@@ -4,6 +4,24 @@ $(document).ready(function () {
 
     initVistaPreviaProducto();
 
+    // Cambiar el estado del producto con SweetAlert2
+    $('#btnCambiarEstado').on('click', function () {
+        const boton = $(this);
+        const estadoActual = parseInt(boton.attr('data-estado'), 10);
+        const nombreProducto = boton.data('nombre');
+        const activo = estadoActual == 1;
+
+        confirmarCambioEstado({
+            id: boton.data('id'),
+            estadoActual: estadoActual,
+            titulo: activo ? `¿Desactivar producto "${nombreProducto}"?` : `¿Activar producto "${nombreProducto}"?`,
+            texto: activo
+                ? 'El producto no estará disponible para venta hasta que sea activado nuevamente.'
+                : 'El producto estará disponible nuevamente para venta.',
+            actionUrl: baseUrl + 'controllers/productos/desactivar_producto.php'
+        });
+    });
+
     // Actualizar etiqueta del archivo seleccionado
     $('.custom-file-input').on('change', function () {
         let fileName = $(this).val().split('\\').pop();

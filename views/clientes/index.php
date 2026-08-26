@@ -59,64 +59,59 @@ $clientes = $controller->index();
                     </div>
                     <!-- /.card-header -->
                     <div class="card-body">
-                        <div class="table-responsive">
-                            <table id="tablaClientes" class="table table-sm table-bordered table-hover table-striped">
-                                <thead>
+                        <table id="tablaClientes" class="table table-sm table-bordered table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nro</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Tipo Documento</th>
+                                    <th>Número Documento</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $contador = 1;
+                                foreach ($clientes as $cliente) :
+                                    $estado_actual = $cliente['estado'];
+                                    $clase_boton_estado = $estado_actual == 1 ? 'btn-danger' : 'btn-success';
+                                    $icono_boton_estado = $estado_actual == 1 ? 'fa-user-slash' : 'fa-user-check';
+                                    $texto_boton_estado = $estado_actual == 1 ? 'Desactivar cliente' : 'Activar cliente';
+                                ?>
                                     <tr>
-                                        <th>Nro</th>
-                                        <th>Nombre Completo</th>
-                                        <th>Tipo Documento</th>
-                                        <th>Número Documento</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
+                                        <td class="text-center"><?= $contador++; ?></td>
+                                        <td><?= $cliente['nombres'] . ' ' . $cliente['apellidopaterno'] . ' ' . ($cliente['apellidomaterno'] ?? ''); ?></td>
+                                        <td><?= $cliente['tipodocumento']; ?></td>
+                                        <td><?= $cliente['numdocumento']; ?></td>
+                                        <td class="text-center">
+                                            <?php if ($estado_actual == 1) : ?>
+                                                <span class="badge badge-success">Activo</span>
+                                            <?php else : ?>
+                                                <span class="badge badge-danger">Inactivo</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group">
+                                                <a href="<?= $URL; ?>views/clientes/show.php?id=<?= $cliente['idcliente']; ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="Ver detalles" aria-label="Ver detalles de <?= $cliente['nombres']; ?>">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="<?= $URL; ?>views/clientes/update.php?id=<?= $cliente['idcliente']; ?>" class="btn btn-warning btn-sm" data-toggle="tooltip" title="Editar cliente" aria-label="Editar a <?= $cliente['nombres']; ?>">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn <?= $clase_boton_estado; ?> btn-sm btn-cambiar-estado"
+                                                    data-id="<?= $cliente['idcliente']; ?>"
+                                                    data-estado="<?= $estado_actual; ?>"
+                                                    data-nombre="<?= $cliente['nombres']; ?>"
+                                                    data-toggle="tooltip" title="<?= $texto_boton_estado; ?>" aria-label="<?= $texto_boton_estado; ?> <?= $cliente['nombres']; ?>">
+                                                    <i class="fas <?= $icono_boton_estado; ?>"></i>
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    $contador = 1;
-                                    foreach ($clientes as $cliente) :
-                                        $estado_actual = $cliente['estado'];
-                                        $clase_boton_estado = $estado_actual == 1 ? 'btn-danger' : 'btn-success';
-                                        $icono_boton_estado = $estado_actual == 1 ? 'fa-user-slash' : 'fa-user-check';
-                                        $titulo_alerta = $estado_actual == 1 ? '¿Desactivar Cliente?' : '¿Activar Cliente?';
-                                        $texto_alerta = $estado_actual == 1 ? 'El cliente no podrá realizar reservas.' : 'El cliente podrá realizar reservas nuevamente.';
-                                        $confirm_button_text = $estado_actual == 1 ? 'Sí, desactivar' : 'Sí, activar';
-                                        $texto_boton_estado = $estado_actual == 1 ? 'Desactivar cliente' : 'Activar cliente';
-                                    ?>
-                                        <tr>
-                                            <td class="text-center"><?= $contador++; ?></td>
-                                            <td><?= $cliente['nombres'] . ' ' . $cliente['apellidopaterno'] . ' ' . ($cliente['apellidomaterno'] ?? ''); ?></td>
-                                            <td><?= $cliente['tipodocumento']; ?></td>
-                                            <td><?= $cliente['numdocumento']; ?></td>
-                                            <td class="text-center">
-                                                <?php if ($estado_actual == 1) : ?>
-                                                    <span class="badge badge-success">Activo</span>
-                                                <?php else : ?>
-                                                    <span class="badge badge-danger">Inactivo</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td class="text-center">
-                                                <div class="btn-group">
-                                                    <a href="<?= $URL; ?>views/clientes/show.php?id=<?= $cliente['idcliente']; ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="Ver detalles" aria-label="Ver detalles de <?= $cliente['nombres']; ?>">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                    <a href="<?= $URL; ?>views/clientes/update.php?id=<?= $cliente['idcliente']; ?>" class="btn btn-warning btn-sm" data-toggle="tooltip" title="Editar cliente" aria-label="Editar a <?= $cliente['nombres']; ?>">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <button type="button" class="btn <?= $clase_boton_estado; ?> btn-sm btn-cambiar-estado"
-                                                        data-id="<?= $cliente['idcliente']; ?>"
-                                                        data-estado="<?= $estado_actual; ?>"
-                                                        data-nombre="<?= $cliente['nombres']; ?>"
-                                                        data-toggle="tooltip" title="<?= $texto_boton_estado; ?>" aria-label="<?= $texto_boton_estado; ?> <?= $cliente['nombres']; ?>">
-                                                        <i class="fas <?= $icono_boton_estado; ?>"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
                     <!-- /.card-body -->
                 </div>

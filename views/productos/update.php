@@ -345,15 +345,36 @@ include_once '../layouts/header.php';
                 <div class="sidebar-sticky">
                     <?php
                     $vistaPreviaImagen = !empty($producto['imagen']) ? $URL . 'public/uploads/productos/' . $producto['imagen'] : $URL . 'public/uploads/productos/producto_default.png';
-                    $vistaPreviaNombre = htmlspecialchars($producto['nombre']);
-                    $vistaPreviaCategoria = htmlspecialchars($producto['categoria_nombre'] ?? '—');
-                    $vistaPreviaCodigo = htmlspecialchars($producto['codigo'] ?? '') !== '' ? htmlspecialchars($producto['codigo']) : '—';
+                    $vistaPreviaNombre = $producto['nombre'];
+                    $vistaPreviaCategoria = $producto['categoria_nombre'] ?? '—';
+                    $vistaPreviaCodigo = !empty($producto['codigo']) ? $producto['codigo'] : '—';
                     $vistaPreviaPrecio = $appCurrency . ' ' . number_format($producto['precioventa'], 2);
                     $vistaPreviaStockLabel = 'Stock Actual';
                     $vistaPreviaStock = $producto['stock'] . ' unidades';
                     $vistaPreviaEstado = $producto['estado'] == 1 ? '<span class="badge badge-success">Activo</span>' : '<span class="badge badge-secondary">Inactivo</span>';
                     include 'partials/vista_previa.php';
                     ?>
+
+                    <!-- Acciones adicionales -->
+                    <div class="card card-primary mb-3">
+                        <div class="card-header">
+                            <h3 class="card-title">Acciones Adicionales</h3>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="list-group">
+                                <a href="<?= $URL; ?>views/productos/show.php?id=<?= $producto['idproducto']; ?>" class="list-group-item list-group-item-action">
+                                    <i class="fas fa-eye mr-2"></i> Ver Detalles del Producto
+                                </a>
+                                <button type="button" class="list-group-item list-group-item-action" id="btnCambiarEstado"
+                                    data-id="<?= $producto['idproducto']; ?>"
+                                    data-estado="<?= $producto['estado']; ?>"
+                                    data-nombre="<?= $producto['nombre']; ?>">
+                                    <i class="fas <?= $producto['estado'] == 1 ? 'fa-ban' : 'fa-check'; ?> mr-2"></i>
+                                    <?= $producto['estado'] == 1 ? 'Desactivar Producto' : 'Activar Producto'; ?>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="card card-outline card-secondary">
                         <div class="card-header">
@@ -392,6 +413,7 @@ include_once '../layouts/header.php';
                 </div>
             </div>
         </div>
+    </div>
 </section>
 <!-- /.content -->
 
