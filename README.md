@@ -20,7 +20,7 @@ Base reusable para proyectos de punto de venta y referencia de arquitectura MVC 
 - Gestión de productos, categorías y clientes.
 - Módulo de compras con actualización de stock.
 - Paneles y accesos diferenciados por rol.
-- Sistema de permisos granulares por usuario.
+- Sistema de permisos granulares por rol.
 - Generación de comprobantes PDF con TCPDF.
 
 ## Stack técnico
@@ -82,7 +82,7 @@ Variables principales:
 | Variable       | Descripción                      | Ejemplo                     |
 | -------------- | -------------------------------- | --------------------------- |
 | `APP_NAME`     | Nombre visible de la aplicación  | `FlowPOS`                   |
-| `APP_VERSION`  | Versión actual de la aplicación  | `1.1.7`                     |
+| `APP_VERSION`  | Versión actual de la aplicación  | `1.2.0`                     |
 | `APP_CURRENCY` | Símbolo de moneda                | `Bs`, `$`, `€`, `S/`        |
 | `APP_URL`      | URL base (debe terminar con `/`) | `http://localhost/FlowPOS/` |
 | `TIMEZONE`     | Zona horaria PHP                 | `America/La_Paz`            |
@@ -96,13 +96,13 @@ Variables principales:
 
 ```bash
 mysql -u root -e "CREATE DATABASE flowpos CHARACTER SET utf8mb4;"
-mysql -u root flowpos < schema.sql
+mysql -u root flowpos < database/schema.sql
 ```
 
 ### 4. (Opcional) Cargar datos de ejemplo
 
 ```bash
-mysql -u root flowpos < seed.sql
+mysql -u root flowpos < database/seed.sql
 ```
 
 Credenciales demo (si importaste `seed.sql`):
@@ -135,15 +135,17 @@ Roles disponibles:
 - **Supervisor**: operación y control.
 - **Vendedor**: flujo de venta y consulta.
 
-Además del rol, la aplicación permite permisos granulares por usuario.
+Los permisos granulares se administran por rol (matriz rol×permiso en `views/roles/permisos.php`), no por usuario individual.
 
 ## Estructura del proyecto
 
 ```text
 FlowPOS/
 ├── index.php
-├── schema.sql
-├── seed.sql
+├── database/
+│   ├── schema.sql
+│   ├── seed.sql
+│   └── migrations/
 ├── config/
 ├── controllers/
 ├── models/
@@ -167,6 +169,7 @@ FlowPOS/
 - Nivelado el módulo de compras al mismo estándar de seguridad de ventas: eliminado endpoint huérfano vulnerable a IDOR, agregado ownership check en el cambio de estado, corregido doble escape en el detalle y payload de productos filtrado a solo activos en el formulario de creación; ver `CHANGELOG.md` [1.1.5].
 - Corregida escalada de privilegios en el módulo de usuarios: un usuario no-administrador podía asignarse (o asignar a otro) el cargo Administrador, y podía degradar, cambiar la contraseña o desactivar una cuenta que ya era Administrador; ahora se valida tanto el cargo nuevo solicitado como el cargo actual del registro objetivo; ver `CHANGELOG.md` [1.1.6].
 - Productos y clientes migrados al mismo formato de formulario (cards por sección) y estandarizada la confirmación de activar/desactivar en un único helper compartido, reduciendo la superficie de código duplicado entre módulos; ver `CHANGELOG.md` [1.1.7].
+- Sistema de permisos migrado a control de acceso basado en roles (RBAC): asignación granular por usuario reemplazada por una matriz rol×permiso, con validaciones anti-escalada de privilegios basadas en el rol; ver `CHANGELOG.md` [1.2.0].
 
 ## Changelog
 

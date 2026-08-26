@@ -26,12 +26,12 @@ Pasos recomendados:
 ```bash
 cp .env.example .env
 mysql -u root -e "CREATE DATABASE flowpos CHARACTER SET utf8mb4;"
-mysql -u root flowpos < schema.sql
-mysql -u root flowpos < seed.sql
+mysql -u root flowpos < database/schema.sql
+mysql -u root flowpos < database/seed.sql
 sudo /opt/lampp/lampp start
 ```
 
-Luego abre `http://localhost/FlowPOS/`. 
+Luego abre `http://localhost/FlowPOS/`.
 
 ## Alcance de contribuciones
 

@@ -5,7 +5,37 @@ Todos los cambios importantes de este proyecto se documentan en este archivo.
 Este formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
-## [Unreleased]
+## [1.2.0] - 2026-08-26
+
+### Fixed
+
+- **Re-auditoría de código sobre productos+clientes (2026-08-26)**: segunda pasada de `/code-review` tras cerrar la ronda del 2026-08-18, para confirmar que el diff commiteado no introdujo regresiones. Encontró y corrigió 7 hallazgos:
+  - `views/productos/create.php`/`update.php` — `<div class="container-fluid">` sin su `</div>` de cierre tras el refactor a cards, rompiendo el layout/footer de AdminLTE en toda la página.
+  - `views/clientes/show.php` — el stat box "Última Compra" seguía leyendo `$compras[0]` (sin filtrar por estado) en vez de `$comprasValidas[0]`, mostrando una venta anulada como la más reciente.
+  - `views/productos/update.php` — doble escape en la Vista Previa: `htmlspecialchars()` aplicado sobre campos que `Producto::sanitizarDatos()` ya escapa al guardar (ver patrón "escape-at-storage" documentado en `CLAUDE.md`).
+  - `views/productos/update.php` — el refactor a cards eliminó la card "Acciones Rápidas" (cambiar estado desde edición) sin reemplazo; agregada una card "Acciones Adicionales" equivalente a la de `clientes/update.php`.
+  - `public/js/modules/productos/vista-previa-producto.js` — formateaba el precio inline en vez de usar el helper compartido `formatCurrency()` de `common-utils.js`.
+  - `views/clientes/index.php` — variables PHP calculadas por fila (`$titulo_alerta`, etc.) nunca usadas, ya que el diálogo de confirmación es 100% client-side vía `confirmarCambioEstado()`. Eliminadas.
+- **Auditoría impeccable de categorías (18/20→20/20)**: `initializeTooltips()` sin `drawCallback` (no sobrevivían a la paginación de DataTables); `exportOptions.columns` de los botones de reporte incluía la columna "Acciones" (solo tiene botones, sin texto exportable); botones de ícono sin `aria-label` explícito.
+- **Auditoría impeccable de empresa (17/20)**: `EmpresaController::actualizarAjax()` no validaba sucursales antes de permitir `estado=0` desde el modal de edición — el botón dedicado "cambiar estado" sí validaba, pero el modal lo bypaseaba al incluir su propio `<select>` de Estado. Agregada la misma validación de negocio en `actualizarAjax()`. También corregidos `table-responsive` redundante con DataTables y tooltips sin `drawCallback`.
+- **Auditoría impeccable de sucursales (16/20→18/20)**: `exportOptions.columns` incluía la columna Acciones (mismo bug que categorías); tooltips inicializados directo con `.tooltip()` en vez del helper `initializeTooltips()` (sin `placement` fijo, sin `drawCallback`); `table-responsive` redundante con DataTables.
+- **`views/usuarios/show.php` mostraba "usuario no tiene permisos específicos asignados" para todo usuario no-admin**: la pestaña Permisos seguía llamando a `AuthorizationService::obtenerPermisosAsignados()`, que lee de `permisousuario` — tabla eliminada por la migración a RBAC. La consulta fallaba silenciosamente (catch + `error_log`) y devolvía `[]` siempre, dando la falsa impresión de que solo los usuarios "viejos" carecían de permisos. Corregido a `obtenerPermisosUsuario()`, que resuelve los permisos por el rol del usuario vía `rolpermiso`; el mensaje pasa a indicar "permisos heredados del rol X".
+- **`views/usuarios/index.php` usaba `badge-pill` en los badges de estado (Activo/Inactivo)**, único módulo del proyecto con ese estilo — clientes y productos usan `badge` plano. Quitado `badge-pill` para consistencia visual con el resto de listados.
+
+### Changed
+
+- **Estandarización de Select2 en todo el proyecto**: se centralizó el fix de altura/responsive de Select2 (bootstrap4) en `public/css/core/common.css` (estaba duplicado en `public/css/modules/dashboard/dashboard.css`); `dashboard.js`, `dashboard_supervisor.js`, `dashboard_vendedor.js` y `sucursales/index-sucursales.js` reemplazan `$('.select2').select2({...})` inline por el helper `initializeSelect2()` de `common-utils.js`. Corregido `views/categorias/index.php` y `views/empresa/index.php`, que tenían `$skip_select2 = true` sin darse cuenta de que ya usaban selects sin estilizar; agregada la clase `select2` a los `<select>` de Estado en `sucursales/index.php` y `empresa/index.php` que no la tenían, con inicialización correcta dentro de `shown.bs.modal` (`dropdownParent`) para los que viven en modales.
+
+### Added
+
+- **Sistema de permisos migrado de asignación individual por usuario a control de acceso basado en roles (RBAC)**: se agregan las tablas `rol` (con los 3 roles del sistema: administrador, supervisor, vendedor) y `rolpermiso` (pivot rol↔permiso); `usuarios.idrol` reemplaza a la antigua columna `cargo`, y `permisousuario` (asignación granular por usuario) se elimina por completo — los permisos ahora se administran por rol, no por cuenta individual.
+  - Nuevo módulo `views/roles/` (`models/Rol.php`, `controllers/rol/RolController.php`) para crear, renombrar, activar/desactivar y eliminar roles. Un rol de sistema no puede renombrarse ni cambiar su dashboard, no puede eliminarse, y no se puede desactivar el último rol administrador activo (evita lockout) — reglas validadas en el servidor, no solo ocultando opciones en el HTML.
+  - Nueva pantalla `views/roles/permisos.php`: matriz rol×permiso con un checkbox por celda, agrupada por categoría; un botón "Guardar" por columna persiste esa columna completa en una transacción. Nadie puede editar los permisos de su propio rol. `views/permisos/index.php` pasa a ser un catálogo de solo lectura con la matriz inversa (qué roles tiene cada permiso). Eliminado `controllers/permisos/cambiar_estado.php` (endpoint huérfano, código muerto).
+  - `AuthorizationService` resuelve permisos y estado de administrador contra `rol`/`rolpermiso` en vez de `usuarios.cargo`/`permisousuario`, con memo-cache por request.
+  - `views/usuarios/create.php`/`update.php` seleccionan el rol del usuario con un Select2 (en vez de un `<select>` de 3 opciones hardcodeadas) y ya no muestran un checklist de permisos individual — los permisos se heredan del rol. Las validaciones anti-escalada de privilegios ahora se basan en `rol.es_admin`, validando tanto el rol solicitado como el rol actual del usuario objetivo.
+  - `index.php` despacha el dashboard según el rol del usuario (resuelto siempre contra la base de datos, nunca contra el dato de sesión) en vez de un `switch` sobre el cargo; toda la lectura de rol en dashboards, sesión, login y listados de usuario se migró de la columna `cargo` a la relación con `rol`.
+  - Migración de base de datos aditiva con backfill de `idrol` por nombre de rol y unión de las asignaciones individuales existentes hacia `rolpermiso`, sin pérdida de acceso para ningún usuario, seguida de la limpieza final: `usuarios.cargo` eliminada, `usuarios.idrol` pasa a `NOT NULL`, y `permisousuario` eliminada (con respaldo previo). `schema.sql` actualizado para instalaciones nuevas.
+  - Verificado en Playwright con las 3 cuentas demo (administrador, supervisor, vendedor): menús, accesos, dashboards y formularios de usuario se comportan igual que antes de la migración, y los intentos de escalada de privilegios por POST directo (evadiendo el HTML) siguen siendo rechazados.
 
 ## [1.1.7] - 2026-08-18
 

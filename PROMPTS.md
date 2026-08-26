@@ -96,8 +96,9 @@ Estructura de archivos relevante:
 
 BD relevante:
 - empresa, sucursal — estructura multi-sucursal
-- usuarios (cargo: administrador/supervisor/vendedor, idsucursal)
-- permiso, permisousuario — permisos granulares por usuario
+- usuarios (idrol FK, idsucursal)
+- rol, rolpermiso — roles del sistema (administrador/supervisor/vendedor) y permisos por rol
+- permiso — catálogo de permisos del sistema
 - producto, categoria — catálogo con stock
 - cliente — registro de clientes
 - venta, detalleventa, pagoventa — ventas con pagos mixtos
@@ -279,9 +280,10 @@ Versionado: `APP_VERSION` en `.env` + `CHANGELOG.md`.
 BD existente relevante:
 - empresa (id, nombre, nit, direccion, telefono, logo, ...)
 - sucursal (id, idempresa FK, nombre, direccion, ...)
-- usuarios (id, nombre, apellido, email, password, cargo, idsucursal FK, foto, estado)
-- permiso (id, nombre, descripcion) — permisos del sistema
-- permisousuario (idusuario, idpermiso) — asignación de permisos por usuario
+- usuarios (id, nombre, apellido, email, password, idrol FK, idsucursal FK, foto, estado)
+- rol (id, nombre, es_admin, es_sistema, dashboard, estado) — roles del sistema
+- rolpermiso (idrol FK, idpermiso FK) — asignación de permisos por rol
+- permiso (id, nombre, descripcion) — catálogo de permisos del sistema
 - producto (id, nombre, idcategoria FK, precio, stock, foto, estado)
 - categoria (id, nombre, descripcion, estado)
 - cliente (id, nombre, apellido, ci, telefono, email, foto, estado)
@@ -310,15 +312,15 @@ Criterios de aceptación:
 - Mensajes flash: $_SESSION['mensaje'] + $_SESSION['icono'] antes de redirect
 - DataTables para listados; SweetAlert2 para confirmaciones y notificaciones
 - Select2 para dropdowns; con dropdownParent si está dentro de un modal
-- Autorización: requireRole() en la vista, AuthorizationService en acciones
-- Registrar permisos nuevos en schema.sql (INSERT en tabla permiso)
+- Autorización: tienePermisoNombre() + esAdministrador() (AuthorizationService) en la vista y en cada acción — requireRole() es código muerto eliminado, no reintroducirlo
+- Registrar permisos nuevos en database/schema.sql (INSERT en tabla permiso)
 - Uploads: ImagenService — nunca move_uploaded_file() directo
 - No introducir librerías externas nuevas
 - Si se agregan cambios funcionales: documentarlos en `CHANGELOG.md` (`Unreleased`)
 
 [Formato de salida]
 Devuelve en este orden:
-1. SQL: ALTER/CREATE TABLE + INSERT de permisos en schema.sql
+1. SQL: ALTER/CREATE TABLE + INSERT de permisos en database/schema.sql
 2. models/[Modulo].php
 3. controllers/[modulo]/[Modulo]Controller.php
 4. controllers/[modulo]/[acciones].php (scripts de acción POST/AJAX)
@@ -331,5 +333,5 @@ Devuelve en este orden:
 
 ---
 
-_Última actualización: 2026-08-18_
+_Última actualización: 2026-08-26_
 _Mantener sincronizado con CLAUDE.md al hacer cambios de arquitectura._

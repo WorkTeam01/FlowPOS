@@ -22,8 +22,9 @@ bash.exe.stackdump
 
 # Respaldos de base de datos
 *.sql
-!schema.sql
-!seed.sql
+!database/schema.sql
+!database/seed.sql
+!database/migrations/*.sql
 
 # Imágenes subidas por usuarios — solo se versionan las imágenes por defecto
 public/uploads/productos/*
