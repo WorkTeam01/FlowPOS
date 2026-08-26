@@ -56,3 +56,24 @@
 .card-outline-tabs .nav-link:not(.active):hover {
     color: #138496;
 }
+
+/*
+ * Alineación de altura de Select2 (tema bootstrap4) con el resto de los
+ * .form-control del proyecto — sin esto el selector queda ~2px más bajo
+ * que sus inputs hermanos. Aplica a cualquier <select class="select2">
+ * inicializado con initializeSelect2() (ver common-utils.js), no solo a
+ * los selects de dashboard donde se detectó originalmente.
+ */
+.select2-container--bootstrap4 .select2-selection--single {
+    height: calc(1.8125rem + 2px) !important;
+}
+
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
+    line-height: calc(1.8125rem + 2px) !important;
+}
+
+@media (max-width: 767.98px) {
+    .select2-container {
+        width: 100% !important;
+    }
+}

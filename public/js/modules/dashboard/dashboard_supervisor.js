@@ -1199,15 +1199,8 @@ document.addEventListener('DOMContentLoaded', function () {
     function inicializarComponentes() {
         // Inicializar Select2 si está disponible
         try {
-            if (typeof $ !== 'undefined' && $.fn.select2) {
-                $('.select2').select2({
-                    theme: 'bootstrap4',
-                    width: '100%',
-                    allowClear: false,
-                    minimumResultsForSearch: Infinity,
-                    closeOnSelect: true,
-                    dropdownAutoWidth: false
-                });
+            if (typeof $ !== 'undefined' && $.fn.select2 && typeof initializeSelect2 === 'function') {
+                initializeSelect2('.select2', { minimumResultsForSearch: Infinity, dropdownAutoWidth: false });
             }
         } catch (e) {
             console.warn("Error al inicializar Select2:", e);

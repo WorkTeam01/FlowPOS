@@ -3,11 +3,6 @@
 /* Estilos responsive para dashboard */
 @media (max-width: 767.98px) {
 
-    /* Ajustes para móviles */
-    .select2-container {
-        width: 100% !important;
-    }
-
     /* Ajustar tamaño de texto en cards para móviles */
     .card-title {
         font-size: 1rem;
@@ -41,15 +36,6 @@
 /* Para que los inputs de fecha tengan el mismo alto en todos los navegadores */
 input[type="date"] {
     height: calc(1.8125rem + 2px);
-}
-
-/* Mejorar aspecto de Select2 */
-.select2-container--bootstrap4 .select2-selection--single {
-    height: calc(1.8125rem + 2px) !important;
-}
-
-.select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
-    line-height: calc(1.8125rem + 2px) !important;
 }
 
 /* Estilos para KPI de ganancias */
