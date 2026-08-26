@@ -37,7 +37,7 @@ $module_scripts = ['dashboard/dashboard_general'];
             <div class="col-md-12">
                 <div class="p-5 mb-4 bg-white rounded-3 shadow-sm">
                     <div class="container-fluid py-4">
-                        <p class="display-5 fw-bold mb-3">Bienvenido a <?= $appName ?> - <?= $_SESSION['usuario_cargo']; ?></p>
+                        <p class="display-5 fw-bold mb-3">Bienvenido a <?= $appName ?> - <?= htmlspecialchars(ucfirst($_SESSION['usuario_rol'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></p>
                         <p class="col-md-8 fs-4">
                             Este sistema le permite gestionar todos los aspectos relacionados con la gestión de ventas,
                             incluyendo productos, inventario, ventas, clientes y más.

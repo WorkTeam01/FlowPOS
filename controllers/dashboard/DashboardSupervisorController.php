@@ -131,9 +131,10 @@ class DashboardSupervisorController
                     END as ticketPromedio
                  FROM venta v
                  JOIN usuarios u ON v.idusuario = u.idusuario
+                 JOIN rol r ON r.idrol = u.idrol
                  WHERE DATE(v.fechacreacion) BETWEEN ? AND ?
                  AND v.estado = 1
-                 AND LOWER(u.cargo) = 'vendedor'";
+                 AND r.nombre = 'vendedor'";
 
             $stmt = $conexion->prepare($query);
             $stmt->bindParam(1, $fechaInicio);
@@ -165,10 +166,11 @@ class DashboardSupervisorController
                     COALESCE(SUM(v.totalventa), 0) as montoVentas,
                     COUNT(DISTINCT v.idcliente) as clientes
                  FROM usuarios u
+                 JOIN rol r ON r.idrol = u.idrol
                  LEFT JOIN venta v ON u.idusuario = v.idusuario 
                     AND DATE(v.fechacreacion) BETWEEN ? AND ?
                     AND v.estado = 1
-                 WHERE LOWER(u.cargo) = 'vendedor' AND u.estado = 1
+                 WHERE r.nombre = 'vendedor' AND u.estado = 1
                  GROUP BY u.idusuario, u.nombre, u.apellidopaterno
                  ORDER BY montoVentas DESC
                  LIMIT ?";
@@ -205,9 +207,10 @@ class DashboardSupervisorController
                     COALESCE(SUM(v.totalventa), 0) as venta
                  FROM venta v
                  JOIN usuarios u ON v.idusuario = u.idusuario
+                 JOIN rol r ON r.idrol = u.idrol
                  WHERE DATE(v.fechacreacion) BETWEEN ? AND ?
                  AND v.estado = 1
-                 AND LOWER(u.cargo) = 'vendedor'
+                 AND r.nombre = 'vendedor'
                  GROUP BY DATE_FORMAT(v.fechacreacion, '%Y-%m-%d')
                  ORDER BY fecha ASC";
 
@@ -234,9 +237,10 @@ class DashboardSupervisorController
                     COALESCE(SUM(v.totalventa), 0) as venta
                  FROM venta v
                  JOIN usuarios u ON v.idusuario = u.idusuario
+                 JOIN rol r ON r.idrol = u.idrol
                  WHERE DATE(v.fechacreacion) BETWEEN ? AND ?
                  AND v.estado = 1
-                 AND LOWER(u.cargo) = 'vendedor'
+                 AND r.nombre = 'vendedor'
                  GROUP BY DATE_FORMAT(v.fechacreacion, '%Y-%m-%d')
                  ORDER BY fecha ASC";
 
@@ -265,9 +269,10 @@ class DashboardSupervisorController
                  JOIN producto p ON dv.idproducto = p.idproducto
                  LEFT JOIN categoria c ON p.idcategoria = c.idcategoria
                  JOIN usuarios u ON v.idusuario = u.idusuario
+                 JOIN rol r ON r.idrol = u.idrol
                  WHERE DATE(v.fechacreacion) BETWEEN ? AND ?
                  AND v.estado = 1
-                 AND LOWER(u.cargo) = 'vendedor'
+                 AND r.nombre = 'vendedor'
                  GROUP BY c.nombre
                  ORDER BY ventas DESC";
 

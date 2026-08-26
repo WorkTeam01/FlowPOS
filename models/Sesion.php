@@ -58,9 +58,10 @@ class Sesion
     {
         try {
             $query = "SELECT s.*, 
-                     u.nombre, u.apellidopaterno, u.apellidomaterno, u.correo, u.imagen, u.cargo
+                     u.nombre, u.apellidopaterno, u.apellidomaterno, u.correo, u.imagen, CONCAT(UPPER(LEFT(r.nombre,1)), SUBSTRING(r.nombre,2)) AS cargo
                      FROM {$this->tabla} s
-                     JOIN usuarios u ON s.idusuario = u.idusuario";
+                     JOIN usuarios u ON s.idusuario = u.idusuario
+                     LEFT JOIN rol r ON r.idrol = u.idrol";
 
             if ($activas) {
                 $query .= " WHERE s.estado = 1";
@@ -88,9 +89,10 @@ class Sesion
     {
         try {
             $query = "SELECT s.*, 
-                     u.nombre, u.apellidopaterno, u.apellidomaterno, u.correo, u.imagen, u.cargo
+                     u.nombre, u.apellidopaterno, u.apellidomaterno, u.correo, u.imagen, CONCAT(UPPER(LEFT(r.nombre,1)), SUBSTRING(r.nombre,2)) AS cargo
                      FROM {$this->tabla} s
                      JOIN usuarios u ON s.idusuario = u.idusuario
+                     LEFT JOIN rol r ON r.idrol = u.idrol
                      WHERE s.idusuario = :idusuario";
 
             if ($activas) {
@@ -119,9 +121,10 @@ class Sesion
     {
         try {
             $query = "SELECT s.*, 
-                     u.nombre, u.apellidopaterno, u.apellidomaterno, u.correo, u.imagen, u.cargo
+                     u.nombre, u.apellidopaterno, u.apellidomaterno, u.correo, u.imagen, CONCAT(UPPER(LEFT(r.nombre,1)), SUBSTRING(r.nombre,2)) AS cargo
                      FROM {$this->tabla} s
                      JOIN usuarios u ON s.idusuario = u.idusuario
+                     LEFT JOIN rol r ON r.idrol = u.idrol
                      WHERE s.idsesion = :id";
 
             $stmt = $this->conexion->prepare($query);

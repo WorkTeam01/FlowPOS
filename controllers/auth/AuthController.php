@@ -184,7 +184,9 @@ class AuthController
         $_SESSION['usuario_id'] = $usuario['idusuario'];
         $_SESSION['usuario_nombre'] = $usuario['nombre'];
         $_SESSION['usuario_correo'] = $usuario['correo'];
-        $_SESSION['usuario_cargo'] = $usuario['cargo'];
+        $_SESSION['usuario_rol'] = $usuario['rol_nombre'] ?? null;
+        $_SESSION['usuario_idrol'] = $usuario['idrol'] ?? null;
+        $_SESSION['usuario_dashboard'] = $usuario['rol_dashboard'] ?? 'dashboard_general.php';
         $_SESSION['usuario_imagen'] = $usuario['imagen'] ?? 'user_default.jpg';
         $_SESSION['usuario_sucursal'] = $usuario['idsucursal'] ?? null;
         $_SESSION['autenticado'] = true;

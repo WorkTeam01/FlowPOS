@@ -101,9 +101,9 @@ $usuarios = $controller->index();
                                         <td><?= (!empty($usuario['cargo'])) ? $usuario['cargo'] : 'N/A'; ?></td>
                                         <td class="text-center">
                                             <?php if ($estado_actual == 1) : ?>
-                                                <span class="badge badge-success badge-pill p-2">Activo</span>
+                                                <span class="badge badge-success">Activo</span>
                                             <?php else : ?>
-                                                <span class="badge badge-danger badge-pill p-2">Inactivo</span>
+                                                <span class="badge badge-danger">Inactivo</span>
                                             <?php endif; ?>
                                         </td>
                                         <td class="text-center">

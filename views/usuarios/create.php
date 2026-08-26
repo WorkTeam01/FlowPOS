@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../services/AuthorizationService.php';
+require_once __DIR__ . '/../../models/Rol.php';
 require_once __DIR__ . '/../layouts/session.php';
 
 $idusuario = $_SESSION['usuario_id'];
@@ -156,20 +157,25 @@ include_once '../layouts/header.php';
                                     </div>
                                 </div>
 
-                                <!-- Cargo -->
+                                <!-- Rol -->
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="cargo">Cargo <span class="text-danger">*</span></label>
-                                        <?php $puedeAsignarAdmin = $authService->esAdministrador($idusuario); ?>
-                                        <select class="form-control select2" id="cargo" name="cargo" required>
-                                            <option value="">Seleccione un cargo</option>
-                                            <option value="Administrador" <?= $puedeAsignarAdmin ? '' : 'disabled'; ?>>Administrador</option>
-                                            <option value="Supervisor">Supervisor</option>
-                                            <option value="Vendedor">Vendedor</option>
+                                        <label for="idrol">Rol <span class="text-danger">*</span></label>
+                                        <?php
+                                        $puedeAsignarAdmin = $authService->esAdministrador($idusuario);
+                                        $rolModelo = new Rol();
+                                        $roles = $rolModelo->getAll(true);
+                                        ?>
+                                        <select class="form-control select2" id="idrol" name="idrol" required>
+                                            <option value="">Seleccione un rol</option>
+                                            <?php foreach ($roles as $rol) : ?>
+                                                <option value="<?= $rol['idrol'] ?>" <?= ($rol['es_admin'] && !$puedeAsignarAdmin) ? 'disabled' : '' ?>><?= htmlspecialchars(ucfirst($rol['nombre'])) ?></option>
+                                            <?php endforeach; ?>
                                         </select>
                                         <?php if (!$puedeAsignarAdmin): ?>
-                                            <small class="form-text text-muted">Solo un administrador puede asignar el cargo de Administrador.</small>
+                                            <small class="form-text text-muted">Solo un administrador puede asignar un rol de Administrador.</small>
                                         <?php endif; ?>
+                                        <small class="form-text text-muted">Los permisos del usuario se heredan del rol asignado.</small>
                                     </div>
                                 </div>
                             </div>
@@ -258,66 +264,6 @@ include_once '../layouts/header.php';
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Sección de Permisos -->
-                    <div class="card card-outline card-primary mb-3">
-                        <div class="card-header">
-                            <h3 class="card-title">Asignación de Permisos</h3>
-                            <div class="card-tools">
-                                <button type="button" class="btn btn-outline-primary btn-xs" id="seleccionar-todos">
-                                    <i class="fas fa-check-square mr-1"></i> Seleccionar todos
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary btn-xs" id="deseleccionar-todos">
-                                    <i class="fas fa-square mr-1"></i> Deseleccionar todos
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <?php
-                            // Obtener todos los permisos disponibles, agrupados por categoría visual
-                            $permisos = $authService->obtenerTodosLosPermisos();
-                            $grupos_permisos = AuthorizationService::agruparPermisosPorCategoria($permisos);
-                            $primera_categoria = true;
-                            ?>
-                            <ul class="nav nav-tabs" role="tablist">
-                                <?php foreach ($grupos_permisos as $categoria => $permisos_categoria) : ?>
-                                    <li class="nav-item">
-                                        <a class="nav-link<?= $primera_categoria ? ' active' : '' ?>"
-                                            id="tab-permisos-<?= md5($categoria) ?>"
-                                            data-toggle="tab"
-                                            href="#panel-permisos-<?= md5($categoria) ?>"
-                                            role="tab"
-                                            aria-controls="panel-permisos-<?= md5($categoria) ?>"
-                                            aria-selected="<?= $primera_categoria ? 'true' : 'false' ?>"><?= htmlspecialchars($categoria) ?></a>
-                                    </li>
-                                    <?php $primera_categoria = false; ?>
-                                <?php endforeach; ?>
-                            </ul>
-                            <div class="tab-content pt-3">
-                                <?php $primera_categoria = true; ?>
-                                <?php foreach ($grupos_permisos as $categoria => $permisos_categoria) : ?>
-                                    <div class="tab-pane<?= $primera_categoria ? ' active' : '' ?>" id="panel-permisos-<?= md5($categoria) ?>" role="tabpanel" aria-labelledby="tab-permisos-<?= md5($categoria) ?>">
-                                        <div class="row">
-                                            <?php foreach ($permisos_categoria as $permiso) : ?>
-                                                <div class="col-md-6">
-                                                    <div class="custom-control custom-checkbox">
-                                                        <input type="checkbox" class="custom-control-input"
-                                                            id="permiso_<?= $permiso['idpermiso'] ?>"
-                                                            name="permisos[]"
-                                                            value="<?= $permiso['idpermiso'] ?>">
-                                                        <label class="custom-control-label" for="permiso_<?= $permiso['idpermiso'] ?>">
-                                                            <?= htmlspecialchars($permiso['nombre']) ?>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    </div>
-                                    <?php $primera_categoria = false; ?>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
                         <div class="card-footer">
                             <div class="row">
                                 <div class="col-12 col-sm-auto mb-2 mb-sm-0">
@@ -365,17 +311,8 @@ include_once '../layouts/header.php';
                                     </ul>
                                 </li>
                                 <li class="list-group-item">
-                                    <h6 class="mb-1"><i class="fas fa-user-shield text-muted mr-2"></i>Asignación de permisos</h6>
-                                    <p class="text-muted small mb-1">Seleccione cuidadosamente los permisos según el rol del usuario:</p>
-                                    <ul class="text-muted small mb-0 pl-3">
-                                        <li><strong>Administrador:</strong> Acceso completo al sistema</li>
-                                        <li><strong>Supervisor:</strong> Acceso a reportes y gestión limitada</li>
-                                        <li><strong>Vendedor:</strong> Acceso a ventas y consultas básicas</li>
-                                    </ul>
-                                </li>
-                                <li class="list-group-item">
-                                    <h6 class="mb-1 text-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Importante</h6>
-                                    <p class="mb-0 text-muted small">Un usuario sin permisos asignados no podrá acceder a ninguna funcionalidad del sistema.</p>
+                                    <h6 class="mb-1"><i class="fas fa-user-shield text-muted mr-2"></i>Rol del usuario</h6>
+                                    <p class="text-muted small mb-0">Los permisos ya no se asignan por usuario: se heredan del rol seleccionado. Para cambiarlos, edite la matriz de permisos en el módulo Roles.</p>
                                 </li>
                                 <li class="list-group-item">
                                     <h6 class="mb-1"><i class="fas fa-question-circle text-muted mr-2"></i>¿Necesitas ayuda?</h6>

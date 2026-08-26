@@ -38,6 +38,19 @@ CREATE TABLE permiso (
   estado tinyint(1) DEFAULT 1
 );
 
+CREATE TABLE rol (
+  idrol int PRIMARY KEY AUTO_INCREMENT,
+  nombre varchar(50) NOT NULL,
+  descripcion varchar(255) DEFAULT NULL,
+  es_sistema tinyint(1) NOT NULL DEFAULT 0,
+  es_admin tinyint(1) NOT NULL DEFAULT 0,
+  dashboard varchar(64) NOT NULL DEFAULT 'dashboard_general.php',
+  fechacreacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+  fechaactualizacion DATETIME ON UPDATE CURRENT_TIMESTAMP,
+  estado tinyint(1) DEFAULT 1,
+  UNIQUE KEY uk_rol_nombre (nombre)
+);
+
 CREATE TABLE cliente (
   idcliente int PRIMARY KEY AUTO_INCREMENT,
   nombres varchar(255) NOT NULL,
@@ -88,7 +101,7 @@ CREATE TABLE usuarios (
   direccion varchar(255) DEFAULT NULL,
   telefono varchar(15) DEFAULT NULL,
   correo varchar(255) DEFAULT NULL,
-  cargo varchar(255) DEFAULT NULL,
+  idrol int NOT NULL,
   clave varchar(255) NOT NULL,
   imagen varchar(255),
   fechacreacion DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -96,19 +109,21 @@ CREATE TABLE usuarios (
   estado tinyint(1) DEFAULT 1,
   idsucursal int,
   FOREIGN KEY (idsucursal) REFERENCES sucursal(idsucursal),
+  FOREIGN KEY (idrol) REFERENCES rol(idrol),
   UNIQUE KEY (correo),
   UNIQUE KEY (tipodocumento, numdocumento)
 );
 
 -- Ahora creamos las tablas que dependen de las anteriores
-CREATE TABLE permisousuario (
-  idrol int PRIMARY KEY AUTO_INCREMENT,
-  idpermiso int DEFAULT NULL,
-  idusuario int DEFAULT NULL,
+CREATE TABLE rolpermiso (
+  idrolpermiso int PRIMARY KEY AUTO_INCREMENT,
+  idrol int NOT NULL,
+  idpermiso int NOT NULL,
   fechacreacion DATETIME DEFAULT CURRENT_TIMESTAMP,
   fechaactualizacion DATETIME ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (idpermiso) REFERENCES permiso(idpermiso),
-  FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario)
+  FOREIGN KEY (idrol) REFERENCES rol(idrol) ON DELETE CASCADE,
+  FOREIGN KEY (idpermiso) REFERENCES permiso(idpermiso) ON DELETE CASCADE,
+  UNIQUE KEY uk_rol_permiso (idrol, idpermiso)
 );
 
 CREATE TABLE compra (

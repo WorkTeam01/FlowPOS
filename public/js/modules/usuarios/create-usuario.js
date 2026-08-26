@@ -88,41 +88,4 @@ $(document).ready(function () {
         }
     });
 
-    // Botón para seleccionar todos los permisos
-    $('#seleccionar-todos').click(function () {
-        $('input[name="permisos[]"]').prop('checked', true);
-
-        // Efecto visual
-        Swal.fire({
-            position: 'top-end',
-            icon: 'success',
-            title: 'Todos los permisos seleccionados',
-            showConfirmButton: false,
-            timer: 3000,
-            toast: true,
-            didOpen: (toast) => {
-                toast.onmouseenter = Swal.stopTimer;
-                toast.onmouseleave = Swal.resumeTimer;
-            }
-        });
-    });
-
-    // Botón para deseleccionar todos los permisos
-    $('#deseleccionar-todos').click(function () {
-        $('input[name="permisos[]"]').prop('checked', false);
-
-        // Efecto visual
-        Swal.fire({
-            position: 'top-end',
-            icon: 'info',
-            title: 'Todos los permisos deseleccionados',
-            showConfirmButton: false,
-            timer: 3000,
-            toast: true,
-            didOpen: (toast) => {
-                toast.onmouseenter = Swal.stopTimer;
-                toast.onmouseleave = Swal.resumeTimer;
-            }
-        });
-    });
 });

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../controllers/permisos/PermisoController.php';
+require_once __DIR__ . '/../../controllers/rol/RolController.php';
 require_once __DIR__ . '/../../services/AuthorizationService.php';
 require_once __DIR__ . '/../layouts/session.php';
 
@@ -21,16 +22,35 @@ include_once '../layouts/header.php';
 
 $module_scripts = ['permisos/index-permisos'];
 
-$controller = new PermisoController();
-$permisos = $controller->index();
+$permisoController = new PermisoController();
+$permisos = $permisoController->index();
+
+// Matriz inversa: por cada permiso, qué roles activos lo tienen. El catálogo
+// permiso es un contrato con el código PHP (~40 llamadas tienePermisoNombre()
+// hardcodeadas), no dato editable por UI — esta vista es solo de auditoría;
+// editar asignaciones se hace en Roles > Matriz de Permisos.
+$rolController = new RolController();
+$matriz = $rolController->getMatriz();
+
+$roles_por_permiso = [];
+foreach ($matriz['asignaciones'] as $idrol => $idpermisos) {
+    foreach ($idpermisos as $idpermiso) {
+        $roles_por_permiso[$idpermiso][] = $idrol;
+    }
+}
+
+$roles_por_id = [];
+foreach ($matriz['roles'] as $rol) {
+    $roles_por_id[$rol['idrol']] = $rol['nombre'];
+}
 ?>
 
 <!-- Content Header (Page header) -->
 <section class="content-header">
     <div class="container-fluid">
-        <div class="row mb-2">
+        <div class="row">
             <div class="col-sm-6">
-                <h1>Gestión de Permisos</h1>
+                <h1>Catálogo de Permisos</h1>
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
@@ -45,12 +65,17 @@ $permisos = $controller->index();
 <!-- Main content -->
 <section class="content">
     <div class="container-fluid">
+        <?php if ($authService->esAdministrador($idusuario)) : ?>
+            <div class="alert alert-info">
+                Este listado es de solo lectura. Para asignar o quitar permisos de un rol, usar
+                <a href="<?= $URL; ?>views/roles/permisos.php" class="alert-link">Roles &gt; Matriz de Permisos</a>.
+            </div>
+        <?php endif; ?>
         <div class="row">
-            <!-- Lista de permisos - Columna Principal (8) -->
-            <div class="col-md-8">
+            <div class="col-12">
                 <div class="card card-outline card-primary">
                     <div class="card-header">
-                        <h3 class="card-title">Listado de Permisos del Sistema</h3>
+                        <h3 class="card-title">Permisos del sistema y roles que los tienen asignados</h3>
                         <div class="card-tools">
                             <button type="button" class="btn btn-tool" data-card-widget="collapse">
                                 <i class="fas fa-minus"></i>
@@ -59,133 +84,47 @@ $permisos = $controller->index();
                     </div>
                     <!-- /.card-header -->
                     <div class="card-body">
-                        <div class="table-responsive">
-                            <table id="tablaPermisos" class="table table-bordered table-striped table-hover">
-                                <thead>
+                        <table id="tablaPermisos" class="table table-bordered table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th style="width: 10px">#</th>
+                                    <th>Nombre</th>
+                                    <th>Estado</th>
+                                    <th>Roles con este permiso</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $contador = 1;
+                                foreach ($permisos as $permiso) :
+                                    $estado = $permiso['estado'];
+                                    $clase_estado = $estado ? 'badge-success' : 'badge-danger';
+                                    $texto_estado = $estado ? 'Activo' : 'Inactivo';
+                                    $ids_roles = $roles_por_permiso[$permiso['idpermiso']] ?? [];
+                                ?>
                                     <tr>
-                                        <th style="width: 10px">#</th>
-                                        <th>Nombre</th>
-                                        <th>Estado</th>
+                                        <td><?= $contador++; ?></td>
+                                        <td><?= htmlspecialchars($permiso['nombre']); ?></td>
+                                        <td class="text-center">
+                                            <span class="badge <?= $clase_estado; ?>"><?= $texto_estado; ?></span>
+                                        </td>
+                                        <td>
+                                            <?php if (empty($ids_roles)) : ?>
+                                                <span class="text-muted">Ningún rol</span>
+                                            <?php else : ?>
+                                                <?php foreach ($ids_roles as $idrol) : ?>
+                                                    <span class="badge badge-secondary"><?= htmlspecialchars($roles_por_id[$idrol] ?? $idrol); ?></span>
+                                                <?php endforeach; ?>
+                                            <?php endif; ?>
+                                        </td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    $contador = 1;
-                                    foreach ($permisos as $permiso) :
-                                        $estado = $permiso['estado'];
-                                        $clase_estado = $estado ? 'badge-success' : 'badge-danger';
-                                        $texto_estado = $estado ? 'Activo' : 'Inactivo';
-                                    ?>
-                                        <tr>
-                                            <td><?= $contador++; ?></td>
-                                            <td><?= htmlspecialchars($permiso['nombre']); ?></td>
-                                            <td class="text-center">
-                                                <span class="badge <?= $clase_estado; ?>"><?= $texto_estado; ?></span>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
                     <!-- /.card-body -->
                 </div>
                 <!-- /.card -->
-            </div>
-
-            <!-- Información de permisos - Columna Lateral (4) -->
-            <div class="col-md-4">
-                <!-- Permisos de Operaciones -->
-                <div class="card card-primary">
-                    <div class="card-header">
-                        <h3 class="card-title">Permisos de Operaciones</h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">
-                                <i class="fas fa-cash-register text-primary mr-2"></i> <strong>ventas</strong>
-                                <p class="text-muted mb-0 small">Crear ventas y ver el propio historial (todas para administradores)</p>
-                            </li>
-                            <li class="list-group-item">
-                                <i class="fas fa-users text-warning mr-2"></i> <strong>clientes</strong>
-                                <p class="text-muted mb-0 small">Gestión de clientes</p>
-                            </li>
-                            <li class="list-group-item">
-                                <i class="fas fa-shopping-cart text-info mr-2"></i> <strong>compras</strong>
-                                <p class="text-muted mb-0 small">Crear compras y ver el propio historial (todas para administradores)</p>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Permisos de Inventario -->
-                <div class="card card-success">
-                    <div class="card-header">
-                        <h3 class="card-title">Permisos de Inventario</h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">
-                                <i class="fas fa-shoe-prints text-primary mr-2"></i> <strong>productos</strong>
-                                <p class="text-muted mb-0 small">Gestión de productos</p>
-                            </li>
-                            <li class="list-group-item">
-                                <i class="fas fa-tags text-warning mr-2"></i> <strong>categorias</strong>
-                                <p class="text-muted mb-0 small">Gestión de categorías</p>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Permisos Administrativos -->
-                <div class="card card-danger">
-                    <div class="card-header">
-                        <h3 class="card-title">Permisos Administrativos</h3>
-                        <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">
-                                <i class="fas fa-building text-primary mr-2"></i> <strong>empresa</strong>
-                                <p class="text-muted mb-0 small">Configuración de empresa</p>
-                            </li>
-                            <li class="list-group-item">
-                                <i class="fas fa-store-alt text-success mr-2"></i> <strong>sucursales</strong>
-                                <p class="text-muted mb-0 small">Gestión de sucursales</p>
-                            </li>
-                            <li class="list-group-item">
-                                <i class="fas fa-user-tie text-info mr-2"></i> <strong>usuarios</strong>
-                                <p class="text-muted mb-0 small">Administración de usuarios</p>
-                            </li>
-                            <li class="list-group-item">
-                                <i class="fas fa-key text-warning mr-2"></i> <strong>permisos</strong>
-                                <p class="text-muted mb-0 small">Gestión de permisos</p>
-                            </li>
-                            <li class="list-group-item">
-                                <i class="fas fa-user-clock text-danger mr-2"></i> <strong>sesiones</strong>
-                                <p class="text-muted mb-0 small">Monitoreo de sesiones</p>
-                            </li>
-                            <li class="list-group-item">
-                                <i class="fas fa-user mr-2"></i> <strong>perfil</strong>
-                                <p class="text-muted mb-0 small">Gestión del perfil de usuario</p>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
             </div>
         </div>
         <!-- /.row -->

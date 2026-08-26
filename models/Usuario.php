@@ -77,7 +77,10 @@ class Usuario
     public function getAll()
     {
         try {
-            $query = "SELECT * FROM {$this->tabla} ORDER BY idusuario DESC";
+            $query = "SELECT u.*, CONCAT(UPPER(LEFT(r.nombre,1)), SUBSTRING(r.nombre,2)) AS cargo
+                     FROM {$this->tabla} u
+                     LEFT JOIN rol r ON r.idrol = u.idrol
+                     ORDER BY u.idusuario DESC";
             $stmt = $this->conexion->prepare($query);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -96,7 +99,10 @@ class Usuario
     public function getById($id)
     {
         try {
-            $query = "SELECT * FROM {$this->tabla} WHERE idusuario = :id";
+            $query = "SELECT u.*, CONCAT(UPPER(LEFT(r.nombre,1)), SUBSTRING(r.nombre,2)) AS cargo
+                     FROM {$this->tabla} u
+                     LEFT JOIN rol r ON r.idrol = u.idrol
+                     WHERE u.idusuario = :id";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':id', $id, PDO::PARAM_INT);
             $stmt->execute();
@@ -119,10 +125,10 @@ class Usuario
             // Encriptar la contraseña
             $clave_hash = password_hash($datos['clave'], PASSWORD_DEFAULT);
 
-            $query = "INSERT INTO {$this->tabla} (nombre, apellidopaterno, apellidomaterno, tipodocumento, numdocumento, 
-                      direccion, telefono, correo, cargo, clave, imagen, idsucursal, estado) 
-                      VALUES (:nombre, :apellidopaterno, :apellidomaterno, :tipodocumento, :numdocumento, 
-                      :direccion, :telefono, :correo, :cargo, :clave, :imagen, :idsucursal, :estado)";
+            $query = "INSERT INTO {$this->tabla} (nombre, apellidopaterno, apellidomaterno, tipodocumento, numdocumento,
+                      direccion, telefono, correo, idrol, clave, imagen, idsucursal, estado)
+                      VALUES (:nombre, :apellidopaterno, :apellidomaterno, :tipodocumento, :numdocumento,
+                      :direccion, :telefono, :correo, :idrol, :clave, :imagen, :idsucursal, :estado)";
 
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':nombre', $datos['nombre'], PDO::PARAM_STR);
@@ -155,11 +161,7 @@ class Usuario
                 $stmt->bindParam(':correo', $datos['correo'], PDO::PARAM_STR);
             }
 
-            if (empty($datos['cargo'])) {
-                $stmt->bindValue(':cargo', null, PDO::PARAM_NULL);
-            } else {
-                $stmt->bindParam(':cargo', $datos['cargo'], PDO::PARAM_STR);
-            }
+            $stmt->bindParam(':idrol', $datos['idrol'], PDO::PARAM_INT);
 
             if (empty($datos['imagen'])) {
                 $stmt->bindValue(':imagen', null, PDO::PARAM_NULL);
@@ -201,11 +203,11 @@ class Usuario
                       numdocumento = :numdocumento, 
                       direccion = :direccion, 
                       telefono = :telefono, 
-                      correo = :correo, 
-                      cargo = :cargo, 
-                      imagen = :imagen, 
+                      correo = :correo,
+                      idrol = :idrol,
+                      imagen = :imagen,
                       idsucursal = :idsucursal,
-                      estado = :estado 
+                      estado = :estado
                       WHERE idusuario = :id";
 
             $stmt = $this->conexion->prepare($query);
@@ -239,11 +241,7 @@ class Usuario
                 $stmt->bindParam(':correo', $datos['correo'], PDO::PARAM_STR);
             }
 
-            if (empty($datos['cargo'])) {
-                $stmt->bindValue(':cargo', null, PDO::PARAM_NULL);
-            } else {
-                $stmt->bindParam(':cargo', $datos['cargo'], PDO::PARAM_STR);
-            }
+            $stmt->bindParam(':idrol', $datos['idrol'], PDO::PARAM_INT);
 
             // Para la imagen, también es bueno manejar el null explícitamente
             if (empty($datos['imagen'])) {
@@ -480,7 +478,10 @@ class Usuario
     public function loginPorCorreo($correo, $clave)
     {
         try {
-            $query = "SELECT * FROM usuarios WHERE correo = :correo AND estado = 1";
+            $query = "SELECT u.*, r.dashboard AS rol_dashboard, r.nombre AS rol_nombre
+                     FROM usuarios u
+                     LEFT JOIN rol r ON r.idrol = u.idrol
+                     WHERE u.correo = :correo AND u.estado = 1";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':correo', $correo, PDO::PARAM_STR);
             $stmt->execute();
@@ -508,7 +509,10 @@ class Usuario
     public function loginPorNumDocumento($numDocumento, $clave)
     {
         try {
-            $query = "SELECT * FROM usuarios WHERE numdocumento = :numdocumento AND estado = 1";
+            $query = "SELECT u.*, r.dashboard AS rol_dashboard, r.nombre AS rol_nombre
+                     FROM usuarios u
+                     LEFT JOIN rol r ON r.idrol = u.idrol
+                     WHERE u.numdocumento = :numdocumento AND u.estado = 1";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':numdocumento', $numDocumento, PDO::PARAM_STR);
             $stmt->execute();
@@ -581,7 +585,7 @@ class Usuario
                 empty($datos['tipodocumento']) ||
                 empty($datos['numdocumento']) ||
                 empty($datos['correo']) ||
-                empty($datos['cargo']) ||
+                empty($datos['idrol']) ||
                 empty($datos['clave'])
             ) {
                 $errores[] = 'Todos los campos obligatorios deben estar completos';
@@ -589,7 +593,7 @@ class Usuario
         } else {
             // Validación para actualización de usuario
             // Solo validar los campos que están presentes y no vacíos
-            $campos_obligatorios = ['nombre', 'apellidopaterno', 'tipodocumento', 'numdocumento', 'correo', 'cargo'];
+            $campos_obligatorios = ['nombre', 'apellidopaterno', 'tipodocumento', 'numdocumento', 'correo', 'idrol'];
             $campos_faltantes = [];
 
             foreach ($campos_obligatorios as $campo) {

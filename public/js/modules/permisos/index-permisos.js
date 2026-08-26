@@ -11,7 +11,7 @@ $(document).ready(function () {
                 text: 'Copiar',
                 extend: 'copy',
                 exportOptions: {
-                    columns: [0, 1, 2]
+                    columns: [0, 1, 2, 3]
                 }
             }, {
                 extend: 'pdf',
@@ -19,7 +19,7 @@ $(document).ready(function () {
                 filename: 'permisos_sistema_' + new Date().toISOString().slice(0, 10),
                 pageSize: 'LETTER',
                 exportOptions: {
-                    columns: [0, 1, 2]
+                    columns: [0, 1, 2, 3]
                 },
                 customize: function (doc) {
                     // Estilo básico
@@ -98,7 +98,7 @@ $(document).ready(function () {
                 messageTop: 'Registro de permisos del sistema',
                 messageBottom: 'Documento generado el ' + new Date().toLocaleDateString('es-BO'),
                 exportOptions: {
-                    columns: [0, 1, 2],
+                    columns: [0, 1, 2, 3],
                     format: {
                         body: function (data, row, column, node) {
                             if (column === 2) { // Columna de estado
@@ -112,7 +112,7 @@ $(document).ready(function () {
                 extend: 'csv',
                 text: 'CSV',
                 exportOptions: {
-                    columns: [0, 1, 2]
+                    columns: [0, 1, 2, 3]
                 }
             }, {
                 extend: 'print',
@@ -120,7 +120,7 @@ $(document).ready(function () {
                 title: 'Permisos del Sistema - ' + window.APP.name + '',
                 messageTop: 'Reporte generado el ' + new Date().toLocaleDateString('es-BO'),
                 exportOptions: {
-                    columns: [0, 1, 2],
+                    columns: [0, 1, 2, 3],
                     format: {
                         body: function (data, row, column, node) {
                             if (column === 2) { // Columna de estado

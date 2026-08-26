@@ -297,7 +297,7 @@ global $URL;
                         <?php endif; ?>
 
                         <!-- Administración -->
-                        <?php if ($authService->tienePermisoNombre($idusuariosesion, 'usuarios') || $authService->tienePermisoNombre($idusuariosesion, 'permisos') || $authService->tienePermisoNombre($idusuariosesion, 'sesiones')) : ?>
+                        <?php if ($authService->tienePermisoNombre($idusuariosesion, 'usuarios') || $authService->tienePermisoNombre($idusuariosesion, 'permisos') || $authService->tienePermisoNombre($idusuariosesion, 'sesiones') || $authService->esAdministrador($idusuariosesion)) : ?>
                             <li class="nav-item">
                                 <a href="#" class="nav-link">
                                     <i class="nav-icon fas fa-user-shield"></i>
@@ -312,6 +312,16 @@ global $URL;
                                             <a href="<?= $URL; ?>views/usuarios" class="nav-link">
                                                 <i class="fas fa-user-alt nav-icon"></i>
                                                 <p>Usuarios</p>
+                                            </a>
+                                        </li>
+                                    <?php endif; ?>
+                                    <?php // Solo administradores: la matriz rol×permiso permite auto-escalada
+                                    // si un supervisor con el permiso 'permisos' pudiera tocarla. ?>
+                                    <?php if ($authService->esAdministrador($idusuariosesion)) : ?>
+                                        <li class="nav-item">
+                                            <a href="<?= $URL; ?>views/roles" class="nav-link">
+                                                <i class="fas fa-user-tag nav-icon"></i>
+                                                <p>Roles</p>
                                             </a>
                                         </li>
                                     <?php endif; ?>

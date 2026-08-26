@@ -33,6 +33,12 @@ class UsuarioController
     private $authService;
 
     /**
+     * Modelo de Rol
+     * @var Rol
+     */
+    private $rolModelo;
+
+    /**
      * Constructor de la clase
      */
     public function __construct()
@@ -45,6 +51,42 @@ class UsuarioController
         $this->imagenService = new ImagenService(__DIR__ . '/../../public/uploads/usuarios/');
 
         $this->authService = new AuthorizationService();
+
+        require_once __DIR__ . '/../../models/Rol.php';
+        $this->rolModelo = new Rol();
+    }
+
+    /**
+     * Resuelve un idrol de $_POST contra la tabla rol, nunca confiando en
+     * un nombre de cargo enviado crudo por el POST.
+     *
+     * @param mixed $post_idrol Valor crudo de $_POST['idrol']
+     * @return array{idrol:int|null,rol:array|false} idrol resuelto (null si no existe/inactivo) y el registro del rol
+     */
+    private function resolverRolDesdePost($post_idrol)
+    {
+        $idrol = isset($post_idrol) ? (int) $post_idrol : 0;
+        if (!$idrol) {
+            return ['idrol' => null, 'rol' => false];
+        }
+
+        $rol = $this->rolModelo->getById($idrol);
+        if (!$rol || (int) $rol['estado'] !== 1) {
+            return ['idrol' => null, 'rol' => false];
+        }
+
+        return ['idrol' => $idrol, 'rol' => $rol];
+    }
+
+    /**
+     * Determina si el rol (registro de la tabla rol) es administrador.
+     *
+     * @param array|false $rol Registro de rol, o false si no se resolvió
+     * @return bool
+     */
+    private function esRolAdmin($rol)
+    {
+        return $rol && (int) $rol['es_admin'] === 1;
     }
 
     /**
@@ -82,7 +124,6 @@ class UsuarioController
             'direccion' => isset($post_data['direccion']) && !empty($post_data['direccion']) ? trim($post_data['direccion']) : null,
             'telefono' => isset($post_data['telefono']) && !empty($post_data['telefono']) ? trim($post_data['telefono']) : null,
             'correo' => isset($post_data['correo']) && !empty($post_data['correo']) ? trim($post_data['correo']) : '',
-            'cargo' => isset($post_data['cargo']) && !empty($post_data['cargo']) ? trim($post_data['cargo']) : '',
             'clave' => isset($post_data['clave']) ? trim($post_data['clave']) : '',
             'estado' => isset($post_data['estado']) ? (int)$post_data['estado'] : 1,
             'imagen' => null // Se establece más tarde
@@ -101,13 +142,21 @@ class UsuarioController
             return ['success' => false, 'message' => 'Acceso no permitido.', 'icon' => 'warning', 'redirect' => 'index.php'];
         }
 
-        // Preparar datos del usuario
-        $datos = $this->modelo->sanitizarDatos($this->prepararDatosUsuario($_POST));
-
-        // Solo un administrador puede asignar el cargo Administrador
-        if (strcasecmp($datos['cargo'], 'Administrador') === 0 && !$this->authService->esAdministrador($_SESSION['usuario_id'])) {
-            return ['success' => false, 'message' => 'No tiene permisos para asignar el cargo de Administrador', 'icon' => 'error', 'redirect' => 'create.php'];
+        // Resolver el rol solicitado contra la tabla rol
+        $rolSeleccionado = $this->resolverRolDesdePost($_POST['idrol'] ?? null);
+        if ($rolSeleccionado['idrol'] === null) {
+            return ['success' => false, 'message' => 'Debe seleccionar un rol válido', 'icon' => 'error', 'redirect' => 'create.php'];
         }
+
+        // Solo un administrador puede asignar un rol con es_admin=1
+        if ($this->esRolAdmin($rolSeleccionado['rol']) && !$this->authService->esAdministrador($_SESSION['usuario_id'])) {
+            return ['success' => false, 'message' => 'No tiene permisos para asignar un rol de Administrador', 'icon' => 'error', 'redirect' => 'create.php'];
+        }
+
+        // Preparar datos del usuario
+        $datos = $this->prepararDatosUsuario($_POST);
+        $datos['idrol'] = $rolSeleccionado['idrol'];
+        $datos = $this->modelo->sanitizarDatos($datos);
 
         // Validar datos en el modelo
         $errores = $this->modelo->validarDatos($datos);
@@ -134,12 +183,6 @@ class UsuarioController
 
         // Guardar usuario usando el modelo
         if ($this->modelo->crear($datos)) {
-            // Obtener el ID del usuario recién creado
-            $idusuario = $this->modelo->getLastInsertId();
-
-            // Procesar permisos seleccionados
-            $this->procesarPermisos($idusuario, $_POST);
-
             return ['success' => true, 'message' => 'Usuario creado correctamente', 'icon' => 'success', 'redirect' => 'index.php'];
         } else {
             return ['success' => false, 'message' => 'Error al crear el usuario: ' . $this->modelo->getLastError(), 'icon' => 'error', 'redirect' => 'create.php'];
@@ -201,9 +244,21 @@ class UsuarioController
             return ['success' => false, 'message' => 'Usuario no encontrado para actualizar', 'icon' => 'error', 'redirect' => 'index.php'];
         }
 
-        // Solo un administrador puede modificar una cuenta que ya es Administrador
-        if (strcasecmp($usuario_actual['cargo'], 'Administrador') === 0 && !$this->authService->esAdministrador($_SESSION['usuario_id'])) {
+        // Solo un administrador puede modificar una cuenta cuyo rol ACTUAL ya es administrador
+        $rolActual = $usuario_actual['idrol'] ? $this->rolModelo->getById($usuario_actual['idrol']) : false;
+        if ($this->esRolAdmin($rolActual) && !$this->authService->esAdministrador($_SESSION['usuario_id'])) {
             return ['success' => false, 'message' => 'No tiene permisos para modificar una cuenta de Administrador', 'icon' => 'error', 'redirect' => "update.php?id=$id"];
+        }
+
+        // Resolver el rol NUEVO solicitado
+        $rolSeleccionado = $this->resolverRolDesdePost($_POST['idrol'] ?? null);
+        if ($rolSeleccionado['idrol'] === null) {
+            return ['success' => false, 'message' => 'Debe seleccionar un rol válido', 'icon' => 'error', 'redirect' => "update.php?id=$id"];
+        }
+
+        // Solo un administrador puede asignar o conservar un rol con es_admin=1
+        if ($this->esRolAdmin($rolSeleccionado['rol']) && !$this->authService->esAdministrador($_SESSION['usuario_id'])) {
+            return ['success' => false, 'message' => 'No tiene permisos para asignar un rol de Administrador', 'icon' => 'error', 'redirect' => "update.php?id=$id"];
         }
 
         // Guardar imagen actual para posible eliminación posterior
@@ -211,9 +266,10 @@ class UsuarioController
 
         // Preparar datos del usuario
         $datos = $this->prepararDatosUsuario($_POST);
+        $datos['idrol'] = $rolSeleccionado['idrol'];
 
         // Asegurarse de que los campos obligatorios estén presentes incluso si no se modificaron
-        $campos_obligatorios = ['nombre', 'apellidopaterno', 'tipodocumento', 'numdocumento', 'correo', 'cargo'];
+        $campos_obligatorios = ['nombre', 'apellidopaterno', 'tipodocumento', 'numdocumento', 'correo'];
         foreach ($campos_obligatorios as $campo) {
             if (empty($datos[$campo]) && isset($usuario_actual[$campo])) {
                 $datos[$campo] = $usuario_actual[$campo];
@@ -222,11 +278,6 @@ class UsuarioController
 
         // Sanitizar los datos
         $datos = $this->modelo->sanitizarDatos($datos);
-
-        // Solo un administrador puede asignar o conservar el cargo Administrador
-        if (strcasecmp($datos['cargo'], 'Administrador') === 0 && !$this->authService->esAdministrador($_SESSION['usuario_id'])) {
-            return ['success' => false, 'message' => 'No tiene permisos para asignar el cargo de Administrador', 'icon' => 'error', 'redirect' => "update.php?id=$id"];
-        }
 
         // Establecer la imagen anterior por defecto
         $datos['imagen'] = $imagen_antigua;
@@ -283,9 +334,6 @@ class UsuarioController
         }
 
         if ($actualizado && $clave_actualizada) {
-            // Procesar permisos seleccionados
-            $this->procesarPermisos($id, $_POST);
-
             return ['success' => true, 'message' => 'Usuario actualizado correctamente', 'icon' => 'success', 'redirect' => 'index.php'];
         } else {
             $error_message = 'Error al actualizar el usuario.';
@@ -336,7 +384,7 @@ class UsuarioController
             // Mantener los campos administrativos como estaban
             'tipodocumento' => $usuario_actual['tipodocumento'],
             'numdocumento' => $usuario_actual['numdocumento'],
-            'cargo' => $usuario_actual['cargo'],
+            'idrol' => $usuario_actual['idrol'],
             'estado' => $usuario_actual['estado'],
             'imagen' => $imagen_antigua
         ];
@@ -411,7 +459,8 @@ class UsuarioController
         }
 
         $usuario_objetivo = $this->modelo->getById($id);
-        if ($usuario_objetivo && strcasecmp($usuario_objetivo['cargo'], 'Administrador') === 0 && !$this->authService->esAdministrador($_SESSION['usuario_id'])) {
+        $rolObjetivo = $usuario_objetivo && $usuario_objetivo['idrol'] ? $this->rolModelo->getById($usuario_objetivo['idrol']) : false;
+        if ($this->esRolAdmin($rolObjetivo) && !$this->authService->esAdministrador($_SESSION['usuario_id'])) {
             return ['success' => false, 'message' => 'No tiene permisos para cambiar el estado de una cuenta de Administrador', 'icon' => 'error'];
         }
 
@@ -422,38 +471,6 @@ class UsuarioController
             return ['success' => true, 'message' => "Usuario $accion correctamente", 'icon' => 'success'];
         } else {
             return ['success' => false, 'message' => 'Error al cambiar el estado del usuario: ' . $this->modelo->getLastError(), 'icon' => 'error'];
-        }
-    }
-
-    /**
-     * Procesa los permisos seleccionados para un usuario
-     * 
-     * @param int $idusuario ID del usuario
-     * @param array $post_data Datos del formulario
-     */
-    private function procesarPermisos($idusuario, $post_data)
-    {
-        // Incluir el servicio de autorización
-        require_once __DIR__ . '/../../services/AuthorizationService.php';
-        $authService = new AuthorizationService();
-
-        // Obtener todos los permisos disponibles
-        $todos_permisos = $authService->obtenerTodosLosPermisos();
-
-        // Permisos seleccionados en el formulario
-        $permisos_seleccionados = isset($post_data['permisos']) ? $post_data['permisos'] : [];
-
-        // Procesar cada permiso disponible
-        foreach ($todos_permisos as $permiso) {
-            $idpermiso = $permiso['idpermiso'];
-
-            // Si el permiso está seleccionado, asignarlo
-            if (in_array($idpermiso, $permisos_seleccionados)) {
-                $authService->asignarPermiso($idusuario, $idpermiso);
-            } else {
-                // Si no está seleccionado, revocarlo
-                $authService->revocarPermiso($idusuario, $idpermiso);
-            }
         }
     }
 }

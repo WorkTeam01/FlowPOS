@@ -24,7 +24,7 @@ $authService = new AuthorizationService();
 $currentUser = getCurrentUser();
 $idusuariosesion = $currentUser['id'];
 
-if (strtolower($currentUser['cargo']) !== 'supervisor') {
+if (strtolower($currentUser['rol'] ?? '') !== 'supervisor') {
     // Devolver error si no es supervisor
     header('Content-Type: application/json');
     echo json_encode([

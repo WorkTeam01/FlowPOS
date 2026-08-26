@@ -40,7 +40,8 @@ if (!$usuario) {
     exit;
 }
 
-$permisosAsignados = $authService->obtenerPermisosAsignados($usuario['idusuario']);
+$permisosUsuario = $authService->obtenerPermisosUsuario($usuario['idusuario']);
+$idsPermisosUsuario = array_column($permisosUsuario, 'idpermiso');
 $todosLosPermisos = $authService->obtenerTodosLosPermisos();
 $esAdmin = $authService->esAdministrador($usuario['idusuario']);
 ?>
@@ -255,23 +256,22 @@ $esAdmin = $authService->esAdministrador($usuario['idusuario']);
                             <!-- Tab Permisos -->
                             <div class="tab-pane fade" id="permisos" role="tabpanel" aria-labelledby="tab-permisos">
                                 <div class="row">
-                                    <?php if (empty($permisosAsignados) && !$esAdmin): ?>
-                                        <div class="col-12">
-                                            <div class="alert alert-warning mb-0">
-                                                <i class="fas fa-exclamation-triangle"></i> Este usuario no tiene permisos específicos asignados.
-                                            </div>
-                                        </div>
-                                    <?php elseif ($esAdmin): ?>
+                                    <?php if ($esAdmin): ?>
                                         <div class="col-12">
                                             <div class="alert alert-info mb-0">
                                                 <i class="fas fa-crown"></i> Este usuario es Administrador y tiene acceso a todas las funcionalidades del sistema.
                                             </div>
                                         </div>
                                     <?php else: ?>
+                                        <div class="col-12">
+                                            <div class="alert alert-secondary mb-3">
+                                                <i class="fas fa-info-circle"></i> Permisos heredados del rol <strong><?= htmlspecialchars($usuario['cargo'] ?? '') ?></strong>.
+                                            </div>
+                                        </div>
                                         <?php foreach ($todosLosPermisos as $permiso): ?>
                                             <div class="col-md-6 mb-2">
                                                 <div class="d-flex align-items-center">
-                                                    <?php if (in_array($permiso['idpermiso'], $permisosAsignados)): ?>
+                                                    <?php if (in_array($permiso['idpermiso'], $idsPermisosUsuario)): ?>
                                                         <span class="badge badge-success mr-2"><i class="fas fa-check"></i></span>
                                                     <?php else: ?>
                                                         <span class="badge badge-secondary mr-2"><i class="fas fa-times"></i></span>

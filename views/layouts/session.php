@@ -167,36 +167,8 @@ function requireLogin($redirect_url = null)
 }
 
 /**
- * Requerir un rol específico para acceder a una página
- * 
- * @param array $roles_permitidos Roles que pueden acceder
- * @param string $redirect_url URL a la que redirigir si no tiene permiso
- */
-function requireRole($roles_permitidos, $redirect_url = null)
-{
-    global $URL;
-
-    if (!$redirect_url) {
-        $redirect_url = $URL . 'index.php';
-    }
-
-    // Primero verificar que haya sesión
-    requireLogin();
-
-    // Verificar rol
-    $rol_usuario = $_SESSION['usuario_cargo'] ?? '';
-
-    if (!in_array($rol_usuario, $roles_permitidos)) {
-        $_SESSION['mensaje'] = 'No tiene permisos para acceder a esta sección.';
-        $_SESSION['icono'] = 'error';
-        header('Location: ' . $redirect_url);
-        exit;
-    }
-}
-
-/**
  * Obtener datos del usuario actual
- * 
+ *
  * @return array|null Datos del usuario o null si no hay sesión
  */
 function getCurrentUser()
@@ -206,7 +178,9 @@ function getCurrentUser()
             'id' => $_SESSION['usuario_id'] ?? null,
             'nombre' => $_SESSION['usuario_nombre'] ?? null,
             'correo' => $_SESSION['usuario_correo'] ?? null,
-            'cargo' => $_SESSION['usuario_cargo'] ?? null,
+            'rol' => $_SESSION['usuario_rol'] ?? null,
+            'cargo' => isset($_SESSION['usuario_rol']) ? ucfirst($_SESSION['usuario_rol']) : null,
+            'idrol' => $_SESSION['usuario_idrol'] ?? null,
             'imagen' => $_SESSION['usuario_imagen'] ?? 'public/img/user_default.jpg',
             'sucursal' => $_SESSION['usuario_sucursal'] ?? null
         ];
