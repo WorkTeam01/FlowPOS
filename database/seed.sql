@@ -1,6 +1,6 @@
 -- Datos de demostración para el boilerplate SistemaVentas
--- Ejecutar después de schema.sql:
---   mysql -u root flowpos < seed.sql
+-- Ejecutar después de database/schema.sql:
+--   mysql -u root flowpos < database/seed.sql
 --
 -- Credenciales de acceso (clave: admin123):
 --   admin@demo.com      → administrador
