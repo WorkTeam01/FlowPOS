@@ -11,7 +11,7 @@ $(document).ready(function () {
                 text: 'Copiar',
                 extend: 'copy',
                 exportOptions: {
-                    columns: [0, 1, 2, 3]
+                    columns: [0, 1, 2]
                 }
             }, {
                 extend: 'pdf',
@@ -19,7 +19,7 @@ $(document).ready(function () {
                 filename: 'permisos_sistema_' + new Date().toISOString().slice(0, 10),
                 pageSize: 'LETTER',
                 exportOptions: {
-                    columns: [0, 1, 2, 3]
+                    columns: [0, 1, 2]
                 },
                 customize: function (doc) {
                     // Estilo básico
@@ -62,13 +62,6 @@ $(document).ready(function () {
                         }
                     });
 
-                    // Formatear estado
-                    doc.content[3].table.body.forEach(function (row) {
-                        if (row[2]) { // Columna de Estado
-                            row[2].alignment = 'center';
-                        }
-                    });
-
                     // Pie de página
                     doc.footer = function (currentPage, pageCount) {
                         return {
@@ -98,11 +91,14 @@ $(document).ready(function () {
                 messageTop: 'Registro de permisos del sistema',
                 messageBottom: 'Documento generado el ' + new Date().toLocaleDateString('es-BO'),
                 exportOptions: {
-                    columns: [0, 1, 2, 3],
+                    columns: [0, 1, 2],
                     format: {
                         body: function (data, row, column, node) {
-                            if (column === 2) { // Columna de estado
-                                return $(node).find('span').text();
+                            if (column === 2) { // Roles: aplanar badges a lista separada por comas
+                                var roles = $(node).find('.badge').map(function () {
+                                    return $(this).text().trim();
+                                }).get();
+                                return roles.length ? roles.join(', ') : $(node).text().trim();
                             }
                             return data;
                         }
@@ -112,7 +108,7 @@ $(document).ready(function () {
                 extend: 'csv',
                 text: 'CSV',
                 exportOptions: {
-                    columns: [0, 1, 2, 3]
+                    columns: [0, 1, 2]
                 }
             }, {
                 extend: 'print',
@@ -120,11 +116,14 @@ $(document).ready(function () {
                 title: 'Permisos del Sistema - ' + window.APP.name + '',
                 messageTop: 'Reporte generado el ' + new Date().toLocaleDateString('es-BO'),
                 exportOptions: {
-                    columns: [0, 1, 2, 3],
+                    columns: [0, 1, 2],
                     format: {
                         body: function (data, row, column, node) {
-                            if (column === 2) { // Columna de estado
-                                return $(node).find('span').text();
+                            if (column === 2) { // Roles: aplanar badges a lista separada por comas
+                                var roles = $(node).find('.badge').map(function () {
+                                    return $(this).text().trim();
+                                }).get();
+                                return roles.length ? roles.join(', ') : $(node).text().trim();
                             }
                             return data;
                         }
@@ -172,7 +171,4 @@ $(document).ready(function () {
             }
         }
     }).buttons().container().appendTo('#tablaPermisos_wrapper .col-md-6:eq(0)');
-
-    // Inicializar tooltips
-    $('[data-toggle="tooltip"]').tooltip();
 });

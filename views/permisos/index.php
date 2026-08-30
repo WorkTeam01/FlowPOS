@@ -65,31 +65,35 @@ foreach ($matriz['roles'] as $rol) {
 <!-- Main content -->
 <section class="content">
     <div class="container-fluid">
-        <?php if ($authService->esAdministrador($idusuario)) : ?>
-            <div class="alert alert-info">
-                Este listado es de solo lectura. Para asignar o quitar permisos de un rol, usar
+        <div class="alert alert-default-info">
+            <i class="fas fa-info-circle mr-1"></i>
+            Este listado es de solo lectura.
+            <?php if ($authService->esAdministrador($idusuario)) : ?>
+                Para asignar o quitar permisos de un rol, usar
                 <a href="<?= $URL; ?>views/roles/permisos.php" class="alert-link">Roles &gt; Matriz de Permisos</a>.
-            </div>
-        <?php endif; ?>
+            <?php else : ?>
+                La asignación de permisos por rol la gestiona un administrador.
+            <?php endif; ?>
+        </div>
         <div class="row">
             <div class="col-12">
                 <div class="card card-outline card-primary">
                     <div class="card-header">
                         <h3 class="card-title">Permisos del sistema y roles que los tienen asignados</h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer panel">
                                 <i class="fas fa-minus"></i>
                             </button>
                         </div>
                     </div>
                     <!-- /.card-header -->
                     <div class="card-body">
-                        <table id="tablaPermisos" class="table table-bordered table-striped table-hover">
+                        <table id="tablaPermisos" class="table table-bordered table-striped table-hover"
+                            aria-label="Catálogo de permisos del sistema y roles asignados">
                             <thead>
                                 <tr>
                                     <th style="width: 10px">#</th>
                                     <th>Nombre</th>
-                                    <th>Estado</th>
                                     <th>Roles con este permiso</th>
                                 </tr>
                             </thead>
@@ -97,17 +101,11 @@ foreach ($matriz['roles'] as $rol) {
                                 <?php
                                 $contador = 1;
                                 foreach ($permisos as $permiso) :
-                                    $estado = $permiso['estado'];
-                                    $clase_estado = $estado ? 'badge-success' : 'badge-danger';
-                                    $texto_estado = $estado ? 'Activo' : 'Inactivo';
                                     $ids_roles = $roles_por_permiso[$permiso['idpermiso']] ?? [];
                                 ?>
                                     <tr>
                                         <td><?= $contador++; ?></td>
                                         <td><?= htmlspecialchars($permiso['nombre']); ?></td>
-                                        <td class="text-center">
-                                            <span class="badge <?= $clase_estado; ?>"><?= $texto_estado; ?></span>
-                                        </td>
                                         <td>
                                             <?php if (empty($ids_roles)) : ?>
                                                 <span class="text-muted">Ningún rol</span>
