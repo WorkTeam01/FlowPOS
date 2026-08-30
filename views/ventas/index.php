@@ -174,7 +174,7 @@ $estadisticas = $controller->getEstadisticas();
                                                         <i class="fas fa-eye"></i>
                                                     </a>
 
-                                                    <?php if ($venta['estado'] == 1) : ?>
+                                                    <?php if ($venta['estado'] == 1 && strtolower((string) ($_SESSION['usuario_rol'] ?? '')) !== 'vendedor') : ?>
                                                         <button type="button" class="btn btn-danger btn-sm btn-anular-venta"
                                                             data-id="<?= $venta['idventa']; ?>"
                                                             data-titulo="VENT-<?= str_pad($venta['idventa'], 6, '0', STR_PAD_LEFT); ?>"

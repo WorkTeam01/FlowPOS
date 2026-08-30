@@ -130,7 +130,7 @@ include_once '../layouts/header.php';
                                     <i class="fas fa-arrow-left"></i> Volver
                                 </a>
 
-                                <?php if ($venta['estado'] == 1) : ?>
+                                <?php if ($venta['estado'] == 1 && strtolower((string) ($_SESSION['usuario_rol'] ?? '')) !== 'vendedor') : ?>
                                     <button type="button" class="btn btn-danger btn-anular-venta"
                                         data-id="<?= $venta['idventa']; ?>"
                                         data-nombre="Venta #<?= str_pad($venta['idventa'], 6, '0', STR_PAD_LEFT); ?>">

@@ -14,6 +14,16 @@ if (!$authService->tienePermisoNombre($_SESSION['usuario_id'], 'ventas') && !$au
     exit;
 }
 
+// Restricción por rol: el vendedor no puede anular ventas (solo supervisor y
+// administrador). Decisión puntual vía rol-check, no un permiso granular nuevo.
+if (strtolower((string) ($_SESSION['usuario_rol'] ?? '')) === 'vendedor'
+    && !$authService->esAdministrador($_SESSION['usuario_id'])) {
+    $_SESSION['mensaje'] = 'Su rol no permite anular ventas. Solicítelo a un supervisor.';
+    $_SESSION['icono'] = 'error';
+    header('Location: ' . $URL . 'views/ventas/index.php');
+    exit;
+}
+
 requireCSRF();
 
 require_once __DIR__ . '/VentaController.php';
