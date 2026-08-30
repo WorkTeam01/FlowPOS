@@ -82,7 +82,7 @@ Variables principales:
 | Variable       | Descripción                      | Ejemplo                     |
 | -------------- | -------------------------------- | --------------------------- |
 | `APP_NAME`     | Nombre visible de la aplicación  | `FlowPOS`                   |
-| `APP_VERSION`  | Versión actual de la aplicación  | `1.2.0`                     |
+| `APP_VERSION`  | Versión actual de la aplicación  | `1.2.1`                     |
 | `APP_CURRENCY` | Símbolo de moneda                | `Bs`, `$`, `€`, `S/`        |
 | `APP_URL`      | URL base (debe terminar con `/`) | `http://localhost/FlowPOS/` |
 | `TIMEZONE`     | Zona horaria PHP                 | `America/La_Paz`            |
@@ -133,9 +133,9 @@ Roles disponibles:
 
 - **Administrador**: acceso total.
 - **Supervisor**: operación y control.
-- **Vendedor**: flujo de venta y consulta.
+- **Vendedor**: flujo de venta y consulta. No puede anular ventas (reservado a supervisor/administrador).
 
-Los permisos granulares se administran por rol (matriz rol×permiso en `views/roles/permisos.php`), no por usuario individual.
+Los permisos granulares se administran por rol (matriz rol×permiso en `views/roles/permisos.php`), no por usuario individual. Restricciones a nivel de acción puntual (como la anulación de ventas) se aplican con un rol-check en el controlador correspondiente.
 
 ## Estructura del proyecto
 
@@ -170,6 +170,7 @@ FlowPOS/
 - Corregida escalada de privilegios en el módulo de usuarios: un usuario no-administrador podía asignarse (o asignar a otro) el cargo Administrador, y podía degradar, cambiar la contraseña o desactivar una cuenta que ya era Administrador; ahora se valida tanto el cargo nuevo solicitado como el cargo actual del registro objetivo; ver `CHANGELOG.md` [1.1.6].
 - Productos y clientes migrados al mismo formato de formulario (cards por sección) y estandarizada la confirmación de activar/desactivar en un único helper compartido, reduciendo la superficie de código duplicado entre módulos; ver `CHANGELOG.md` [1.1.7].
 - Sistema de permisos migrado a control de acceso basado en roles (RBAC): asignación granular por usuario reemplazada por una matriz rol×permiso, con validaciones anti-escalada de privilegios basadas en el rol; ver `CHANGELOG.md` [1.2.0].
+- Auditoría de accesibilidad del catálogo de permisos, barrido de contraste WCAG AA en callouts y paginación de DataTables, y anulación de ventas restringida al rol supervisor/administrador con un rol-check en el servidor (el POST directo del rol vendedor es rechazado); ver `CHANGELOG.md` [1.2.1].
 
 ## Changelog
 

@@ -12,10 +12,14 @@ git checkout -b feat/mi-mejora
 ```
 
 3. Realiza cambios pequeños y enfocados.
-4. Prueba tu cambio en entorno local (XAMPP/LAMP) antes de enviar PR.
-5. Actualiza documentación relacionada cuando aplique (`README.md`, `CLAUDE.md`, `PROMPTS.md`, etc.).
-6. Si tu cambio impacta comportamiento funcional, registra el cambio en `CHANGELOG.md`.
+4. Prueba tu cambio en entorno local (XAMPP/LAMP) antes de enviar PR. Los cambios que afecten permisos o flujos por rol deben probarse con las tres cuentas demo (administrador, supervisor, vendedor).
+5. Actualiza documentación relacionada cuando aplique (`README.md`, `CLAUDE.md`, `PROMPTS.md`, `CHANGELOG.md`).
+6. Si tu cambio impacta comportamiento funcional, regístralo en `CHANGELOG.md` (sección `Unreleased` o la versión en curso) y mantén `APP_VERSION` en `.env` sincronizado con la última versión publicada.
 7. Abre un Pull Request con contexto claro.
+
+## Versionado
+
+El proyecto sigue versionado semántico (`MAJOR.MINOR.PATCH`). El registro de cambios vive en `CHANGELOG.md` y la versión funcional vigente en `APP_VERSION` (`.env`); ambos deben quedar alineados en el mismo PR que introduce el cambio. Los tags de git se nombran sin prefijo (`1.2.1`, no `v1.2.1`).
 
 ## Entorno local
 
@@ -24,12 +28,14 @@ Este proyecto usa PHP + MariaDB sin build step ni gestor de paquetes.
 Pasos recomendados:
 
 ```bash
-cp .env.example .env
+cp .env.example .env   # ajusta DB_USER / DB_PASS según tu instalación
 mysql -u root -e "CREATE DATABASE flowpos CHARACTER SET utf8mb4;"
 mysql -u root flowpos < database/schema.sql
 mysql -u root flowpos < database/seed.sql
 sudo /opt/lampp/lampp start
 ```
+
+`database/schema.sql` ya incluye el esquema RBAC; sobre una base preexistente aplica en cambio las migraciones de `database/migrations/` en orden.
 
 Luego abre `http://localhost/FlowPOS/`.
 
@@ -64,8 +70,9 @@ Checklist mínima:
 - [ ] El cambio está acotado al objetivo.
 - [ ] Probado localmente.
 - [ ] No rompe flujos existentes.
-- [ ] Documentación actualizada (si aplica).
-- [ ] `CHANGELOG.md` actualizado (si aplica).
+- [ ] Documentación actualizada (si aplica): `README.md`, `CLAUDE.md`, `PROMPTS.md`.
+- [ ] `CHANGELOG.md` actualizado y `APP_VERSION` sincronizado (si aplica).
+- [ ] Cambios de permisos/rol probados con las tres cuentas demo.
 
 ## Reportar issues
 

@@ -5,6 +5,26 @@ Todos los cambios importantes de este proyecto se documentan en este archivo.
 Este formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.2.1] - 2026-08-30
+
+### Added
+
+- **Restricción de anulación de ventas al rol supervisor/administrador**: el rol `vendedor` ya no puede anular ventas. Resuelto con un rol-check puntual (`strtolower($_SESSION['usuario_rol']) === 'vendedor'`) en `controllers/ventas/anular_venta.php` como barrera real — un POST directo evadiendo el HTML es rechazado con mensaje flash y redirect al listado. El botón "Anular" se oculta además en `views/ventas/index.php` y `views/ventas/show.php` para ese rol (solo limpieza de UI). Decisión deliberada de no introducir un permiso de acción granular (`ventas.anular`) por un solo caso; el catálogo `permiso` sigue siendo de granularidad por módulo. Verificado en Playwright con las 3 cuentas demo: vendedor bloqueado (botón oculto + POST rechazado), supervisor y administrador anulan sin cambios.
+
+### Fixed
+
+- **Auditoría impeccable del módulo permisos (14/20 → 18/20)** sobre `views/permisos/index.php` y `public/js/modules/permisos/index-permisos.js`:
+  - Aviso `alert alert-info` (fondo sólido de AdminLTE, 3.04:1, falla WCAG AA) migrado a `alert alert-default-info` (~7:1). AdminLTE sobrescribe todas las variantes `.alert-*` de Bootstrap con fondo oscuro; hay que usar las variantes `alert-default-*`.
+  - El aviso de "solo lectura" ahora es visible también para no-administradores (antes envuelto en `if esAdministrador`), con copy adaptado por rol: el no-admin ve el texto sin el enlace a la matriz de permisos.
+  - Columna "Estado" eliminada de la tabla (siempre "Activo", sin UI para cambiarla; `badge-success` fallaba contraste). Tabla de 4 → 3 columnas; `exportOptions.columns` ajustado a `[0,1,2]` en copy/pdf/excel/csv/print, quitado el formateo de la columna Estado en el PDF, y `format.body` de Excel/print aplana los badges de roles a una lista separada por comas.
+  - `aria-label` agregado al botón de colapso del panel y al `<table>`.
+  - Línea muerta `$('[data-toggle="tooltip"]').tooltip();` eliminada del JS (la vista no tiene tooltips).
+- **Barrido de accesibilidad de contraste fuera del módulo permisos**:
+  - `public/css/core/common.css`: nueva regla `.dataTables_wrapper .pagination .page-item:not(.active):not(.disabled) .page-link { color: #0056b3 }` — oscurece el `#007bff` (3.98:1) heredado de AdminLTE en la paginación de todos los DataTables del proyecto a ~5.9:1. El `:not()` deja intactas la página activa y los botones deshabilitados.
+  - `alert alert-info` → `alert-default-info` en `views/usuarios/perfil.php`, `views/usuarios/show.php`, `views/usuarios/update.php` y `views/productos/show.php` (mismo override sólido de AdminLTE).
+  - Cierre del barrido: migradas también las `alert-danger` / `alert-warning` / `alert-success` restantes a variantes `alert-default-*` en `views/productos/show.php` (bloques de estado de stock y de margen), `views/ventas/show.php` y `views/compras/show.php` (aviso de la sección de observaciones). Ya no quedan `.alert-*` sólidas de AdminLTE en `views/` fuera del patrón `alert-default-*`; estas variantes conservan el mismo aspecto en dark-mode, sin contraparte `body.dark-mode`.
+  - `common.css`: área táctil de 44px (WCAG 2.5.5) extendida a los botones de reporte de DataTables (`.dt-buttons > .btn`), que no forman un `.btn-group` y por eso no los cubría la regla `@media (pointer: coarse)` existente.
+
 ## [1.2.0] - 2026-08-26
 
 ### Fixed
@@ -242,6 +262,9 @@ y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 - Configuración por variables de entorno (`.env`).
 - Compatibilidad con PHP 7.4+, MariaDB/MySQL y frontend AdminLTE/Bootstrap.
 
+[1.2.1]: https://github.com/WorkTeam01/FlowPOS/compare/1.2.0...1.2.1
+[1.2.0]: https://github.com/WorkTeam01/FlowPOS/compare/1.1.7...1.2.0
+[1.1.7]: https://github.com/WorkTeam01/FlowPOS/compare/1.1.6...1.1.7
 [1.1.6]: https://github.com/WorkTeam01/FlowPOS/compare/1.1.5...1.1.6
 [1.1.5]: https://github.com/WorkTeam01/FlowPOS/compare/1.1.4...1.1.5
 [1.1.4]: https://github.com/WorkTeam01/FlowPOS/compare/1.1.3...1.1.4

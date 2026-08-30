@@ -61,6 +61,7 @@ _______________
 - Vistas que no usan DataTables/Select2: declarar `$skip_datatables`/`$skip_select2` antes del `include_once` de `header.php` (ver CLAUDE.md)
 - No introducir dependencias externas sin evaluar el impacto
 - Lógica de negocio (cálculos, mapeos de estado/badge, agregaciones, consultas por fila) va en el controlador o el modelo — la vista solo consume datos ya resueltos (ver `VentaController` como referencia: `calcularTotales()`, `obtenerIconoMetodoPago()`, `calcularInfoMetodoPago()`)
+- Control de acceso: `tienePermisoNombre() + esAdministrador()` (AuthorizationService) en la vista y en cada acción — `requireRole()` es código muerto eliminado, no reintroducirlo. El catálogo `permiso` es de granularidad por módulo; restricciones a una sola acción dentro de un módulo (ej. anular ventas solo supervisor/admin) se resuelven con un rol-check puntual en el controlador (`strtolower($_SESSION['usuario_rol']) === '<rol>'`), no ampliando el catálogo
 - Si se modifica comportamiento funcional: actualizar `CHANGELOG.md`
 
 [Formato de salida]
@@ -117,7 +118,7 @@ Descripción: [criterios de aceptación]
 - Queries con PDO preparado — nunca concatenar variables en SQL
 - Mensajes flash: $_SESSION['mensaje'] + $_SESSION['icono'] antes de cualquier redirect
 - Subida de archivos: siempre ImagenService — nunca move_uploaded_file() directo
-- Control de acceso: requireRole() para páginas, AuthorizationService para acciones
+- Control de acceso: `tienePermisoNombre() + esAdministrador()` (AuthorizationService) en la vista y en cada acción — `requireRole()` es código muerto eliminado, no reintroducirlo. Restricciones a nivel de acción puntual: rol-check directo en el controlador, no permisos de acción nuevos en el catálogo
 - DataTables para listados; SweetAlert2 para confirmaciones — nunca alert()/confirm() nativo
 - Select2 para dropdowns; con dropdownParent si está dentro de un modal
 - Si la vista no usa DataTables y/o Select2, declarar `$skip_datatables`/`$skip_select2` antes de incluir `header.php`
@@ -202,7 +203,7 @@ Evalúa específicamente:
   CSRF (requireCSRF() en el controlador + csrfField()/csrfMetaTag() en la vista), sesiones mal validadas,
   mutaciones de estado invocadas por GET en vez de POST
 - Conexión: Conexion::getInstance() usado correctamente — nunca PDO directo
-- Autorización: requireRole() en páginas, AuthorizationService en acciones
+- Autorización: `tienePermisoNombre() + esAdministrador()` (AuthorizationService) en la vista y en cada acción — `requireRole()` es código muerto eliminado. Restricción a nivel de acción puntual: rol-check en el controlador
 - Uploads: ImagenService — nunca move_uploaded_file() directo
 - Flash messages: $_SESSION['mensaje'] + $_SESSION['icono'] antes de redirect
 - AJAX: JSON válido con header correcto
@@ -333,5 +334,5 @@ Devuelve en este orden:
 
 ---
 
-_Última actualización: 2026-08-26_
+_Última actualización: 2026-08-30_
 _Mantener sincronizado con CLAUDE.md al hacer cambios de arquitectura._
