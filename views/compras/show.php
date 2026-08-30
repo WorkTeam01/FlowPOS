@@ -203,7 +203,7 @@ $totales = $controller->calcularTotales($compra);
                             <?php endif; ?>
 
                             <?php if ($compra['estado'] == 0) : ?>
-                                <div class="alert alert-warning <?= !empty($compra['observaciones']) ? 'mt-3' : '' ?> mb-0">
+                                <div class="alert alert-default-warning <?= !empty($compra['observaciones']) ? 'mt-3' : '' ?> mb-0">
                                     <i class="icon fas fa-info-circle"></i>
                                     Esta compra fue cancelada el <?= date('d/m/Y H:i', strtotime($compra['fechaactualizacion'])); ?>.
                                     El stock de los productos fue revertido.

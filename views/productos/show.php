@@ -330,25 +330,25 @@ if (!$producto) {
 
                                         <div class="mt-3">
                                             <?php if ($producto['stock'] < $producto['stockminimo']): ?>
-                                                <div class="alert alert-danger">
+                                                <div class="alert alert-default-danger">
                                                     <i class="fas fa-exclamation-circle mr-2"></i>
                                                     <strong>¡Alerta de stock bajo!</strong> El stock actual está por debajo del mínimo recomendado.
                                                     Se recomienda realizar una compra pronto.
                                                 </div>
                                             <?php elseif ($producto['stock'] < ($producto['stockminimo'] * 1.5)): ?>
-                                                <div class="alert alert-warning">
+                                                <div class="alert alert-default-warning">
                                                     <i class="fas fa-exclamation-triangle mr-2"></i>
                                                     <strong>Stock cercano al mínimo.</strong> El stock actual se está acercando al nivel mínimo recomendado.
                                                 </div>
                                             <?php else: ?>
-                                                <div class="alert alert-success">
+                                                <div class="alert alert-default-success">
                                                     <i class="fas fa-check-circle mr-2"></i>
                                                     <strong>Stock saludable.</strong> El nivel de inventario está en un nivel óptimo.
                                                 </div>
                                             <?php endif; ?>
 
                                             <?php if (!empty($producto['stockmaximo']) && $producto['stock'] > $producto['stockmaximo']): ?>
-                                                <div class="alert alert-info">
+                                                <div class="alert alert-default-info">
                                                     <i class="fas fa-info-circle mr-2"></i>
                                                     <strong>Stock sobre el máximo.</strong> El inventario actual supera el nivel máximo recomendado.
                                                 </div>
@@ -510,17 +510,17 @@ if (!$producto) {
 
                                         <div class="mt-3">
                                             <?php if ($margenPorcentaje < 10): ?>
-                                                <div class="alert alert-danger">
+                                                <div class="alert alert-default-danger">
                                                     <i class="fas fa-exclamation-circle mr-2"></i>
                                                     <strong>Margen bajo.</strong> El margen de ganancia está por debajo del 10%.
                                                 </div>
                                             <?php elseif ($margenPorcentaje < 20): ?>
-                                                <div class="alert alert-warning">
+                                                <div class="alert alert-default-warning">
                                                     <i class="fas fa-exclamation-triangle mr-2"></i>
                                                     <strong>Margen moderado.</strong> El margen de ganancia está entre 10% y 20%.
                                                 </div>
                                             <?php else: ?>
-                                                <div class="alert alert-success">
+                                                <div class="alert alert-default-success">
                                                     <i class="fas fa-check-circle mr-2"></i>
                                                     <strong>Buen margen.</strong> El margen de ganancia es superior al 20%.
                                                 </div>

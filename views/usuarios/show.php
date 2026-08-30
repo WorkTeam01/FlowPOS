@@ -258,7 +258,7 @@ $esAdmin = $authService->esAdministrador($usuario['idusuario']);
                                 <div class="row">
                                     <?php if ($esAdmin): ?>
                                         <div class="col-12">
-                                            <div class="alert alert-info mb-0">
+                                            <div class="alert alert-default-info mb-0">
                                                 <i class="fas fa-crown"></i> Este usuario es Administrador y tiene acceso a todas las funcionalidades del sistema.
                                             </div>
                                         </div>

@@ -269,7 +269,7 @@ if (!$usuario) {
                                     </div>
                                 </div>
                             </div>
-                            <div class="alert alert-info mt-3">
+                            <div class="alert alert-default-info mt-3">
                                 <i class="fas fa-info-circle"></i> Dejar estos campos en blanco si no desea cambiar la contraseña.
                             </div>
                         </div>

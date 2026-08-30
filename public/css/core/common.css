@@ -24,6 +24,15 @@
     .btn-group>.btn-sm+.btn-sm {
         margin-left: -1px;
     }
+
+    /* Botones de reporte de DataTables (Reportes, Visualización de columnas):
+       no son un .btn-group, así que la regla de arriba no los cubre. */
+    .dt-buttons>.btn {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
 
 /*
@@ -76,4 +85,16 @@
     .select2-container {
         width: 100% !important;
     }
+}
+
+/*
+ * Contraste de la paginación de DataTables: el .page-link hereda el color
+ * primary de AdminLTE (#007bff), que sobre fondo blanco da 3.9:1 — falla
+ * WCAG AA (1.4.3) para texto de cuerpo. Se oscurece a #0056b3 (~5.9:1) solo
+ * en los enlaces navegables; la página activa (texto blanco sobre fondo
+ * primary) y los botones deshabilitados (Anterior/Siguiente en los bordes,
+ * gris) se dejan intactos con :not(). Aplica a cualquier DataTable del proyecto.
+ */
+.dataTables_wrapper .pagination .page-item:not(.active):not(.disabled) .page-link {
+    color: #0056b3;
 }

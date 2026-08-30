@@ -285,7 +285,7 @@ include_once '../layouts/header.php';
                             <?php endif; ?>
 
                             <?php if ($venta['estado'] == 0) : ?>
-                                <div class="alert alert-warning <?= !empty($venta['observacion']) ? 'mt-3' : '' ?> mb-0">
+                                <div class="alert alert-default-warning <?= !empty($venta['observacion']) ? 'mt-3' : '' ?> mb-0">
                                     <i class="icon fas fa-info-circle"></i>
                                     Esta venta fue anulada el <?= date('d/m/Y H:i', strtotime($venta['fechaactualizacion'])); ?>.
                                     El stock de los productos fue restaurado.

@@ -167,7 +167,7 @@ $module_scripts = ['usuarios/perfil-usuario'];
                             <!-- Tab Cambiar Contraseña -->
                             <div class="tab-pane" id="cambiarPassword" role="tabpanel" aria-labelledby="tab-cambiarPassword">
                                 <form id="formCambiarPassword" action="javascript:void(0)">
-                                    <div class="alert alert-info">
+                                    <div class="alert alert-default-info">
                                         <i class="fas fa-info-circle"></i> Al cambiar su contraseña, se cerrará su sesión y deberá iniciar sesión nuevamente.
                                     </div>
 
