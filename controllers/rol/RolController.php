@@ -296,6 +296,18 @@ class RolController
     }
 
     /**
+     * Cuenta los roles con acceso total (es_admin=1) que están activos.
+     * La vista lo usa para ocultar el botón "Desactivar" del último rol
+     * administrador, misma barrera que ya aplica cambiarEstadoAjax() en servidor.
+     *
+     * @return int
+     */
+    public function contarAdminsActivos()
+    {
+        return $this->modelo->contarRolesAdminActivos();
+    }
+
+    /**
      * Obtiene la matriz rol×permiso: roles activos, catálogo de permisos y,
      * por cada rol, la lista de idpermiso que tiene asignados.
      *

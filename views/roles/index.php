@@ -23,6 +23,7 @@ include_once '../layouts/header.php';
 $controller = new RolController();
 $roles = $controller->index();
 $estadisticas = $controller->getEstadisticas();
+$admins_activos = $controller->contarAdminsActivos();
 
 // Whitelist de dashboards disponibles (mismos archivos reales en views/dashboard/).
 $dashboards_disponibles = [
@@ -97,7 +98,7 @@ $dashboards_disponibles = [
                                 <button type="button" class="btn btn-primary btn-sm me-2" id="btnNuevoRol">
                                     <i class="fas fa-plus"></i> Nuevo Rol
                                 </button>
-                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer panel">
                                     <i class="fas fa-minus"></i>
                                 </button>
                             </div>
@@ -127,11 +128,14 @@ $dashboards_disponibles = [
                                     $clase_usuarios = $total_usuarios > 0 ? 'badge-primary' : 'badge-secondary';
                                     $es_sistema = $rol['es_sistema'] == 1;
                                     $es_admin = $rol['es_admin'] == 1;
+                                    // El último rol admin activo no puede desactivarse (lo rechaza
+                                    // el servidor); no se ofrece el botón para no invitar al error.
+                                    $puede_cambiar_estado = !($es_admin && $estado_actual == 1 && $admins_activos <= 1);
                                 ?>
                                     <tr>
                                         <td class="text-center"><?= $contador++; ?></td>
-                                        <td><?= htmlspecialchars($rol['nombre']); ?></td>
-                                        <td><?= htmlspecialchars($rol['descripcion'] ?? ''); ?></td>
+                                        <td><?= $rol['nombre']; ?></td>
+                                        <td><?= $rol['descripcion'] ?? ''; ?></td>
                                         <td class="text-center">
                                             <span class="badge <?= $clase_usuarios; ?>">
                                                 <?= $total_usuarios; ?> usuario<?= $total_usuarios != 1 ? 's' : ''; ?>
@@ -153,29 +157,31 @@ $dashboards_disponibles = [
                                             <div class="btn-group">
                                                 <button type="button" class="btn btn-warning btn-sm btn-editar"
                                                     data-id="<?= $rol['idrol']; ?>"
-                                                    data-nombre="<?= htmlspecialchars($rol['nombre']); ?>"
-                                                    data-descripcion="<?= htmlspecialchars($rol['descripcion'] ?? ''); ?>"
-                                                    data-dashboard="<?= htmlspecialchars($rol['dashboard']); ?>"
+                                                    data-nombre="<?= $rol['nombre']; ?>"
+                                                    data-descripcion="<?= $rol['descripcion'] ?? ''; ?>"
+                                                    data-dashboard="<?= $rol['dashboard']; ?>"
                                                     data-es-sistema="<?= $rol['es_sistema']; ?>"
                                                     data-toggle="tooltip" title="Editar rol"
-                                                    aria-label="Editar rol <?= htmlspecialchars($rol['nombre']); ?>">
+                                                    aria-label="Editar rol <?= $rol['nombre']; ?>">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
-                                                <button type="button" class="btn <?= $estado_actual == 1 ? 'btn-danger' : 'btn-success'; ?> btn-sm cambiar-estado"
-                                                    data-id="<?= $rol['idrol']; ?>"
-                                                    data-estado-actual="<?= $estado_actual; ?>"
-                                                    data-toggle="tooltip"
-                                                    title="<?= $estado_actual == 1 ? 'Desactivar' : 'Activar'; ?>"
-                                                    aria-label="<?= $estado_actual == 1 ? 'Desactivar' : 'Activar'; ?> rol <?= htmlspecialchars($rol['nombre']); ?>">
-                                                    <i class="fas <?= $estado_actual == 1 ? 'fa-times' : 'fa-check'; ?>"></i>
-                                                </button>
+                                                <?php if ($puede_cambiar_estado) : ?>
+                                                    <button type="button" class="btn <?= $estado_actual == 1 ? 'btn-danger' : 'btn-success'; ?> btn-sm cambiar-estado"
+                                                        data-id="<?= $rol['idrol']; ?>"
+                                                        data-estado-actual="<?= $estado_actual; ?>"
+                                                        data-toggle="tooltip"
+                                                        title="<?= $estado_actual == 1 ? 'Desactivar' : 'Activar'; ?>"
+                                                        aria-label="<?= $estado_actual == 1 ? 'Desactivar' : 'Activar'; ?> rol <?= $rol['nombre']; ?>">
+                                                        <i class="fas <?= $estado_actual == 1 ? 'fa-times' : 'fa-check'; ?>"></i>
+                                                    </button>
+                                                <?php endif; ?>
                                                 <?php if (!$es_sistema) : ?>
                                                     <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar"
                                                         data-id="<?= $rol['idrol']; ?>"
-                                                        data-nombre="<?= htmlspecialchars($rol['nombre']); ?>"
+                                                        data-nombre="<?= $rol['nombre']; ?>"
                                                         data-usuarios="<?= $total_usuarios; ?>"
                                                         data-toggle="tooltip" title="Eliminar rol"
-                                                        aria-label="Eliminar rol <?= htmlspecialchars($rol['nombre']); ?>">
+                                                        aria-label="Eliminar rol <?= $rol['nombre']; ?>">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 <?php endif; ?>
