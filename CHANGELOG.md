@@ -5,6 +5,25 @@ Todos los cambios importantes de este proyecto se documentan en este archivo.
 Este formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.2.2] - 2026-09-08
+
+### Fixed
+
+- **Auditoría impeccable del módulo roles (13/20 → 18/20)** sobre `views/roles/index.php` y `views/roles/permisos.php`. Tras los cambios, axe-core reporta 0 violaciones WCAG 2 A/AA en el contenido del módulo:
+  - Doble escape eliminado en `nombre` / `descripcion` / `data-*` / `aria-label`: `Rol::sanitizarDatos()` ya escapa al guardar (patrón "escape-at-storage"). Se conserva `htmlspecialchars()` sobre los nombres del catálogo `permiso` y las categorías, que no pasan por ese modelo.
+  - Matriz de permisos: primera columna, cabecera de roles y etiqueta de categoría con `position: sticky` para no perder el contexto de fila al hacer scroll horizontal en móvil; descripción de cada permiso vía `AuthorizationService::descripcionPermiso()`; celda de checkbox clicable en todo su relleno para alcanzar el área táctil de 44px (WCAG 2.5.5); aviso de "cambios sin guardar" por columna con `beforeunload`; `caption`, `scope` y `aria-label` en la tabla.
+  - `views/roles/index.php`: el botón "Desactivar" se oculta cuando el rol sería el último administrador activo (misma barrera que ya aplicaba el endpoint en servidor).
+  - `aria-label` en el botón de colapso del panel (`.btn-tool[data-card-widget="collapse"]`) de ambas vistas.
+- **Contraste de controles sólidos** (`public/css/core/common.css`, global a todo el proyecto):
+  - `.btn-primary` (`#007bff` → `#0056b3`, ~7:1) y `.btn-info` (`#17a2b8` → `#117a8b`, ~5:1) oscurecidos: los fondos sólidos de AdminLTE con texto blanco fallaban WCAG AA 1.4.3. Estados `:disabled` exentos.
+  - `.btn:focus-visible` restituye un contorno sólido visible por teclado (WCAG 2.4.11); AdminLTE lo reducía a una sombra tenue.
+  - `.badge-success` / `.badge-info` / `.badge-primary` oscurecidos sobre los defaults de Bootstrap/AdminLTE, que con texto blanco al tamaño de badge fallaban WCAG AA. Sin dark mode → sin contraparte.
+- **`APP_VERSION` subido a `1.2.2`**: `common.css` y los assets de módulo se sirven con `?v=<APP_VERSION>`. Sin el bump, el navegador sigue sirviendo la copia cacheada de `common.css` y los fixes de contraste anteriores no llegan al usuario.
+
+### Note
+
+- `CLAUDE.md` actualizado: sección de autorización, flujo de request y tablas de BD alineados con RBAC (se eliminaron referencias residuales a `cargo`, `permisousuario` y `requireRole()`); nuevas utilidades de `common.css` documentadas; lección nueva sobre el bump obligatorio de `APP_VERSION` al tocar assets versionados. Misma regla añadida a `PROMPTS.md` y `CONTRIBUTING.md`.
+
 ## [1.2.1] - 2026-08-30
 
 ### Added
@@ -262,6 +281,7 @@ y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 - Configuración por variables de entorno (`.env`).
 - Compatibilidad con PHP 7.4+, MariaDB/MySQL y frontend AdminLTE/Bootstrap.
 
+[1.2.2]: https://github.com/WorkTeam01/FlowPOS/compare/1.2.1...1.2.2
 [1.2.1]: https://github.com/WorkTeam01/FlowPOS/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/WorkTeam01/FlowPOS/compare/1.1.7...1.2.0
 [1.1.7]: https://github.com/WorkTeam01/FlowPOS/compare/1.1.6...1.1.7

@@ -15,6 +15,7 @@ git checkout -b feat/mi-mejora
 4. Prueba tu cambio en entorno local (XAMPP/LAMP) antes de enviar PR. Los cambios que afecten permisos o flujos por rol deben probarse con las tres cuentas demo (administrador, supervisor, vendedor).
 5. Actualiza documentación relacionada cuando aplique (`README.md`, `CLAUDE.md`, `PROMPTS.md`, `CHANGELOG.md`).
 6. Si tu cambio impacta comportamiento funcional, regístralo en `CHANGELOG.md` (sección `Unreleased` o la versión en curso) y mantén `APP_VERSION` en `.env` sincronizado con la última versión publicada.
+   - Si modificaste `public/css/core/common.css` o cualquier asset servido con `?v=<APP_VERSION>` (CSS/JS de módulo), **sube `APP_VERSION`** aunque el cambio parezca menor: el query string solo cambia con la versión, y sin el bump los usuarios existentes siguen recibiendo la copia cacheada.
 7. Abre un Pull Request con contexto claro.
 
 ## Versionado
@@ -71,7 +72,7 @@ Checklist mínima:
 - [ ] Probado localmente.
 - [ ] No rompe flujos existentes.
 - [ ] Documentación actualizada (si aplica): `README.md`, `CLAUDE.md`, `PROMPTS.md`.
-- [ ] `CHANGELOG.md` actualizado y `APP_VERSION` sincronizado (si aplica).
+- [ ] `CHANGELOG.md` actualizado y `APP_VERSION` sincronizado (si aplica; obligatorio si tocaste `common.css` o assets versionados).
 - [ ] Cambios de permisos/rol probados con las tres cuentas demo.
 
 ## Reportar issues

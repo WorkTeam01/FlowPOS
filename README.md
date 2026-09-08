@@ -82,7 +82,7 @@ Variables principales:
 | Variable       | Descripción                      | Ejemplo                     |
 | -------------- | -------------------------------- | --------------------------- |
 | `APP_NAME`     | Nombre visible de la aplicación  | `FlowPOS`                   |
-| `APP_VERSION`  | Versión actual de la aplicación  | `1.2.1`                     |
+| `APP_VERSION`  | Versión actual de la aplicación  | `1.2.2`                     |
 | `APP_CURRENCY` | Símbolo de moneda                | `Bs`, `$`, `€`, `S/`        |
 | `APP_URL`      | URL base (debe terminar con `/`) | `http://localhost/FlowPOS/` |
 | `TIMEZONE`     | Zona horaria PHP                 | `America/La_Paz`            |
@@ -171,6 +171,7 @@ FlowPOS/
 - Productos y clientes migrados al mismo formato de formulario (cards por sección) y estandarizada la confirmación de activar/desactivar en un único helper compartido, reduciendo la superficie de código duplicado entre módulos; ver `CHANGELOG.md` [1.1.7].
 - Sistema de permisos migrado a control de acceso basado en roles (RBAC): asignación granular por usuario reemplazada por una matriz rol×permiso, con validaciones anti-escalada de privilegios basadas en el rol; ver `CHANGELOG.md` [1.2.0].
 - Auditoría de accesibilidad del catálogo de permisos, barrido de contraste WCAG AA en callouts y paginación de DataTables, y anulación de ventas restringida al rol supervisor/administrador con un rol-check en el servidor (el POST directo del rol vendedor es rechazado); ver `CHANGELOG.md` [1.2.1].
+- Auditoría de accesibilidad del módulo de roles (gestión y matriz de permisos): doble escape eliminado, matriz usable en móvil con columnas fijas y área táctil de 44px, contraste WCAG AA en botones/badges sólidos y anillo de foco de teclado restituido a nivel global; el botón "Desactivar" del último rol administrador activo se oculta; ver `CHANGELOG.md` [1.2.2].
 
 ## Changelog
 
