@@ -1,0 +1,73 @@
+/*
+ * Matriz de permisos rol×permiso (views/roles/permisos.php).
+ */
+
+/* Texto solo para lectores de pantalla (BS5 lo renombró a .visually-hidden). */
+.sr-only {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/*
+ * En viewports angostos la tabla hace scroll horizontal (.table-responsive).
+ * La primera columna (nombre + ayuda del permiso) queda fija para no perder
+ * el contexto de qué permiso corresponde a cada casilla, y la fila de
+ * cabecera (roles) queda fija al hacer scroll vertical.
+ */
+.matriz-permisos thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: #fff;
+}
+
+.matriz-permisos th[scope="row"],
+.matriz-permisos thead th:first-child {
+    position: sticky;
+    left: 0;
+    background-color: #fff;
+    z-index: 1;
+}
+
+.matriz-permisos thead th:first-child {
+    z-index: 3;
+}
+
+/* La celda fija necesita fondo opaco también en el hover de fila. */
+.matriz-permisos tbody tr:hover th[scope="row"] {
+    background-color: #f2f2f2;
+}
+
+.matriz-permisos th[scope="row"] small {
+    font-size: 80%;
+    line-height: 1.2;
+}
+
+/* La etiqueta de categoría (celda con colspan) sigue visible al hacer scroll. */
+.matriz-permisos .categoria-sticky {
+    position: sticky;
+    left: 0;
+    display: inline-block;
+}
+
+/*
+ * Área táctil (WCAG 2.5.5): el checkbox de icheck mide ~20px. La celda
+ * completa es clicable (ver permisos-rol.js) y se le da alto suficiente
+ * para llegar a 44px de zona activa sin descuadrar la casilla.
+ */
+.matriz-permisos td.chk-celda {
+    padding: 12px 8px;
+    cursor: pointer;
+}
+
+/* Columna con cambios sin guardar: se resalta su botón Guardar. */
+.matriz-permisos .btn-guardar-rol.tiene-cambios {
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.5);
+}

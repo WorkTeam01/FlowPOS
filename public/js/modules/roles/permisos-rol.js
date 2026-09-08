@@ -5,6 +5,30 @@
 $(document).ready(function () {
     initializeTooltips();
 
+    // Área táctil: un clic en el relleno de la celda (no sobre el checkbox
+    // ni su label) alterna la casilla, para llegar al mínimo de 44px.
+    $('#tablaMatrizPermisos').on('click', 'td.chk-celda', function (e) {
+        if (e.target !== this) {
+            return;
+        }
+        const $chk = $(this).find('.chk-permiso-rol');
+        if (!$chk.prop('disabled')) {
+            $chk.prop('checked', !$chk.prop('checked')).trigger('change');
+        }
+    });
+
+    // Marca la columna (botón Guardar) con cambios sin persistir.
+    $('#tablaMatrizPermisos').on('change', '.chk-permiso-rol', function () {
+        const idrol = $(this).data('idrol');
+        $(`.btn-guardar-rol[data-idrol="${idrol}"]`).addClass('tiene-cambios');
+    });
+
+    $(window).on('beforeunload', function () {
+        if ($('.btn-guardar-rol.tiene-cambios').length > 0) {
+            return 'Hay cambios de permisos sin guardar.';
+        }
+    });
+
     $('.btn-guardar-rol').on('click', function () {
         const $btn = $(this);
         const idrol = $btn.data('idrol');
@@ -28,6 +52,7 @@ $(document).ready(function () {
             },
             success: function (response) {
                 if (response.success) {
+                    $btn.removeClass('tiene-cambios');
                     Swal.fire({
                         icon: 'success',
                         title: 'Permisos actualizados',

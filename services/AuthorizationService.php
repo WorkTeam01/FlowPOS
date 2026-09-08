@@ -333,6 +333,33 @@ class AuthorizationService
     }
 
     /**
+     * Texto de ayuda de cada permiso, para orientar a quien edita la matriz
+     * rol×permiso. Igual que categoriasPermisos(): mapa fijo por nombre, no
+     * restringe nada. Un permiso sin entrada no muestra ayuda.
+     *
+     * @param string $nombre Nombre del permiso
+     * @return string Descripción legible, o '' si no hay
+     */
+    public static function descripcionPermiso($nombre)
+    {
+        $descripciones = [
+            'ventas' => 'Registrar ventas y ver el historial de ventas',
+            'clientes' => 'Crear, editar y consultar clientes',
+            'compras' => 'Registrar compras e ingreso de mercadería',
+            'productos' => 'Gestionar el catálogo de productos y su stock',
+            'categorias' => 'Gestionar las categorías de productos',
+            'usuarios' => 'Crear y administrar cuentas de usuario',
+            'permisos' => 'Consultar el catálogo de permisos del sistema',
+            'empresa' => 'Editar los datos de la empresa',
+            'sucursales' => 'Gestionar las sucursales',
+            'sesiones' => 'Consultar el registro de sesiones de usuario',
+            'perfil' => 'Editar el perfil propio',
+        ];
+
+        return $descripciones[$nombre] ?? '';
+    }
+
+    /**
      * Agrupa una lista de permisos (idpermiso, nombre) en categorías visuales
      * para renderizarlas como tabs. Los permisos sin categoría definida caen
      * en "Otros".

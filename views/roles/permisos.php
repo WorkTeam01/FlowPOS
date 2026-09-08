@@ -21,6 +21,7 @@ $skip_datatables = true; // Matriz de checkboxes, no es una tabla de listado
 $skip_select2 = true;    // Sin selects en esta vista
 
 $module_scripts = ['roles/permisos-rol'];
+$module_styles = ['roles/permisos'];
 include_once '../layouts/header.php';
 
 $controller = new RolController();
@@ -57,7 +58,7 @@ $grupos = AuthorizationService::agruparPermisosPorCategoria($matriz['permisos'])
                     <div class="card-header">
                         <h3 class="card-title">Permisos asignados por rol</h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer panel">
                                 <i class="fas fa-minus"></i>
                             </button>
                         </div>
@@ -69,13 +70,18 @@ $grupos = AuthorizationService::agruparPermisosPorCategoria($matriz['permisos'])
                         </p>
                         <form id="formMatrizPermisos">
                             <div class="table-responsive">
-                                <table class="table table-bordered table-sm table-hover" id="tablaMatrizPermisos">
+                                <table class="table table-bordered table-sm table-hover matriz-permisos" id="tablaMatrizPermisos"
+                                    aria-label="Permisos asignados a cada rol">
+                                    <caption class="sr-only">
+                                        Cada fila es un permiso y cada columna un rol. Marque una casilla para
+                                        otorgar el permiso a ese rol; la columna de su propio rol está deshabilitada.
+                                    </caption>
                                     <thead>
                                         <tr>
-                                            <th style="min-width: 160px;">Permiso</th>
+                                            <th scope="col" style="min-width: 200px;">Permiso</th>
                                             <?php foreach ($matriz['roles'] as $rol) : ?>
-                                                <th class="text-center" style="min-width: 120px;">
-                                                    <?= htmlspecialchars($rol['nombre']); ?>
+                                                <th scope="col" class="text-center" style="min-width: 120px;">
+                                                    <?= $rol['nombre']; ?>
                                                     <?php if ((int) $rol['idrol'] === $rol_actual) : ?>
                                                         <br><small class="text-muted">(su rol)</small>
                                                     <?php endif; ?>
@@ -87,18 +93,25 @@ $grupos = AuthorizationService::agruparPermisosPorCategoria($matriz['permisos'])
                                         <?php foreach ($grupos as $categoria => $permisos_categoria) : ?>
                                             <tr class="table-secondary">
                                                 <td colspan="<?= count($matriz['roles']) + 1; ?>">
-                                                    <strong><?= htmlspecialchars($categoria); ?></strong>
+                                                    <strong class="categoria-sticky"><?= htmlspecialchars($categoria); ?></strong>
                                                 </td>
                                             </tr>
-                                            <?php foreach ($permisos_categoria as $permiso) : ?>
+                                            <?php foreach ($permisos_categoria as $permiso) :
+                                                $ayuda = AuthorizationService::descripcionPermiso($permiso['nombre']);
+                                            ?>
                                                 <tr>
-                                                    <td><?= htmlspecialchars($permiso['nombre']); ?></td>
+                                                    <th scope="row" class="font-weight-normal">
+                                                        <?= htmlspecialchars($permiso['nombre']); ?>
+                                                        <?php if ($ayuda !== '') : ?>
+                                                            <small class="d-block text-muted"><?= htmlspecialchars($ayuda); ?></small>
+                                                        <?php endif; ?>
+                                                    </th>
                                                     <?php foreach ($matriz['roles'] as $rol) :
                                                         $idrol = (int) $rol['idrol'];
                                                         $es_propio = $idrol === $rol_actual;
                                                         $marcado = in_array((int) $permiso['idpermiso'], $matriz['asignaciones'][$idrol] ?? [], true);
                                                     ?>
-                                                        <td class="text-center">
+                                                        <td class="text-center chk-celda">
                                                             <div class="icheck-primary d-inline-block">
                                                                 <input type="checkbox"
                                                                     class="chk-permiso-rol"
@@ -106,6 +119,7 @@ $grupos = AuthorizationService::agruparPermisosPorCategoria($matriz['permisos'])
                                                                     value="<?= (int) $permiso['idpermiso']; ?>"
                                                                     <?= $marcado ? 'checked' : ''; ?>
                                                                     <?= $es_propio ? 'disabled' : ''; ?>
+                                                                    aria-label="<?= htmlspecialchars($permiso['nombre']); ?> para el rol <?= $rol['nombre']; ?>"
                                                                     id="chk_<?= $idrol; ?>_<?= (int) $permiso['idpermiso']; ?>">
                                                                 <label for="chk_<?= $idrol; ?>_<?= (int) $permiso['idpermiso']; ?>"></label>
                                                             </div>
