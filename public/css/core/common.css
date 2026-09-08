@@ -98,3 +98,71 @@
 .dataTables_wrapper .pagination .page-item:not(.active):not(.disabled) .page-link {
     color: #0056b3;
 }
+
+/*
+ * Contraste de los badges de color de Bootstrap/AdminLTE: los fondos por
+ * defecto con texto blanco fallan WCAG AA (1.4.3) al tamaño de un badge
+ * (~12px, texto de cuerpo, requiere 4.5:1): success #28a745 → 3.1:1,
+ * info #17a2b8 → 3.0:1, primary #007bff → 4.0:1. Se oscurecen los tres
+ * fondos manteniendo el mismo matiz (≥5:1 sobre el blanco del texto).
+ * danger (#dc3545, 4.5:1) y warning (texto oscuro en AdminLTE) ya cumplen.
+ * El proyecto no tiene dark mode, así que no requiere contraparte. Global
+ * para todos los badges de estado/etiqueta del proyecto (roles, usuarios,
+ * productos, ventas, etc.).
+ */
+.badge-success {
+    background-color: #1e7e34;
+}
+
+.badge-info {
+    background-color: #117a8b;
+}
+
+.badge-primary {
+    background-color: #0056b3;
+}
+
+/*
+ * Contraste del botón primary sólido: AdminLTE deja .btn-primary en #007bff
+ * con texto blanco (~4.0:1), falla WCAG AA (1.4.3) para el texto ~14px del
+ * botón. Se oscurece a #0056b3 (~7:1) igual que el badge y la paginación,
+ * con su estado hover un paso más oscuro. Sin dark mode → sin contraparte.
+ * Global para .btn-primary y .btn-info sólidos del proyecto (mismo criterio
+ * que sus badges). .btn-info de AdminLTE es #17a2b8 con texto blanco (~2.8:1);
+ * se lleva a #117a8b (~5:1) como el badge. Los estados deshabilitados quedan
+ * exentos del requisito de contraste (WCAG 1.4.3).
+ */
+.btn-primary {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:not(:disabled):not(.disabled):active {
+    background-color: #004494;
+    border-color: #004494;
+}
+
+.btn-info {
+    background-color: #117a8b;
+    border-color: #117a8b;
+}
+
+.btn-info:hover,
+.btn-info:focus,
+.btn-info:not(:disabled):not(.disabled):active {
+    background-color: #0e6674;
+    border-color: #0e6674;
+}
+
+/*
+ * Anillo de foco visible para teclado: AdminLTE reduce el outline nativo de
+ * los .btn a una sombra tenue difícil de ver. Se restituye un contorno
+ * sólido (solo con :focus-visible, así el mouse no lo dispara) que cumple
+ * el 3:1 de foco (WCAG 2.4.11) sobre el fondo claro de la app.
+ */
+.btn:focus-visible {
+    outline: 2px solid #1f2d3d;
+    outline-offset: 2px;
+}
