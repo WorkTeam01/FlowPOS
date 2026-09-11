@@ -5,6 +5,7 @@
 *.log
 *.tmp
 .playwright-mcp/
+.playwright-cli/
 .claude/
 
 # Archivos del sistema
