@@ -5,6 +5,30 @@ Todos los cambios importantes de este proyecto se documentan en este archivo.
 Este formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.2.3] - 2026-09-11
+
+### Fixed
+
+- **Auditoría impeccable del módulo compras — fixes de accesibilidad (WCAG AA)** sobre `views/compras/{index,create}.php`, `public/js/modules/compras/create-compra.js` y `public/css/modules/compras/compras.css`. Los hallazgos se detectaron con axe-core (WCAG 2.1 A/AA) en los estados condicionales (modal abierto, carrito con productos), no solo en el DOM inicial:
+  - `aria-label` en los botones icon-only de la tabla de compras ("Ver detalles" y "Cancelar compra") — `link-name`/`button-name` que fallaban con axe critical/serious; ventas ya lo tenía.
+  - Inputs del carrito (`cantidad`, `precio`) con `aria-label` (el `data-label` CSS solo era visual) y `invalid-feedback` por campo; `create-compra.js` vincula cada input con su feedback vía `aria-describedby` con IDs únicos por producto (patrón replicado de `ventas/create-venta.js`) y conmuta `aria-invalid` en la validación.
+  - Botón "Eliminar producto" de cada fila con `aria-label` (el texto "Eliminar" estaba oculto en desktop vía `d-md-none`).
+  - `fechacompra` con `invalid-feedback` + `aria-describedby` + `aria-invalid` al validar.
+  - Header del modal "Agregar Producto": `.bg-primary` (#007bff, 3.98:1 con texto blanco) oscurecido a `#0056b3` (~7:1) solo para `#modal-productos` en `compras.css`, sin tocar el utilitario global.
+- **Auditoría impeccable del módulo compras — fixes P2 (accesibilidad)** sobre `views/compras/{index,create,show}.php` y `public/css/modules/compras/compras.css`:
+  - `aria-label="Contraer panel"` en los botones `.btn-tool[data-card-widget="collapse"]` de index y show (×2): button-name axe critical resuelto, patrón consistente con roles/permisos.
+  - `tabindex="0"` en el `.table-responsive` de show.php: scrollable-region-focusable axe serious resuelto (la tabla de detalle de productos ahora es navegable por teclado).
+  - `aria-label="Buscar producto por nombre o código"` en `#modal-buscar-producto`: input del modal con solo placeholder → nombre accesible explícito.
+  - `.box-profile .text-muted` oscurecido a `#495057` (8.18:1) en `compras.css`: el label "Total Compra" (4.69:1, Bootstrap 4 lo define con `!important`) estaba en el umbral de WCAG AA. Se agrega `$module_styles = ['compras/compras']` a `show.php`: era la única vista del módulo que no cargaba `compras.css` (index/create sí lo hacían).
+- **Auditoría impeccable del módulo compras — fixes P3 (layout compartido)** sobre `views/layouts/header.php` y `public/css/core/common.css` (beneficia todos los módulos):
+  - `role="menu"` eliminado del `<ul class="nav nav-pills nav-sidebar">` del sidebar: AdminLTE lo seteaba por defecto y hacía que axe flagge `aria-required-children` (children are not role=menuitem) y el enmascaramiento de los `<li>` como items de lista (violation `listitem`). El treeview JS (`data-widget="treeview"`) no depende de este atributo — verificado que el submenú sigue expandiendo correctamente.
+  - `aria-label` en los tres iconos icon-only del navbar: pushmenu ("Alternar menú lateral"), fullscreen ("Pantalla completa"), user dropdown ("Menú de usuario"): `link-name` resuelto.
+  - `aria-label` en ambos landmarks `<nav>`: "Barra de navegación principal" (`.main-header`) y "Menú lateral" (sidebar): `landmark-unique` resuelto.
+  - `.breadcrumb-item a` oscurecido a `#0056b3` (7.04:1, mismo token que `badge-primary`), `.breadcrumb-item.active` y el separador `::before` a `#495057` (8.18:1): `color-contrast` del breadcrumb del content-header resuelto.
+  - `.footer-content` con `color: #495057` (8.18:1) y enlace `.text-decoration-none` con `#0056b3` (7.04:1): `color-contrast` del `main-footer` resuelto (AdminLTE dejaba #869099 a 3.25:1).
+  - Touch targets (WCAG 2.5.5) de `.btn-sm` aislados: en `@media (pointer: coarse)` se expande el área de toque a 44px con un `::before` centrado (`width/height: max(100%, 44px)`) sin alterar el tamaño visual de la caja — cubre botones como "Nueva Compra", "Agregar Producto" y "Eliminar producto" que quedaban en ~31px. La regla de `.btn-group>.btn-sm` (min-height real) y `.dt-buttons>.btn` ya existían; la nueva no les aplica doble crecimiento (max(100%, 44px) = 100% cuando el box ya mide 44px).
+- **`APP_VERSION` queda en `1.2.3`**: `compras.css`, `create-compra.js` y `common.css` se sirven con `?v=<APP_VERSION>`. Sin el bump del query string el navegador sigue sirviendo la copia cacheada y los fixes no llegan al usuario.
+
 ## [1.2.2] - 2026-09-08
 
 ### Fixed
