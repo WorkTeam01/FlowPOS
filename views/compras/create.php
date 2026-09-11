@@ -88,7 +88,8 @@ include_once '../layouts/header.php';
                                     <div class="form-group">
                                         <label for="fechacompra"><i class="far fa-calendar-alt"></i> Fecha de Compra <span class="text-danger">*</span></label>
                                         <input type="datetime-local" class="form-control" id="fechacompra" name="fechacompra"
-                                            value="<?= date('Y-m-d\TH:i'); ?>" required>
+                                            value="<?= date('Y-m-d\TH:i'); ?>" required aria-describedby="feedback-fecha">
+                                        <div class="invalid-feedback" id="feedback-fecha">Seleccione la fecha de la compra</div>
                                     </div>
                                 </div>
                                 <div class="col-md-12">
@@ -133,7 +134,8 @@ include_once '../layouts/header.php';
                                             </td>
                                             <td data-label="Cantidad">
                                                 <input type="number" class="form-control cantidad" name="cantidades[]"
-                                                    min="1" value="1" required>
+                                                    min="1" value="1" required aria-label="Cantidad">
+                                                <div class="invalid-feedback">Ingrese una cantidad válida</div>
                                             </td>
                                             <td data-label="Precio Unit.">
                                                 <div class="input-group">
@@ -141,14 +143,15 @@ include_once '../layouts/header.php';
                                                         <span class="input-group-text"><?= $appCurrency ?></span>
                                                     </div>
                                                     <input type="number" class="form-control precio" name="precios[]"
-                                                        step="0.01" min="0.01" value="0.00" required>
+                                                        step="0.01" min="0.01" value="0.00" required aria-label="Precio unitario">
+                                                    <div class="invalid-feedback">Ingrese un precio válido</div>
                                                 </div>
                                             </td>
                                             <td data-label="Subtotal" class="text-right">
                                                 <span class="subtotal">0.00</span>
                                             </td>
                                             <td data-label="" class="text-center">
-                                                <button type="button" class="btn btn-danger btn-sm btn-eliminar-fila">
+                                                <button type="button" class="btn btn-danger btn-sm btn-eliminar-fila" aria-label="Eliminar producto">
                                                     <i class="fas fa-trash"></i> <span class="d-md-none">Eliminar</span>
                                                 </button>
                                             </td>
@@ -206,7 +209,7 @@ include_once '../layouts/header.php';
                 </button>
             </div>
             <div class="modal-body">
-                <input type="text" class="form-control mb-3" id="modal-buscar-producto" placeholder="Buscar por nombre o código..." autocomplete="off">
+                <input type="text" class="form-control mb-3" id="modal-buscar-producto" placeholder="Buscar por nombre o código..." autocomplete="off" aria-label="Buscar producto por nombre o código">
                 <div id="lista-productos-modal" class="list-group"></div>
                 <p id="sin-resultados-productos" class="text-muted text-center mt-3" style="display: none;">No se encontraron productos.</p>
             </div>

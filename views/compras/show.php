@@ -47,6 +47,7 @@ if (!$authService->esAdministrador($idusuario) && (int)$compra['idusuario'] !== 
 $skip_datatables = true; // Evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
 $skip_select2 = true;
 $module_scripts = ['compras/show-compra'];
+$module_styles = ['compras/compras'];
 include_once '../layouts/header.php';
 
 $estadoInfo = $controller->obtenerInfoEstado($compra['estado']);
@@ -141,13 +142,13 @@ $totales = $controller->calcularTotales($compra);
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-boxes mr-2"></i>Productos Comprados</h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer panel">
                                 <i class="fas fa-minus"></i>
                             </button>
                         </div>
                     </div>
                     <div class="card-body p-0">
-                        <div class="table-responsive">
+                        <div class="table-responsive" tabindex="0">
                             <table class="table table-striped table-hover">
                                 <thead class="bg-light">
                                     <tr>
@@ -187,7 +188,7 @@ $totales = $controller->calcularTotales($compra);
                         <div class="card-header">
                             <h3 class="card-title">Información Adicional</h3>
                             <div class="card-tools">
-                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer panel">
                                     <i class="fas fa-minus"></i>
                                 </button>
                             </div>

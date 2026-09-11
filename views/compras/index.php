@@ -100,7 +100,7 @@ $estadisticas = $controller->getEstadisticas();
                             <a href="<?= $URL; ?>views/compras/create.php" class="btn btn-primary btn-sm">
                                 <i class="fas fa-plus"></i> Nueva Compra
                             </a>
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer panel">
                                 <i class="fas fa-minus"></i>
                             </button>
                         </div>
@@ -137,7 +137,7 @@ $estadisticas = $controller->getEstadisticas();
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <a href="<?= $URL; ?>views/compras/show.php?id=<?= $compra['idcompra']; ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="Ver detalles">
+                                                <a href="<?= $URL; ?>views/compras/show.php?id=<?= $compra['idcompra']; ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="Ver detalles" aria-label="Ver detalles">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
 
@@ -146,7 +146,7 @@ $estadisticas = $controller->getEstadisticas();
                                                         data-id="<?= $compra['idcompra']; ?>"
                                                         data-accion="cancelar"
                                                         data-titulo="COMP-<?= str_pad($compra['idcompra'], 6, '0', STR_PAD_LEFT); ?>"
-                                                        data-toggle="tooltip" title="Cancelar compra">
+                                                        data-toggle="tooltip" title="Cancelar compra" aria-label="Cancelar compra">
                                                         <i class="fas fa-times"></i>
                                                     </button>
                                                 <?php endif; ?>

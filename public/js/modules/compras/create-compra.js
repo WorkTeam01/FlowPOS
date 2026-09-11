@@ -87,6 +87,24 @@ document.addEventListener('DOMContentLoaded', function () {
         nuevaFila.querySelector('.precio').value = parseFloat(producto.preciocompra || 0).toFixed(2);
         nuevaFila.querySelector('.subtotal').textContent = parseFloat(producto.preciocompra || 0).toFixed(2);
 
+        // Vincular cada input con su mensaje de error (aria-describedby) para que
+        // los lectores de pantalla anuncien la invalidez, no solo la clase visual is-invalid
+        const cantidadInput = nuevaFila.querySelector('.cantidad');
+        const precioInput = nuevaFila.querySelector('.precio');
+        const cantidadFeedback = cantidadInput.nextElementSibling;
+        const precioInputGroup = precioInput.closest('.input-group');
+        const precioFeedback = precioInputGroup ? precioInputGroup.querySelector('.invalid-feedback') : null;
+
+        cantidadFeedback.id = `feedback-cantidad-${producto.idproducto}`;
+        cantidadInput.setAttribute('aria-describedby', cantidadFeedback.id);
+        cantidadInput.setAttribute('aria-invalid', 'false');
+
+        if (precioFeedback) {
+            precioFeedback.id = `feedback-precio-${producto.idproducto}`;
+            precioInput.setAttribute('aria-describedby', precioFeedback.id);
+        }
+        precioInput.setAttribute('aria-invalid', 'false');
+
         agregarEventosCalculo(nuevaFila);
 
         nuevaFila.querySelector('.btn-eliminar-fila').addEventListener('click', function () {
@@ -156,9 +174,11 @@ document.addEventListener('DOMContentLoaded', function () {
             [cantidad, precio].forEach(input => {
                 if (!input.checkValidity()) {
                     input.classList.add('is-invalid');
+                    input.setAttribute('aria-invalid', 'true');
                     esValido = false;
                 } else {
                     input.classList.remove('is-invalid');
+                    input.setAttribute('aria-invalid', 'false');
                 }
             });
         });
@@ -170,13 +190,19 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('form-compra').addEventListener('submit', function (e) {
         e.preventDefault();
 
-        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        document.querySelectorAll('.is-invalid').forEach(el => {
+            el.classList.remove('is-invalid');
+            el.setAttribute('aria-invalid', 'false');
+        });
 
         const fechaCompra = document.getElementById('fechacompra');
         let isValid = true;
         if (!fechaCompra.value) {
             fechaCompra.classList.add('is-invalid');
+            fechaCompra.setAttribute('aria-invalid', 'true');
             isValid = false;
+        } else {
+            fechaCompra.setAttribute('aria-invalid', 'false');
         }
 
         if (document.querySelectorAll('.fila-producto').length === 0) {

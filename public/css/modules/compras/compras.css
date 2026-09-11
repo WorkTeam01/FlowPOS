@@ -2,6 +2,24 @@
     background-color: rgba(0, 0, 0, .03);
 }
 
+/* Header del modal de productos: el bg-primary de AdminLTE (#007bff) con texto
+   blanco da 3.98:1 (falla WCAG AA). Se oscurece solo para este modal del módulo,
+   sin tocar el utilitario global .bg-primary usado en otras vistas. */
+#modal-productos .modal-header.bg-primary {
+    background-color: #0056b3 !important;
+}
+
+#modal-productos .modal-header.bg-primary .close {
+    color: #fff;
+    text-shadow: none;
+}
+
+/* "Total Compra" — text-muted #6c757d da 4.69:1 (borderline AA).
+   Se oscurece solo dentro del box-profile de show.php. */
+.box-profile .text-muted {
+    color: #495057 !important;
+}
+
 /* Carrito de create.php (#tabla-productos): con muchos productos, el contenedor
    crece indefinidamente y empuja el resto del formulario (total, acciones) fuera
    de vista. Se limita la altura y se habilita scroll propio; el thead queda fijo
