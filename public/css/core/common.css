@@ -33,6 +33,27 @@
         align-items: center;
         justify-content: center;
     }
+
+    /* Botones .btn-sm aislados (fuera de .btn-group y .dt-buttons): ej.
+       "Nueva Compra", "Agregar Producto", "Eliminar producto" — mismos ~31px
+       en táctil. Se expande SOLO el área de toque con un ::before centrado
+       de 44px, sin tocar el tamaño visual de la caja (el pseudo-elemento es
+       parte del botón para hit-testing, así el clic funciona en toda la zona
+       invisible). En .btn-group>.btn-sm el box real ya se estiró a 44px
+       arriba, así que aquí max(100%, 44px) = 100% y no hay doble crecimiento. */
+    .btn-sm {
+        position: relative;
+    }
+
+    .btn-sm::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: max(100%, 44px);
+        height: max(100%, 44px);
+        transform: translate(-50%, -50%);
+    }
 }
 
 /*
@@ -165,4 +186,41 @@
 .btn:focus-visible {
     outline: 2px solid #1f2d3d;
     outline-offset: 2px;
+}
+
+/*
+ * Contraste del breadcrumb del encabezado: AdminLTE deja los enlaces en
+ * #007bff (3.98:1) y el ítem activo en #6c757d (4.69:1, en el umbral pero
+ * flaggeado por axe junto al separador). Se oscurecen enlaces (#0056b3,
+ * mismo que el badge/botón primary) y activo/separador (#495057). Estos
+ * selectores solo existen en el breadcrumb del content-header (layout).
+ */
+.breadcrumb-item a {
+    color: #0056b3;
+}
+
+.breadcrumb-item.active {
+    color: #495057;
+}
+
+.breadcrumb-item+.breadcrumb-item::before {
+    color: #495057;
+}
+
+/*
+ * Contraste del footer: AdminLTE deja .main-footer con texto #869099 sobre
+ * blanco (3.25:1, falla WCAG AA 1.4.3) y el enlace de marca en #007bff
+ * (3.98:1). Se oscurecen el bloque completo (#495057) y el enlace
+ * (#0056b3). El a es más específico que el *, luego aplica sobre él.
+ */
+.main-footer .footer-content {
+    color: #495057;
+}
+
+.main-footer .footer-content * {
+    color: #495057;
+}
+
+.main-footer .footer-content a {
+    color: #0056b3;
 }

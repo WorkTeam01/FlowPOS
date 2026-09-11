@@ -85,11 +85,11 @@ global $URL;
     <div class="wrapper">
 
         <!-- Navbar -->
-        <nav class="main-header navbar navbar-expand navbar-light">
+        <nav class="main-header navbar navbar-expand navbar-light" aria-label="Barra de navegación principal">
             <!-- Left navbar links -->
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button" aria-label="Alternar menú lateral"><i class="fas fa-bars"></i></a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
                     <a href="<?= $URL; ?>" class="nav-link">FlowPOS</a>
@@ -99,12 +99,12 @@ global $URL;
             <!-- Right navbar links -->
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" data-widget="fullscreen" href="#" role="button">
+                    <a class="nav-link" data-widget="fullscreen" href="#" role="button" aria-label="Pantalla completa">
                         <i class="fas fa-expand-arrows-alt"></i>
                     </a>
                 </li>
                 <li class="nav-item dropdown user-menu">
-                    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-label="Menú de usuario">
                         <i class="fas fa-user"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
@@ -141,8 +141,8 @@ global $URL;
             <div class="sidebar">
 
                 <!-- Sidebar Menu -->
-                <nav class="mt-4">
-                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                <nav class="mt-4" aria-label="Menú lateral">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" data-accordion="false">
 
                         <!-- Dashboard -->
                         <li class="nav-item">
