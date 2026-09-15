@@ -77,14 +77,38 @@
  * Pestañas de las vistas "show" con card-outline-tabs (AdminLTE): por defecto
  * el texto de las pestañas inactivas hereda el color primary (azul), lo cual
  * es inconsistente con el acento info/outline de la propia card. Se aplica
- * a cualquier .card-outline-tabs del proyecto (no solo usuarios).
+ * a cualquier .card-outline-tabs del proyecto (no solo usuarios). El tono
+ * info se oscurece a #117a8b (5.02:1, mismo token que badge-info/btn-info):
+ * el #17a2b8 original da 3.04:1 sobre blanco y falla WCAG AA. Sin dark mode
+ * -> sin contraparte.
  */
 .card-outline-tabs .nav-link:not(.active) {
-    color: #17a2b8;
+    color: #117a8b;
 }
 
 .card-outline-tabs .nav-link:not(.active):hover {
-    color: #138496;
+    color: #0e6c7a;
+}
+
+/*
+ * Navbar (main-header navbar-light): AdminLTE deja los .nav-link en
+ * rgba(0,0,0,.5) (computed #7c7d7d, 3.91:1 sobre #f8f9fa — falla WCAG AA).
+ * Se oscurece a #495057 (7.76:1, mismo token que el footer/breadcrumb).
+ * Aplica al enlace "FlowPOS" y a los iconos del navbar de cualquier página.
+ */
+.main-header .navbar-nav .nav-link {
+    color: #495057 !important;
+}
+
+/*
+ * Pills usados como tablist (nav-pills[role="tablist"], ej. perfil): Bootstrap 4
+ * deja la pestaña activa con bg #007bff y texto blanco (3.97:1 — falla WCAG AA).
+ * Se oscurece a #0056b3 (7.04:1, mismo token que btn-primary/badge-primary).
+ * El sidebar (nav-sidebar) no lleva role="tablist" y tiene sus propios estados
+ * sobrescritos, así que no se ve afectado.
+ */
+.nav-pills[role="tablist"] .nav-link.active {
+    background-color: #0056b3;
 }
 
 /*

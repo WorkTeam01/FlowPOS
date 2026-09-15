@@ -11,7 +11,7 @@ $(document).ready(function () {
                 text: 'Copiar',
                 extend: 'copy',
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5]
+                    columns: [0, 1, 2, 3, 4, 6, 7]
                 }
             }, {
                 extend: 'pdf',
@@ -19,7 +19,7 @@ $(document).ready(function () {
                 filename: 'usuarios_sistema_' + new Date().toISOString().slice(0, 10),
                 pageSize: 'LETTER',
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5]
+                    columns: [0, 1, 2, 3, 4, 6, 7]
                 },
                 customize: function (doc) {
 
@@ -92,21 +92,13 @@ $(document).ready(function () {
                 messageTop: 'Registro de usuarios del sistema',
                 messageBottom: 'Documento generado el ' + new Date().toLocaleDateString('es-BO'),
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5],
-                    format: {
-                        body: function (data, row, column, node) {
-                            if (column === 5) {
-                                return $(node).find('span').text();
-                            }
-                            return data;
-                        }
-                    }
+                    columns: [0, 1, 2, 3, 4, 6, 7]
                 }
             }, {
                 extend: 'csv',
                 text: 'CSV',
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5]
+                    columns: [0, 1, 2, 3, 4, 6, 7]
                 }
             }, {
                 extend: 'print',
@@ -114,7 +106,7 @@ $(document).ready(function () {
                 title: 'Usuarios del Sistema - FlowPOS',
                 messageTop: 'Reporte generado el ' + new Date().toLocaleDateString('es-BO'),
                 exportOptions: {
-                    columns: [0, 1]
+                    columns: [0, 1, 2, 3, 4, 6, 7]
                 },
                 customize: function (win) {
                     $(win.document.body).find('table')
@@ -166,31 +158,13 @@ $(document).ready(function () {
 
     document.querySelectorAll('.btn-cambiar-estado').forEach(boton => {
         boton.addEventListener('click', function () {
-            const usuarioId = this.dataset.id;
             const estadoActual = this.dataset.estado;
-            const nombreUsuario = this.dataset.nombre;
-
-            const tituloAlerta = estadoActual == 1 ? `¿Desactivar a ${nombreUsuario}?` : `¿Activar a ${nombreUsuario}?`;
-            const textoAlerta = estadoActual == 1 ? 'El usuario no podrá acceder al sistema.' : 'El usuario podrá acceder nuevamente al sistema.';
-            const confirmButtonText = estadoActual == 1 ? 'Sí, desactivar' : 'Sí, activar';
-            const cancelButtonText = 'Cancelar';
-
-            Swal.fire({
-                title: tituloAlerta,
-                text: textoAlerta,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: estadoActual == 1 ? '#d33' : '#28a745',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: confirmButtonText,
-                cancelButtonText: cancelButtonText
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    submitCsrfForm(`${baseUrl}controllers/usuarios/desactivar_usuario.php`, {
-                        id: usuarioId,
-                        estado: estadoActual
-                    });
-                }
+            confirmarCambioEstado({
+                id: this.dataset.id,
+                estadoActual,
+                titulo: estadoActual == 1 ? `¿Desactivar a ${this.dataset.nombre}?` : `¿Activar a ${this.dataset.nombre}?`,
+                texto: estadoActual == 1 ? 'El usuario no podrá acceder al sistema.' : 'El usuario podrá acceder nuevamente al sistema.',
+                actionUrl: `${baseUrl}controllers/usuarios/desactivar_usuario.php`
             });
         });
     });

@@ -16,6 +16,7 @@ if (!($authService->tienePermisoNombre($idusuario, 'usuarios')) && !($authServic
 
 $skip_datatables = true; // Evita cargar DataTables/pdfmake/vfs_fonts (~2.8MB)
 $skip_select2 = true;
+$module_styles = ['usuarios/usuarios'];
 $module_scripts = ['usuarios/show-usuario'];
 include_once '../layouts/header.php';
 
@@ -88,6 +89,7 @@ $esAdmin = $authService->esAdministrador($usuario['idusuario']);
                                 <!-- Indicador de estado sobre la imagen -->
                                 <span id="avatarEstadoBadge" class="position-absolute badge <?= $usuario['estado'] == 1 ? 'badge-success' : 'badge-danger'; ?>"
                                     style="top: 0; right: 50%; transform: translateX(60px);"
+                                    role="status"
                                     aria-label="<?= $usuario['estado'] == 1 ? 'Usuario activo' : 'Usuario inactivo'; ?>">
                                     <i class="fas <?= $usuario['estado'] == 1 ? 'fa-check' : 'fa-times'; ?>"></i>
                                 </span>
@@ -148,22 +150,22 @@ $esAdmin = $authService->esAdministrador($usuario['idusuario']);
                 <div class="card card-info card-outline card-outline-tabs">
                     <div class="card-header p-0 border-bottom-0">
                         <ul class="nav nav-tabs" id="detail-tabs" role="tablist">
-                            <li class="nav-item">
+                            <li class="nav-item" role="presentation">
                                 <a class="nav-link active" id="tab-personal" data-toggle="pill" href="#personal" role="tab" aria-controls="personal" aria-selected="true">
                                     <i class="fas fa-user mr-1"></i> Personal
                                 </a>
                             </li>
-                            <li class="nav-item">
+                            <li class="nav-item" role="presentation">
                                 <a class="nav-link" id="tab-contacto" data-toggle="pill" href="#contacto" role="tab" aria-controls="contacto" aria-selected="false">
                                     <i class="fas fa-address-book mr-1"></i> Contacto
                                 </a>
                             </li>
-                            <li class="nav-item">
+                            <li class="nav-item" role="presentation">
                                 <a class="nav-link" id="tab-permisos" data-toggle="pill" href="#permisos" role="tab" aria-controls="permisos" aria-selected="false">
                                     <i class="fas fa-key mr-1"></i> Permisos
                                 </a>
                             </li>
-                            <li class="nav-item">
+                            <li class="nav-item" role="presentation">
                                 <a class="nav-link" id="tab-sistema" data-toggle="pill" href="#sistema" role="tab" aria-controls="sistema" aria-selected="false">
                                     <i class="fas fa-cogs mr-1"></i> Sistema
                                 </a>

@@ -52,7 +52,7 @@ $usuarios = $controller->index();
                             <a href="<?= $URL; ?>views/usuarios/create.php" class="btn btn-primary btn-sm">
                                 <i class="fas fa-plus"></i> Nuevo Usuario
                             </a>
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer panel">
                                 <i class="fas fa-minus"></i>
                             </button>
                         </div>
@@ -93,9 +93,9 @@ $usuarios = $controller->index();
                                         <td><?= $usuario['correo']; ?></td>
                                         <td class="text-center">
                                             <?php if (isset($usuario['imagen'])): ?>
-                                                <img src="<?= $URL; ?>public/uploads/usuarios/<?= $usuario['imagen']; ?>" loading="lazy" alt="Imagen" class="img-thumbnail" width="40">
+                                                <img src="<?= $URL; ?>public/uploads/usuarios/<?= $usuario['imagen']; ?>" loading="lazy" alt="Foto de <?= $usuario['nombre'] . ' ' . $usuario['apellidopaterno']; ?>" class="img-thumbnail" width="40">
                                             <?php else : ?>
-                                                <img src="<?= $URL; ?>public/uploads/usuarios/user_default.jpg" loading="lazy" alt="Imagen" class="img-thumbnail" width="40">
+                                                <img src="<?= $URL; ?>public/uploads/usuarios/user_default.jpg" loading="lazy" alt="Foto por defecto" class="img-thumbnail" width="40">
                                             <?php endif; ?>
                                         </td>
                                         <td><?= (!empty($usuario['cargo'])) ? $usuario['cargo'] : 'N/A'; ?></td>

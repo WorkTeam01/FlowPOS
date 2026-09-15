@@ -1,0 +1,6 @@
+/* "Nombre Completo" (h5/h6) dentro de .info-box.bg-light: text-muted #6c757d
+   da 4.44:1 sobre #f8f9fa (justo bajo WCAG AA). Se oscurece a #495057 (7.76:1)
+   solo dentro de este contenedor, sin tocar el utilitario global .text-muted. */
+.info-box.bg-light .info-box-content .text-muted {
+    color: #495057 !important;
+}

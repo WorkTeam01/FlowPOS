@@ -312,7 +312,7 @@ if (!$usuario) {
                                     <div id="preview-container" style="display: none;">
                                         <div class="form-group">
                                             <label>Vista Previa Nueva Imagen:</label><br>
-                                            <img id="preview-image" src="#" alt="Vista previa" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
+                                            <img id="preview-image" alt="Vista previa" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
                                         </div>
                                     </div>
                                 </div>

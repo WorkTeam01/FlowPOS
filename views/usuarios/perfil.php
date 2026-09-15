@@ -72,7 +72,7 @@ $module_scripts = ['usuarios/perfil-usuario'];
                         <div class="text-center">
                             <img class="profile-user-img img-fluid img-circle"
                                 src="<?= $URL . 'public/uploads/usuarios/' . (!empty($usuario['imagen']) && file_exists(__DIR__ . '/../../public/uploads/usuarios/' . $usuario['imagen']) ? htmlspecialchars($usuario['imagen']) : 'user_default.jpg'); ?>"
-                                alt="User profile picture"
+                                alt="Foto de perfil"
                                 style="width: 100px; height: 100px; object-fit: cover;">
                         </div>
                         <h3 class="profile-username text-center"><?= $usuario['nombre'] . ' ' . $usuario['apellidopaterno']; ?></h3>
@@ -101,11 +101,11 @@ $module_scripts = ['usuarios/perfil-usuario'];
                 <div class="card">
                     <div class="card-header p-2">
                         <ul class="nav nav-pills" role="tablist">
-                            <li class="nav-item">
+                            <li class="nav-item" role="presentation">
                                 <a class="nav-link active" id="tab-imagenPerfil" href="#imagenPerfil" data-toggle="tab"
                                     role="tab" aria-controls="imagenPerfil" aria-selected="true">Imagen de Perfil</a>
                             </li>
-                            <li class="nav-item">
+                            <li class="nav-item" role="presentation">
                                 <a class="nav-link" id="tab-cambiarPassword" href="#cambiarPassword" data-toggle="tab"
                                     role="tab" aria-controls="cambiarPassword" aria-selected="false">Cambiar Contraseña</a>
                             </li>
@@ -152,7 +152,7 @@ $module_scripts = ['usuarios/perfil-usuario'];
                                         <div class="col-md-12">
                                             <div class="form-group">
                                                 <label>Vista Previa Nueva Imagen:</label><br>
-                                                <img id="preview-image" src="#" alt="Vista previa" class="img-thumbnail" style="max-width: 150px; max-height: 150px;">
+                                                <img id="preview-image" alt="Vista previa" class="img-thumbnail" style="max-width: 150px; max-height: 150px;">
                                             </div>
                                         </div>
                                     </div>

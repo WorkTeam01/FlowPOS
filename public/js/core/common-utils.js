@@ -361,7 +361,7 @@ $(document).on('click', '.password-toggle', function () {
  * atributo ARIA, así que lectores de pantalla no anuncian el cambio de tab
  * sin este handler.
  */
-$(document).on('shown.bs.tab', '[data-toggle="tab"]', function (e) {
+$(document).on('shown.bs.tab', '[data-toggle="tab"],[data-toggle="pill"]', function (e) {
     $(e.target).attr('aria-selected', 'true');
     $(e.relatedTarget).attr('aria-selected', 'false');
 });
