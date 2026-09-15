@@ -5,6 +5,24 @@ Todos los cambios importantes de este proyecto se documentan en este archivo.
 Este formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.2.4] - 2026-09-15
+
+### Fixed
+
+- **Auditoría impeccable del módulo usuarios (16/20 → 20/20)** sobre `views/usuarios/{index,create,update,show,perfil}.php`, el nuevo `public/css/modules/usuarios/usuarios.css`, `public/js/modules/usuarios/{index-usuarios,show-usuario}.js`, `public/js/core/common-utils.js` y `public/css/core/common.css`. Tras los cambios, axe-core (WCAG 2.1 A/AA) reporta 0 violaciones en las 5 vistas del módulo:
+  - **Contraste WCAG AA en `common.css`** (global, sin dark mode → sin contraparte): pestañas inactivas de `card-outline-tabs` oscurecidas de `#17a2b8` (3.04:1) a `#117a8b` (5.02:1, hover `#0e6c7a`) — mismo token que `badge-info`/`btn-info`, mejora el color info original que se agregó en 1.1.2; enlaces e íconos del navbar (`.main-header .navbar-nav .nav-link`) de `rgba(0,0,0,.5)` (computed `#7c7d7d`, 3.91:1) a `#495057` (7.76:1) con `!important` (AdminLTE define ese color con `!important` propio); pills usados como tablist (`.nav-pills[role="tablist"] .nav-link.active`, ej. perfil) con activa de `#007bff` (3.97:1) → `#0056b3` (7.04:1) — el `nav-sidebar` del layout no lleva `role="tablist"` y conserva sus propios estados.
+  - **Nuevo `public/css/modules/usuarios/usuarios.css`** (+ `$module_styles` en `show.php`): `.info-box.bg-light .info-box-content .text-muted` oscurecido a `#495057` (4.44:1 → 7.76:1 sobre `#f8f9fa`) — `.text-muted` de Bootstrap se define con `!important`, por eso el override vive en CSS de módulo y no en `common.css`.
+  - **Nombres accesibles y roles ARIA**: `aria-label="Contraer panel"` en el botón de colapso de `index.php` (`button-name`/`link-name` axe critical/serious); `role="presentation"` en los `<li>` que envuelven los `<a role="tab">` de `show.php` (personal/contacto/permisos/sistema) y `perfil.php` (imagen/contraseña) — sin él axe flaggea `aria-required-children`/`listitem` porque el hijo directo del `role="tablist"` es un `<li>` y no el `tab`; `role="status"` en el badge de estado del avatar (`#avatarEstadoBadge`) de `show.php`, que cambia dinámicamente.
+  - **Sincronización global de `aria-selected` para pills**: el handler `shown.bs.tab` de `common-utils.js` ahora aplica a `[data-toggle="tab"],[data-toggle="pill"]` — las pestañas tipo pill (perfil) actualizan `aria-selected` en cada cambio como ya hacían los tabs de las vistas "show" (antes quedaban con los valores estáticos del HTML).
+  - **Botones de reporte de `index-usuarios.js`**: `exportOptions.columns` corregido a `[0,1,2,3,4,6,7]` en copy/pdf/excel/csv/print (excluye la columna Imágen 5 y Acciones 8; antes incluía Imágen y omitía Cargo/Estado); eliminado el `format.body` de la columna Imágen (código muerto que apuntaba a una columna que ya no se exportaba).
+  - **Migración a `confirmarCambioEstado()`**: `index-usuarios.js` y `show-usuario.js` reemplazan el bloque SweetAlert2 + `submitCsrfForm` duplicado (que ya se había eliminado en productos/clientes) por el helper compartido de `common-utils.js`.
+  - **Previews y alts**: los `<img id="preview-image">` de `create.php`, `update.php` y `perfil.php` ya no usan `src="#"` — el `src` lo asigna el JS al seleccionar el archivo y solo entonces se muestra la card (verificado en navegador); el detector de imágenes rotas marca estos `<img>` sin `src` como broken-image, falso positivo conocido porque nunca se renderizan sin `src`. Miniaturas de `index.php` con `alt` descriptivo (`"Foto de <Nombre> <Apellido>"` / `"Foto por defecto"`) en lugar del genérico `"Imagen"`, y `perfil.php` con `alt="Foto de perfil"` en español (era "User profile picture").
+- **`APP_VERSION` subido a `1.2.4`**: `common.css`, `usuarios.css`, `common-utils.js` y los assets de módulo se sirven con `?v=<APP_VERSION>`. `.env.example` realineado a `1.2.4` (había quedado en `1.2.2` desde el release anterior).
+
+### Note
+
+- `CLAUDE.md` actualizado: lista de utilidades de `common.css` ampliada con los nuevos overrides de contraste (tabs inactivos, navbar, pills activos) y lecciones nuevas (preview sin `src="#"`, `role="presentation"` en tablists con `<li>` wrapper, sincronización global de `aria-selected` en pills, `exportOptions` excluyendo también columnas de imagen). `PROMPTS.md` y `README.md` alineados.
+
 ## [1.2.3] - 2026-09-11
 
 ### Fixed
@@ -305,6 +323,8 @@ y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 - Configuración por variables de entorno (`.env`).
 - Compatibilidad con PHP 7.4+, MariaDB/MySQL y frontend AdminLTE/Bootstrap.
 
+[1.2.4]: https://github.com/WorkTeam01/FlowPOS/compare/1.2.3...1.2.4
+[1.2.3]: https://github.com/WorkTeam01/FlowPOS/compare/1.2.2...1.2.3
 [1.2.2]: https://github.com/WorkTeam01/FlowPOS/compare/1.2.1...1.2.2
 [1.2.1]: https://github.com/WorkTeam01/FlowPOS/compare/1.2.0...1.2.1
 [1.2.0]: https://github.com/WorkTeam01/FlowPOS/compare/1.1.7...1.2.0

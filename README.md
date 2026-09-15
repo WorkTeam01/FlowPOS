@@ -82,7 +82,7 @@ Variables principales:
 | Variable       | Descripción                      | Ejemplo                     |
 | -------------- | -------------------------------- | --------------------------- |
 | `APP_NAME`     | Nombre visible de la aplicación  | `FlowPOS`                   |
-| `APP_VERSION`  | Versión actual de la aplicación  | `1.2.3`                     |
+| `APP_VERSION`  | Versión actual de la aplicación  | `1.2.4`                     |
 | `APP_CURRENCY` | Símbolo de moneda                | `Bs`, `$`, `€`, `S/`        |
 | `APP_URL`      | URL base (debe terminar con `/`) | `http://localhost/FlowPOS/` |
 | `TIMEZONE`     | Zona horaria PHP                 | `America/La_Paz`            |
@@ -173,6 +173,7 @@ FlowPOS/
 - Auditoría de accesibilidad del catálogo de permisos, barrido de contraste WCAG AA en callouts y paginación de DataTables, y anulación de ventas restringida al rol supervisor/administrador con un rol-check en el servidor (el POST directo del rol vendedor es rechazado); ver `CHANGELOG.md` [1.2.1].
 - Auditoría de accesibilidad del módulo de roles (gestión y matriz de permisos): doble escape eliminado, matriz usable en móvil con columnas fijas y área táctil de 44px, contraste WCAG AA en botones/badges sólidos y anillo de foco de teclado restituido a nivel global; el botón "Desactivar" del último rol administrador activo se oculta; ver `CHANGELOG.md` [1.2.2].
 - Auditoría de accesibilidad del módulo de compras (WCAG AA): nombres accesibles en botones icon-only y de colapso de panel, mensajes de error enlazados a sus campos (`aria-describedby` + `aria-invalid`) en el carrito y la fecha, contraste del modal de productos y del total de compra, y layout compartido (sidebar y navbar con landmarks y nombres accesibles, breadcrumb y footer con contraste mejorado); el área de toque táctil de 44px ahora cubre también los `.btn-sm` aislados con un `::before` que no agranda la caja visible; ver `CHANGELOG.md` [1.2.3].
+- Auditoría de accesibilidad del módulo de usuarios (WCAG AA, 0 violaciones axe-core): contraste mejorado en pestañas inactivas de `card-outline-tabs`, enlaces/íconos del navbar y pills activos (global en `common.css`), nombre accesible en el botón de colapso, `role="presentation"` en los `<li>` de los tablists y `role="status"` en el badge de estado del avatar; `aria-selected` de las pestañas tipo pill sincronizado globalmente; reportes DataTables sin la columna de Imágen; confirmación de activar/desactivar migrada al helper compartido; previews de imagen sin `src="#"` y con `alt` descriptivo en español; ver `CHANGELOG.md` [1.2.4].
 
 ## Changelog
 

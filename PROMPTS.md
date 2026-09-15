@@ -62,7 +62,7 @@ _______________
 - No introducir dependencias externas sin evaluar el impacto
 - Lógica de negocio (cálculos, mapeos de estado/badge, agregaciones, consultas por fila) va en el controlador o el modelo — la vista solo consume datos ya resueltos (ver `VentaController` como referencia: `calcularTotales()`, `obtenerIconoMetodoPago()`, `calcularInfoMetodoPago()`)
 - Control de acceso: `tienePermisoNombre() + esAdministrador()` (AuthorizationService) en la vista y en cada acción — `requireRole()` es código muerto eliminado, no reintroducirlo. El catálogo `permiso` es de granularidad por módulo; restricciones a una sola acción dentro de un módulo (ej. anular ventas solo supervisor/admin) se resuelven con un rol-check puntual en el controlador (`strtolower($_SESSION['usuario_rol']) === '<rol>'`), no ampliando el catálogo
-- Accesibilidad WCAG AA: callouts con `alert-default-*` (no `alert-*` sólidas de AdminLTE); overrides de contraste y touch targets táctiles de 44px ya centralizados en `common.css` (`badge-*`, `btn-primary`, `btn-info`, `btn:focus-visible`, `.btn-group>.btn-sm` y `.btn-sm` aislados con `::before`) — no duplicar reglas por módulo; `aria-label` en botones icon-only y en el botón de colapso de panel; en formularios, cada input con mensaje de error enlazado (`aria-describedby` + `aria-invalid` + `invalid-feedback`, patrón del carrito de ventas/compras)
+- Accesibilidad WCAG AA: callouts con `alert-default-*` (no `alert-*` sólidas de AdminLTE); overrides de contraste y touch targets táctiles de 44px ya centralizados en `common.css` (`badge-*`, `btn-primary`, `btn-info`, `btn:focus-visible`, `.card-outline-tabs` inactivas, `.main-header .navbar-nav .nav-link`, `.nav-pills[role="tablist"] .nav-link.active`, `.btn-group>.btn-sm` y `.btn-sm` aislados con `::before`) — no duplicar reglas por módulo; `aria-label` en botones icon-only y en el botón de colapso de panel; tablists con `<li>` wrapper → `role="presentation"` en el `<li>`; `aria-selected` de tabs/pills sincronizado globalmente en `common-utils.js` (no en JS de módulo); previews de imagen con `alt` descriptivo en español y SIN `src="#"`; `exportOptions.columns` sin columna de imagen ni Acciones; en formularios, cada input con mensaje de error enlazado (`aria-describedby` + `aria-invalid` + `invalid-feedback`, patrón del carrito de ventas/compras)
 - Si tocas `public/css/core/common.css` o cualquier asset versionado por `?v=<APP_VERSION>`, sube `APP_VERSION` en `.env` en el mismo cambio — si no, el navegador del usuario sigue sirviendo la copia cacheada
 - Si se modifica comportamiento funcional: actualizar `CHANGELOG.md` y mantener `APP_VERSION` sincronizado
 
@@ -126,7 +126,7 @@ Descripción: [criterios de aceptación]
 - Si la vista no usa DataTables y/o Select2, declarar `$skip_datatables`/`$skip_select2` antes de incluir `header.php`
 - AJAX: devolver JSON con header('Content-Type: application/json') + json_encode()
 - No introducir librerías externas nuevas
-- Accesibilidad WCAG AA: callouts `alert-default-*`; usar los overrides de contraste y touch targets táctiles de 44px de `common.css` (`badge-*`, `btn-primary`, `btn-info`, `btn:focus-visible`), no duplicarlos por módulo; `aria-label` en botones icon-only; inputs con `invalid-feedback` enlazado (`aria-describedby` + `aria-invalid`)
+- Accesibilidad WCAG AA: callouts `alert-default-*`; usar los overrides de contraste y touch targets táctiles de 44px de `common.css` (`badge-*`, `btn-primary`, `btn-info`, `btn:focus-visible`, pestañas/navbar/pills activos), no duplicarlos por módulo; `aria-label` en botones icon-only; tablists con `<li>` wrapper → `role="presentation"`; `aria-selected` sincronizado globalmente; previews sin `src="#"` y con alt descriptivo; inputs con `invalid-feedback` enlazado (`aria-describedby` + `aria-invalid`)
 - Tocar `common.css` / assets versionados obliga a subir `APP_VERSION` en el mismo cambio (caché del navegador)
 - Si cambia funcionalidad visible: actualizar `CHANGELOG.md` en `Unreleased`
 
@@ -323,7 +323,7 @@ Criterios de aceptación:
 - Registrar permisos nuevos en database/schema.sql (INSERT en tabla permiso)
 - Uploads: ImagenService — nunca move_uploaded_file() directo
 - No introducir librerías externas nuevas
-- Accesibilidad WCAG AA: callouts `alert-default-*`, overrides de contraste y touch targets táctiles de 44px de `common.css` sin duplicar por módulo, `aria-label` en botones icon-only, inputs con `invalid-feedback` enlazado (`aria-describedby` + `aria-invalid`)
+- Accesibilidad WCAG AA: callouts `alert-default-*`, overrides de contraste y touch targets táctiles de 44px de `common.css` sin duplicar por módulo, `aria-label` en botones icon-only, tablists con `<li>` wrapper → `role="presentation"`, `aria-selected` sincronizado globalmente, previews sin `src="#"` con alt descriptivo, inputs con `invalid-feedback` enlazado (`aria-describedby` + `aria-invalid`)
 - Tocar `common.css` / assets versionados obliga a subir `APP_VERSION` en el mismo cambio
 - Si se agregan cambios funcionales: documentarlos en `CHANGELOG.md` (`Unreleased`)
 
