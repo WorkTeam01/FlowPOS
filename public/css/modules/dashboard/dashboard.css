@@ -1,5 +1,18 @@
 /* Estilos compartidos por los dashboards (administrador, supervisor, vendedor) */
 
+/* CSS Custom Properties para colores de gráficos (theming) */
+:root {
+    --chart-color-primary: #007bff;
+    --chart-color-success: #28a745;
+    --chart-color-warning: #ffc107;
+    --chart-color-danger: #dc3545;
+    --chart-color-info: #17a2b8;
+    --chart-color-secondary: #6c757d;
+    --chart-color-orange: #fd7e14;
+    --chart-color-purple: #6f42c1;
+    --chart-color-pink: #e83e8c;
+}
+
 /* Estilos responsive para dashboard */
 @media (max-width: 767.98px) {
 
@@ -57,6 +70,15 @@ input[type="date"] {
 .progress-group .progress {
     height: 5px;
     margin-bottom: 5px;
+}
+
+/* Tabla ranking vendedores (supervisor dashboard) */
+.ranking-col-num {
+    width: 10px;
+}
+
+.ranking-col-meta {
+    width: 40px;
 }
 
 /* Estilos para impresión */

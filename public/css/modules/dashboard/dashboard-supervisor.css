@@ -1,0 +1,47 @@
+/* Estilos específicos para dashboard de supervisor */
+.chart-legend {
+    list-style: none;
+    margin-top: 5px;
+    padding-left: 0;
+}
+
+.chart-legend li {
+    display: block;
+    padding: 5px 0;
+    position: relative;
+    padding-left: 25px;
+}
+
+.chart-legend li span {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 5px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+}
+
+#lista-categorias .nav-item {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 10px 0;
+}
+
+#lista-categorias .nav-item:last-child {
+    border-bottom: none;
+}
+
+/* Estilos para las listas de categorías en formato compacto */
+#lista-categorias .progress-group {
+    margin-bottom: 5px;
+}
+
+#lista-categorias .progress {
+    height: 4px;
+    margin-bottom: 4px;
+}
+
+#lista-categorias .progress-text {
+    font-size: 0.9rem;
+    margin-bottom: 2px;
+}
