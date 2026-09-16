@@ -1,36 +1,17 @@
 /**
  * Dashboard Supervisor
  * JavaScript para la visualización de datos en el dashboard de supervisor
+ * Usa DashboardCore para lógica compartida
  */
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Configuración global de Chart.js
-    Chart.defaults.global.defaultFontFamily = 'Source Sans Pro, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue';
-    Chart.defaults.global.defaultFontSize = 12;
-    Chart.defaults.global.defaultFontColor = '#666';
-    Chart.defaults.global.responsive = true;
-    Chart.defaults.global.maintainAspectRatio = false;
+    const Core = window.DashboardCore;
 
     // Variables de estado
     let periodoActual = 'hoy';
     let fechaDesde = null;
     let fechaHasta = null;
     let datosActuales = null;
-    let cargando = false;
-    const dashboardCache = {};
-
-    // Colores para gráficos
-    const colores = {
-        azul: '#007bff',
-        verde: '#28a745',
-        amarillo: '#ffc107',
-        rojo: '#dc3545',
-        cian: '#17a2b8',
-        gris: '#6c757d',
-        naranja: '#fd7e14',
-        morado: '#6f42c1',
-        rosa: '#e83e8c'
-    };
 
     // Referencias a gráficos
     let graficoVendedores = null;
@@ -38,172 +19,79 @@ document.addEventListener('DOMContentLoaded', function () {
     let graficoCategorias = null;
     let graficoConversion = null;
 
-    // Función para formatear moneda
-    const formatoMoneda = (valor) => {
-        const currency = (window.APP && window.APP.currency) ? window.APP.currency : 'Bs';
-        return currency + ' ' + parseFloat(valor).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-    };
+    // IDs para loading
+    const kpiSelector = '.info-box-number';
+    const listIds = ['lista-vendedores', 'lista-categorias', 'tabla-ranking', 'tabla-alertas', 'leyenda-conversion'];
 
-    // Función para formatear porcentaje
-    const formatoPorcentaje = (valor) => {
-        return parseFloat(valor).toFixed(1) + '%';
-    };
+    // Colores
+    const colores = Core.getChartColors();
+    const t = Core.t;
 
-    // Función para generar una clave de caché
-    function generarClaveCache(periodo, fechaInicio = null, fechaFin = null) {
-        if (periodo === 'personalizado' && fechaInicio && fechaFin) {
-            return `${periodo}_${fechaInicio}_${fechaFin}`;
+    // Crear elementos "sin datos"
+    Core.crearElementosNoDatos(
+        ['grafico-vendedores', 'grafico-tendencia', 'grafico-categorias', 'grafico-conversion'],
+        [
+            t('chart.sinDatosVendedores'),
+            t('chart.sinDatosTendencia'),
+            t('chart.sinDatosCategorias'),
+            t('chart.sinDatosConversion')
+        ]
+    );
+
+    // Inicializar selector de período
+    const fechas = Core.inicializarSelectorPeriodo(function (periodo, fDesde, fHasta) {
+        if (periodo === 'personalizado') {
+            fechaDesde = fDesde;
+            fechaHasta = fHasta;
         }
-        return periodo;
-    }
+        cargarDatosPeriodo(periodo, fDesde, fHasta);
+    });
+    fechaDesde = fechas.fechaDesde;
+    fechaHasta = fechas.fechaHasta;
 
-    // Función para mostrar indicador de carga
-    function mostrarCargando(mostrar = true) {
-        cargando = mostrar;
-
-        if (mostrar) {
-            // Mostrar indicadores en KPIs
-            const kpis = document.querySelectorAll('.info-box-number');
-            kpis.forEach(kpi => {
-                if (!kpi.dataset.originalText && !kpi.querySelector('.fa-spinner')) {
-                    kpi.dataset.originalText = kpi.innerHTML;
-                    kpi.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                }
-            });
-
-            // Añadir indicadores a las tablas
-            const tablas = ['lista-vendedores', 'lista-categorias', 'tabla-ranking', 'tabla-alertas', 'leyenda-conversion'];
-            tablas.forEach(id => {
-                const elemento = document.getElementById(id);
-                if (elemento && !elemento.querySelector('.fa-spinner')) {
-                    elemento.innerHTML = `
-                        <li class="nav-item text-center py-3">
-                            <i class="fas fa-spinner fa-spin mr-2"></i> Actualizando datos...
-                        </li>
-                    `;
-                }
-            });
-        }
-    }
-
-    // Función para mostrar mensajes de error
-    function mostrarError(mensaje) {
-        try {
-            Swal.fire({
-                title: 'Error',
-                text: mensaje,
-                icon: 'error',
-                confirmButtonText: 'Aceptar'
-            });
-        } catch (e) {
-            alert(mensaje);
-        }
-    }
-
-    // Función para obtener la URL base correcta
-    function getBaseUrl() {
-        if (typeof baseUrl !== 'undefined' && baseUrl) {
-            return baseUrl.replace(/\/$/, '');
-        }
-        return '';
-    }
-
-    // Función para cargar datos del dashboard mediante AJAX
+    // Cargar datos del dashboard
     async function cargarDatosDashboard(periodo, fechaInicio = null, fechaFin = null) {
         try {
-            // Generar clave de caché
-            const claveCache = generarClaveCache(periodo, fechaInicio, fechaFin);
+            const claveCache = Core.generarClaveCache(periodo, fechaInicio, fechaFin);
+            const cached = Core.getCachedData(claveCache);
 
-            // Verificar si los datos están en caché y no tienen más de 5 minutos
-            const ahora = new Date().getTime();
-            if (dashboardCache[claveCache] &&
-                (ahora - dashboardCache[claveCache].timestamp) < 5 * 60 * 1000) {
-                actualizarDashboard(dashboardCache[claveCache].data);
+            if (cached) {
+                actualizarDashboard(cached);
                 return true;
             }
 
-            mostrarCargando(true);
+            Core.mostrarCargando(true, [kpiSelector], listIds);
 
-            // Obtener la URL base correcta
-            const baseUrl = getBaseUrl();
-            let url = baseUrl + '/controllers/dashboard/get_supervisor_dashboard_data.php';
+            const data = await Core.cargarDatosDashboard('get_supervisor_dashboard_data.php', {
+                periodo: periodo,
+                fecha_inicio: fechaInicio,
+                fecha_fin: fechaFin,
+                limite: 5
+            });
 
-            // Si la URL no funciona, intentar con rutas relativas
-            if (!url.startsWith('http')) {
-                url = 'controllers/dashboard/get_supervisor_dashboard_data.php';
-            }
+            Core.mostrarCargando(false);
 
-            let params = new URLSearchParams();
-            params.append('periodo', periodo);
-
-            if (fechaInicio && fechaFin) {
-                params.append('fecha_inicio', fechaInicio);
-                params.append('fecha_fin', fechaFin);
-            }
-
-            // Realizar petición AJAX
-            const response = await fetch(`${url}?${params.toString()}`);
-
-            // Manejar posibles errores HTTP
-            if (!response.ok) {
-                throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
-            }
-
-            // Verificar si la respuesta es JSON válido
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                const text = await response.text();
-                console.error('Respuesta no es JSON:', text);
-                throw new Error('Respuesta del servidor no es JSON válido. Verifique la consola para más detalles.');
-            }
-
-            // Intentar parsear la respuesta como JSON
-            let data;
-            try {
-                data = await response.json();
-            } catch (e) {
-                const text = await response.text();
-                console.error('Respuesta no válida:', text);
-                throw new Error('La respuesta del servidor no es un JSON válido');
-            }
-
-            mostrarCargando(false);
-
-            if (!data.success) {
-                mostrarError(data.message || 'Error al cargar datos del dashboard');
-                return false;
-            }
-
-            // Guardar datos en caché
-            dashboardCache[claveCache] = {
-                data: data,
-                timestamp: ahora
-            };
-
-            // Guardar datos y actualizar interfaz
+            Core.setCachedData(claveCache, data);
             datosActuales = data;
             actualizarDashboard(data);
             return true;
 
         } catch (error) {
-            mostrarCargando(false);
+            Core.mostrarCargando(false);
 
-            // Si no hay datos, cargar datos de ejemplo para mostrar la interfaz
             if (!datosActuales) {
                 cargarDatosDePrueba();
             }
 
-            mostrarError('Error de conexión: ' + error.message);
+            Core.mostrarError(`${t('errorConexion')}: ${error.message}`);
             console.error('Error cargando datos:', error);
             return false;
         }
     }
 
-    /**
-     * Función para cargar datos de prueba cuando no hay datos disponibles
-     */
+    // Datos de prueba
     function cargarDatosDePrueba() {
-        console.log("Cargando datos de prueba para visualización");
+        console.log('Cargando datos de prueba para visualización');
 
         const datosPrueba = {
             success: true,
@@ -235,16 +123,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 totalClientes: 0,
                 tasaRetencion: 0,
                 distribucion: [
-                    {
-                        etiqueta: 'Nuevos',
-                        valor: 0,
-                        color: '#28a745'
-                    },
-                    {
-                        etiqueta: 'Recurrentes',
-                        valor: 0,
-                        color: '#17a2b8'
-                    }
+                    { etiqueta: 'Nuevos', valor: 0, color: colores.success },
+                    { etiqueta: 'Recurrentes', valor: 0, color: colores.info }
                 ]
             }
         };
@@ -253,322 +133,211 @@ document.addEventListener('DOMContentLoaded', function () {
         actualizarDashboard(datosPrueba);
     }
 
-    /**
-     * Función principal para actualizar el dashboard con datos
-     */
+    // Actualizar dashboard principal
     function actualizarDashboard(datos) {
         try {
-            // Verificar si hay datos
-            if (!datos) {
-                console.error("No hay datos para actualizar el dashboard");
-                return;
-            }
+            if (!datos) return;
 
-            // Actualizar título del período
+            // Título período
             if (datos.periodo && datos.periodo.descripcion) {
-                const periodoTitulo = document.getElementById('periodo-titulo');
-                if (periodoTitulo) {
-                    periodoTitulo.textContent = datos.periodo.descripcion;
-                }
+                const el = document.getElementById('periodo-titulo');
+                if (el) el.textContent = datos.periodo.descripcion;
             }
 
-            // Actualizar KPIs
+            // KPIs (sin tendencias en supervisor, solo valores)
             actualizarKPIs(datos.resumen);
 
-            // Actualizar gráficos (verificando que existan los elementos)
+            // Gráficos
             if (document.getElementById('grafico-vendedores')) {
                 crearGraficoVendedores(datos.rendimientoVendedores);
             }
-
             if (document.getElementById('grafico-tendencia')) {
                 crearGraficoTendencia(datos.tendencia);
             }
-
             if (document.getElementById('grafico-categorias')) {
                 crearGraficoCategorias(datos.ventasPorCategoria);
             }
-
             if (document.getElementById('grafico-conversion')) {
                 crearGraficoConversion(datos.conversion);
             }
 
-            // Actualizar tablas
+            // Tablas/Lista
             if (document.getElementById('tabla-ranking')) {
                 actualizarRankingVendedores(datos.rendimientoVendedores);
             }
-
             if (document.getElementById('lista-categorias')) {
                 actualizarListaCategorias(datos.ventasPorCategoria);
             }
-
             if (document.getElementById('tabla-alertas')) {
                 actualizarAlertasInventario(datos.productosAgotar);
             }
-
             if (document.getElementById('stats-conversion')) {
                 actualizarEstadisticasConversion(datos.conversion);
             }
+
         } catch (error) {
-            console.error("Error en actualizarDashboard:", error);
+            console.error('Error en actualizarDashboard:', error);
         }
     }
 
-    /**
-     * Crea el gráfico de rendimiento por vendedor con manejo adecuado para casos sin datos
-     */
+    // Gráfico de vendedores (bar)
     function crearGraficoVendedores(datos) {
         try {
             const canvas = document.getElementById('grafico-vendedores');
+            if (!canvas) return;
 
-            // Verificar si el elemento existe
-            if (!canvas) {
-                console.error('Elemento grafico-vendedores no encontrado en el DOM');
-                return;
-            }
+            if (graficoVendedores) graficoVendedores.destroy();
 
-            const ctx = canvas.getContext('2d');
-
-            // Destruir gráfico existente si lo hay
-            if (graficoVendedores) {
-                try {
-                    graficoVendedores.destroy();
-                } catch (e) {
-                    console.warn("Error al destruir gráfico existente:", e);
-                }
-            }
-
-            // Verificar si hay datos
             if (!datos || datos.length === 0) {
-                // Intentar mostrar mensaje de "sin datos" si existe el elemento
-                const sinDatosVendedores = document.getElementById('sin-datos-vendedores');
-                if (sinDatosVendedores) {
-                    canvas.style.display = 'none';
-                    sinDatosVendedores.style.display = 'block';
-                } else {
-                    // Si no existe el elemento para mostrar mensaje, dibujarlo en el canvas
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.font = '14px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillStyle = '#6c757d';
-                    ctx.fillText('No hay datos disponibles', canvas.width / 2, canvas.height / 2);
-                }
+                Core.mostrarSinDatos('grafico-vendedores', true);
                 return;
             }
 
-            // Si hay datos, asegurar que el canvas esté visible y el mensaje oculto
-            canvas.style.display = 'block';
-            const sinDatosVendedores = document.getElementById('sin-datos-vendedores');
-            if (sinDatosVendedores) {
-                sinDatosVendedores.style.display = 'none';
-            }
+            Core.mostrarSinDatos('grafico-vendedores', false);
 
-            // Preparar datos
             const labels = datos.map(item => item.nombre);
-            const ventas = datos.map(item => parseFloat(item.montoVentas));
-            const coloresBarras = [
-                colores.azul,
-                colores.verde,
-                colores.amarillo,
-                colores.cian,
-                colores.naranja
-            ];
+            const values = datos.map(item => parseFloat(item.montoVentas));
+            const backgroundColors = colores.categorical.slice(0, datos.length);
 
-            graficoVendedores = new Chart(ctx, {
+            graficoVendedores = new Chart(canvas, {
                 type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [{
                         label: 'Ventas',
-                        data: ventas,
-                        backgroundColor: coloresBarras,
+                        data: values,
+                        backgroundColor: backgroundColors,
                         borderWidth: 0
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    legend: {
-                        display: false
-                    },
-                    tooltips: {
-                        callbacks: {
-                            label: function (tooltipItem) {
-                                return 'Ventas: ' + formatoMoneda(tooltipItem.yLabel);
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => 'Ventas: ' + Core.formatoMoneda(context.parsed.y)
                             }
                         }
                     },
                     scales: {
-                        xAxes: [{
-                            gridLines: {
-                                display: false
-                            }
-                        }],
-                        yAxes: [{
+                        x: { grid: { display: false } },
+                        y: {
+                            beginAtZero: true,
                             ticks: {
-                                beginAtZero: true,
-                                callback: function (value) {
-                                    return 'Bs. ' + value.toLocaleString();
-                                }
+                                callback: (value) => Core.formatoMoneda(value)
                             }
-                        }]
+                        }
                     }
                 }
             });
 
-            // Actualizar lista de vendedores
+            // Tabla accesible
+            Core.crearTablaAccesibleGrafico('grafico-vendedores', datos,
+                (item) => `<td>${item.nombre}</td><td>${Core.formatoMoneda(item.montoVentas)}</td>`,
+                'Rendimiento de ventas por vendedor'
+            );
+
             actualizarListaVendedores(datos);
+
         } catch (error) {
-            console.error("Error en crearGraficoVendedores:", error);
+            console.error('Error en crearGraficoVendedores:', error);
         }
     }
 
-    /**
-     * Actualiza la lista de vendedores
-     */
+    // Lista de vendedores (card footer)
     function actualizarListaVendedores(datos) {
-        try {
-            const listaVendedores = document.getElementById('lista-vendedores');
+        const contenedor = document.getElementById('lista-vendedores');
+        if (!contenedor) return;
 
-            if (!listaVendedores) {
-                console.error('Elemento lista-vendedores no encontrado en el DOM');
-                return;
-            }
-
-            if (!datos || datos.length === 0) {
-                listaVendedores.innerHTML = `
+        if (!datos || datos.length === 0) {
+            contenedor.innerHTML = `
                 <li class="nav-item text-center py-3 text-muted">
-                    <i class="fas fa-info-circle mr-1"></i> No hay datos de vendedores para este período
-                </li>
-            `;
-                return;
-            }
-
-            let html = '';
-            datos.slice(0, 5).forEach((vendedor, index) => {
-                const porcentaje = (vendedor.montoVentas / datos[0].montoVentas) * 100;
-                const claseBadge = index === 0 ? 'badge-success' : 'badge-info';
-
-                html += `
-                <li class="nav-item p-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="badge ${claseBadge} mr-2">${index + 1}</span>
-                            <span>${vendedor.nombre}</span>
-                        </div>
-                        <span class="text-muted">${formatoMoneda(vendedor.montoVentas)}</span>
-                    </div>
-                    <div class="progress mt-2">
-                        <div class="progress-bar bg-primary" style="width: ${porcentaje}%"></div>
-                    </div>
-                </li>
-            `;
-            });
-
-            listaVendedores.innerHTML = html;
-        } catch (error) {
-            console.error("Error en actualizarListaVendedores:", error);
+                    <i class="fas fa-info-circle mr-1" aria-hidden="true"></i> ${t('table.sinVendedores')}
+                </li>`;
+            return;
         }
+
+        let html = '';
+        const maxVentas = datos[0]?.montoVentas || 1;
+        datos.slice(0, 5).forEach((vendedor, index) => {
+            const porcentaje = (vendedor.montoVentas / maxVentas) * 100;
+            const claseBadge = index === 0 ? 'badge-success' : 'badge-info';
+
+            html += `
+            <li class="nav-item p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge ${claseBadge} mr-2">${index + 1}</span>
+                        <span>${vendedor.nombre}</span>
+                    </div>
+                    <span class="text-muted">${Core.formatoMoneda(vendedor.montoVentas)}</span>
+                </div>
+                <div class="progress mt-2">
+                    <div class="progress-bar bg-primary" style="width: ${porcentaje}%"></div>
+                </div>
+            </li>`;
+        });
+        contenedor.innerHTML = html;
     }
 
-    /**
-     * Crea el gráfico de tendencia de ventas con manejo adecuado para casos sin datos
-     */
+    // Gráfico de tendencia (line)
     function crearGraficoTendencia(datos) {
         try {
             const canvas = document.getElementById('grafico-tendencia');
+            if (!canvas) return;
 
-            // Verificar si el elemento existe
-            if (!canvas) {
-                console.error('Elemento grafico-tendencia no encontrado en el DOM');
-                return;
-            }
+            if (graficoTendencia) graficoTendencia.destroy();
 
-            const ctx = canvas.getContext('2d');
-
-            // Destruir gráfico existente si lo hay
-            if (graficoTendencia) {
-                try {
-                    graficoTendencia.destroy();
-                } catch (e) {
-                    console.warn("Error al destruir gráfico existente:", e);
-                }
-            }
-
-            // Verificar si hay datos
             if (!datos || !datos.periodoActual || datos.periodoActual.length === 0) {
-                // Intentar mostrar mensaje de "sin datos" si existe el elemento
-                const sinDatosTendencia = document.getElementById('sin-datos-tendencia');
-                if (sinDatosTendencia) {
-                    canvas.style.display = 'none';
-                    sinDatosTendencia.style.display = 'block';
-                } else {
-                    // Si no existe el elemento para mostrar mensaje, dibujarlo en el canvas
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.font = '14px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillStyle = '#6c757d';
-                    ctx.fillText('No hay datos disponibles', canvas.width / 2, canvas.height / 2);
-                }
+                Core.mostrarSinDatos('grafico-tendencia', true);
 
-                // También actualizar información de comparación a valores cero
-                const cambioPorcentajeEl = document.getElementById('cambio-porcentaje');
-                const periodoAnteriorEl = document.getElementById('periodo-anterior');
-                const periodoActualEl = document.getElementById('periodo-actual');
-
-                if (cambioPorcentajeEl) cambioPorcentajeEl.textContent = '0.0%';
-                if (periodoAnteriorEl) periodoAnteriorEl.textContent = formatoMoneda(0);
-                if (periodoActualEl) periodoActualEl.textContent = formatoMoneda(0);
-
+                // Reset comparison values
+                const cambioEl = document.getElementById('cambio-porcentaje');
+                const antEl = document.getElementById('periodo-anterior');
+                const actEl = document.getElementById('periodo-actual');
+                if (cambioEl) cambioEl.textContent = '0.0%';
+                if (antEl) antEl.textContent = Core.formatoMoneda(0);
+                if (actEl) actEl.textContent = Core.formatoMoneda(0);
                 return;
             }
 
-            // Si hay datos, asegurar que el canvas esté visible y el mensaje oculto
-            canvas.style.display = 'block';
-            const sinDatosTendencia = document.getElementById('sin-datos-tendencia');
-            if (sinDatosTendencia) {
-                sinDatosTendencia.style.display = 'none';
-            }
+            Core.mostrarSinDatos('grafico-tendencia', false);
 
-            // Preparar datos con formato de fecha correcto
-            const fechas = datos.periodoActual.map(item => {
-                // Usar la fecha del item pero asegurarse de que se muestra correctamente
+            const labels = datos.periodoActual.map(item => {
                 const fecha = new Date(item.fecha + 'T00:00:00');
-                // Formatear la fecha manualmente para asegurar consistencia
                 const dia = fecha.getDate().toString().padStart(2, '0');
                 const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
                 return `${dia}/${mes}`;
             });
 
-            // Datasets
-            const datasets = [
-                {
-                    label: 'Período Actual',
-                    data: datos.periodoActual.map(item => parseFloat(item.venta)),
-                    borderColor: colores.azul,
-                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                    pointBackgroundColor: colores.azul,
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: colores.azul,
-                    pointRadius: 3,
-                    pointHoverRadius: 5,
-                    fill: true,
-                    tension: 0.1,
-                    borderWidth: 2
-                }
-            ];
+            const datasets = [{
+                label: 'Período Actual',
+                data: datos.periodoActual.map(item => parseFloat(item.venta)),
+                borderColor: colores.primary,
+                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                pointBackgroundColor: colores.primary,
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: colores.primary,
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                fill: true,
+                tension: 0.1,
+                borderWidth: 2
+            }];
 
-            // Añadir período anterior si hay datos
             if (datos.periodoAnterior && datos.periodoAnterior.length > 0) {
                 datasets.push({
                     label: 'Período Anterior',
                     data: datos.periodoAnterior.map(item => parseFloat(item.venta)),
-                    borderColor: colores.gris,
+                    borderColor: colores.secondary,
                     backgroundColor: 'transparent',
-                    pointBackgroundColor: colores.gris,
+                    pointBackgroundColor: colores.secondary,
                     pointBorderColor: '#fff',
                     pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: colores.gris,
+                    pointHoverBorderColor: colores.secondary,
                     pointRadius: 2,
                     pointHoverRadius: 4,
                     fill: false,
@@ -577,220 +346,133 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             }
 
-            graficoTendencia = new Chart(ctx, {
+            graficoTendencia = new Chart(canvas, {
                 type: 'line',
-                data: {
-                    labels: fechas,
-                    datasets: datasets
-                },
+                data: { labels, datasets },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    legend: {
-                        display: true,
-                        position: 'top'
-                    },
-                    tooltips: {
-                        callbacks: {
-                            label: function (tooltipItem, data) {
-                                return data.datasets[tooltipItem.datasetIndex].label + ': ' +
-                                    formatoMoneda(tooltipItem.yLabel);
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => context.dataset.label + ': ' + Core.formatoMoneda(context.parsed.y)
                             }
                         }
                     },
                     scales: {
-                        xAxes: [{
-                            gridLines: {
-                                display: false
-                            }
-                        }],
-                        yAxes: [{
-                            ticks: {
-                                beginAtZero: true,
-                                callback: function (value) {
-                                    return 'Bs. ' + value.toLocaleString();
-                                }
-                            }
-                        }]
+                        x: { grid: { display: false } },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: (value) => Core.formatoMoneda(value) }
+                        }
                     }
                 }
             });
 
-            // Actualizar información de comparación
-            const cambioPorcentajeEl = document.getElementById('cambio-porcentaje');
-            const periodoAnteriorEl = document.getElementById('periodo-anterior');
-            const periodoActualEl = document.getElementById('periodo-actual');
+            // Actualizar comparación
+            const cambioEl = document.getElementById('cambio-porcentaje');
+            const antEl = document.getElementById('periodo-anterior');
+            const actEl = document.getElementById('periodo-actual');
 
-            // Verificar si los elementos existen
-            if (cambioPorcentajeEl && periodoAnteriorEl && periodoActualEl) {
-                // Asignar los valores
-                cambioPorcentajeEl.textContent = (datos.cambioPorcentual >= 0 ? '+' : '') + formatoPorcentaje(datos.cambioPorcentual);
-                cambioPorcentajeEl.classList.remove('text-success', 'text-danger');
-                cambioPorcentajeEl.classList.add(datos.cambioPorcentual >= 0 ? 'text-success' : 'text-danger');
-
-                periodoAnteriorEl.textContent = formatoMoneda(datos.totalAnterior);
-                periodoActualEl.textContent = formatoMoneda(datos.totalActual);
+            if (cambioEl && antEl && actEl) {
+                const cambio = datos.cambioPorcentual || 0;
+                cambioEl.textContent = (cambio >= 0 ? '+' : '') + Core.formatoPorcentaje(cambio);
+                cambioEl.classList.remove('text-success', 'text-danger');
+                cambioEl.classList.add(cambio >= 0 ? 'text-success' : 'text-danger');
+                antEl.textContent = Core.formatoMoneda(datos.totalAnterior || 0);
+                actEl.textContent = Core.formatoMoneda(datos.totalActual || 0);
             }
+
+            // Tabla accesible
+            Core.crearTablaAccesibleGrafico('grafico-tendencia', datos.periodoActual,
+                (item, i) => `<td>${labels[i]}</td><td>${Core.formatoMoneda(item.venta)}</td>`,
+                'Tendencia de ventas del equipo'
+            );
+
         } catch (error) {
-            console.error("Error en crearGraficoTendencia:", error);
+            console.error('Error en crearGraficoTendencia:', error);
         }
     }
 
-    /**
-     * Crea el gráfico de categorías con manejo adecuado para casos sin datos
-     */
+    // Gráfico de categorías (doughnut)
     function crearGraficoCategorias(datos) {
         try {
             const canvas = document.getElementById('grafico-categorias');
+            if (!canvas) return;
 
-            // Verificar si el elemento existe
-            if (!canvas) {
-                console.error('Elemento grafico-categorias no encontrado en el DOM');
-                return;
-            }
+            if (graficoCategorias) graficoCategorias.destroy();
 
-            const ctx = canvas.getContext('2d');
-
-            // Destruir gráfico existente si lo hay
-            if (graficoCategorias) {
-                try {
-                    graficoCategorias.destroy();
-                } catch (e) {
-                    console.warn("Error al destruir gráfico existente:", e);
-                }
-            }
-
-            // Verificar si hay datos
             if (!datos || datos.length === 0) {
-                // Intentar mostrar mensaje de "sin datos" si existe el elemento
-                const sinDatosCategorias = document.getElementById('sin-datos-categorias');
-                if (sinDatosCategorias) {
-                    canvas.style.display = 'none';
-                    sinDatosCategorias.style.display = 'block';
-                } else {
-                    // Si no existe el elemento para mostrar mensaje, dibujarlo en el canvas
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.font = '14px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillStyle = '#6c757d';
-                    ctx.fillText('No hay datos disponibles', canvas.width / 2, canvas.height / 2);
-                }
+                Core.mostrarSinDatos('grafico-categorias', true);
                 return;
             }
 
-            // Si hay datos, asegurar que el canvas esté visible y el mensaje oculto
-            canvas.style.display = 'block';
-            const sinDatosCategorias = document.getElementById('sin-datos-categorias');
-            if (sinDatosCategorias) {
-                sinDatosCategorias.style.display = 'none';
-            }
+            Core.mostrarSinDatos('grafico-categorias', false);
 
-            // Preparar datos
             const labels = datos.map(item => item.categoria);
             const values = datos.map(item => parseFloat(item.ventas));
-            const backgroundColors = [
-                colores.verde,
-                colores.azul,
-                colores.amarillo,
-                colores.cian,
-                colores.naranja,
-                colores.morado,
-                colores.rosa
-            ];
+            const backgroundColors = colores.categorical.slice(0, datos.length);
 
-            // Asegurar que hay suficientes colores
-            while (backgroundColors.length < datos.length) {
-                backgroundColors.push(...backgroundColors);
-            }
-
-            graficoCategorias = new Chart(ctx, {
+            graficoCategorias = new Chart(canvas, {
                 type: 'doughnut',
                 data: {
                     labels: labels,
                     datasets: [{
                         data: values,
-                        backgroundColor: backgroundColors.slice(0, datos.length),
+                        backgroundColor: backgroundColors,
                         borderWidth: 0
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    legend: {
-                        display: false
-                    },
-                    tooltips: {
-                        callbacks: {
-                            label: function (tooltipItem, data) {
-                                const index = tooltipItem.index;
-                                const categoria = datos[index];
-                                return `${categoria.categoria}: ${formatoMoneda(categoria.ventas)} (${formatoPorcentaje(categoria.porcentaje)})`;
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const item = datos[context.dataIndex];
+                                    return `${item.categoria}: ${Core.formatoMoneda(item.ventas)} (${Core.formatoPorcentaje(item.porcentaje)})`;
+                                }
                             }
                         }
                     },
-                    cutoutPercentage: 60
+                    cutout: '60%'
                 }
             });
+
+            // Tabla accesible
+            Core.crearTablaAccesibleGrafico('grafico-categorias', datos,
+                (item) => `<td>${item.categoria}</td><td>${Core.formatoMoneda(item.ventas)}</td><td>${Core.formatoPorcentaje(item.porcentaje)}</td>`,
+                'Ventas del equipo por categoría de producto'
+            );
+
         } catch (error) {
-            console.error("Error en crearGraficoCategorias:", error);
+            console.error('Error en crearGraficoCategorias:', error);
         }
     }
 
-    /**
- * Crea el gráfico de conversión de clientes con manejo adecuado para casos sin datos
- */
+    // Gráfico de conversión (pie)
     function crearGraficoConversion(datos) {
         try {
             const canvas = document.getElementById('grafico-conversion');
+            if (!canvas) return;
 
-            // Verificar si el elemento existe
-            if (!canvas) {
-                console.error('Elemento grafico-conversion no encontrado en el DOM');
-                return;
-            }
+            if (graficoConversion) graficoConversion.destroy();
 
-            const ctx = canvas.getContext('2d');
-
-            // Destruir gráfico existente si lo hay
-            if (graficoConversion) {
-                try {
-                    graficoConversion.destroy();
-                } catch (e) {
-                    console.warn("Error al destruir gráfico existente:", e);
-                }
-            }
-
-            // Verificar si hay datos
             if (!datos || !datos.distribucion || datos.distribucion.length === 0) {
-                // Intentar mostrar mensaje de "sin datos" si existe el elemento
-                const sinDatosConversion = document.getElementById('sin-datos-conversion');
-                if (sinDatosConversion) {
-                    canvas.style.display = 'none';
-                    sinDatosConversion.style.display = 'block';
-                } else {
-                    // Si no existe el elemento para mostrar mensaje, dibujarlo en el canvas
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.font = '14px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillStyle = '#6c757d';
-                    ctx.fillText('No hay datos disponibles', canvas.width / 2, canvas.height / 2);
-                }
+                Core.mostrarSinDatos('grafico-conversion', true);
                 return;
             }
 
-            // Si hay datos, asegurar que el canvas esté visible y el mensaje oculto
-            canvas.style.display = 'block';
-            const sinDatosConversion = document.getElementById('sin-datos-conversion');
-            if (sinDatosConversion) {
-                sinDatosConversion.style.display = 'none';
-            }
+            Core.mostrarSinDatos('grafico-conversion', false);
 
-            // Preparar datos
             const labels = datos.distribucion.map(item => item.etiqueta);
             const values = datos.distribucion.map(item => item.valor);
             const colorList = datos.distribucion.map(item => item.color);
 
-            graficoConversion = new Chart(ctx, {
+            graficoConversion = new Chart(canvas, {
                 type: 'pie',
                 data: {
                     labels: labels,
@@ -803,497 +485,240 @@ document.addEventListener('DOMContentLoaded', function () {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    legend: {
-                        display: false
-                    },
-                    tooltips: {
-                        callbacks: {
-                            label: function (tooltipItem, data) {
-                                const index = tooltipItem.index;
-                                const valor = values[index];
-                                const total = values.reduce((a, b) => a + b, 0);
-                                const porcentaje = total > 0 ? (valor / total) * 100 : 0;
-                                return `${labels[index]}: ${valor} (${porcentaje.toFixed(1)}%)`;
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const total = values.reduce((a, b) => a + b, 0);
+                                    const pct = total > 0 ? (values[context.dataIndex] / total) * 100 : 0;
+                                    return `${labels[context.dataIndex]}: ${values[context.dataIndex]} (${pct.toFixed(1)}%)`;
+                                }
                             }
                         }
                     }
                 }
             });
 
-            // Actualizar leyenda
             actualizarLeyendaConversion(datos.distribucion);
+
+            // Tabla accesible
+            Core.crearTablaAccesibleGrafico('grafico-conversion', datos.distribucion,
+                (item) => `<td>${item.etiqueta}</td><td>${item.valor}</td>`,
+                'Distribución de conversión de clientes'
+            );
+
         } catch (error) {
-            console.error("Error en crearGraficoConversion:", error);
+            console.error('Error en crearGraficoConversion:', error);
         }
     }
 
-    /**
-     * Actualiza la leyenda del gráfico de conversión
-     */
+    // Leyenda de conversión
     function actualizarLeyendaConversion(distribucion) {
-        try {
-            const leyendaConversion = document.getElementById('leyenda-conversion');
-            if (!leyendaConversion) return;
+        const contenedor = document.getElementById('leyenda-conversion');
+        if (!contenedor) return;
 
-            if (!distribucion || distribucion.length === 0) {
-                leyendaConversion.innerHTML = '<li class="text-center">No hay datos disponibles</li>';
-                return;
-            }
-
-            let leyendaHtml = '';
-            distribucion.forEach(item => {
-                leyendaHtml += `
-                <li>
-                    <span style="background-color: ${item.color}"></span>
-                    ${item.etiqueta}: ${item.valor}
-                </li>
-            `;
-            });
-
-            leyendaConversion.innerHTML = leyendaHtml;
-        } catch (error) {
-            console.error("Error en actualizarLeyendaConversion:", error);
+        if (!distribucion || distribucion.length === 0) {
+            contenedor.innerHTML = `<li class="text-center">${t('table.sinLeyenda')}</li>`;
+            return;
         }
+
+        let html = '';
+        distribucion.forEach(item => {
+            html += `
+            <li>
+                <span style="background-color: ${item.color}; display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px;"></span>
+                ${item.etiqueta}: ${item.valor}
+            </li>`;
+        });
+        contenedor.innerHTML = html;
     }
 
-    /**
-     * Actualiza la tabla de ranking de vendedores
-     */
+    // Ranking de vendedores (table)
     function actualizarRankingVendedores(datos) {
-        try {
-            const tablaRanking = document.getElementById('tabla-ranking');
+        const tabla = document.getElementById('tabla-ranking');
+        if (!tabla) return;
 
-            if (!tablaRanking) {
-                console.error('Elemento tabla-ranking no encontrado en el DOM');
-                return;
-            }
-
-            if (!datos || datos.length === 0) {
-                tablaRanking.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="text-center py-3 text-muted">
-                            <i class="fas fa-info-circle mr-1"></i> No hay datos de vendedores para el período seleccionado
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            let html = '';
-            datos.forEach((vendedor, index) => {
-                // Simular progreso hacia una meta (ajustar según las metas reales)
-                const metaVendedor = 10000; // Meta simulada
-                const progresoMeta = Math.min(100, Math.round((vendedor.montoVentas / metaVendedor) * 100));
-                let claseProgreso = 'bg-success';
-
-                if (progresoMeta < 30) {
-                    claseProgreso = 'bg-danger';
-                } else if (progresoMeta < 70) {
-                    claseProgreso = 'bg-warning';
-                }
-
-                html += `
+        if (!datos || datos.length === 0) {
+            tabla.innerHTML = `
                 <tr>
-                    <td>${index + 1}</td>
-                    <td>${vendedor.nombre}</td>
-                    <td>${formatoMoneda(vendedor.montoVentas)}</td>
-                    <td>${vendedor.clientes}</td>
-                    <td>
-                        <div class="progress progress-xs">
-                            <div class="progress-bar ${claseProgreso}" style="width: ${progresoMeta}%"></div>
-                        </div>
-                        <span class="badge ${claseProgreso === 'bg-success' ? 'bg-success' : claseProgreso === 'bg-warning' ? 'bg-warning' : 'bg-danger'}">${progresoMeta}%</span>
+                    <td colspan="5" class="text-center py-3 text-muted">
+                        <i class="fas fa-info-circle mr-1" aria-hidden="true"></i> ${t('table.sinVendedores')}
                     </td>
-                </tr>
-            `;
-            });
-
-            tablaRanking.innerHTML = html;
-        } catch (error) {
-            console.error("Error en actualizarRankingVendedores:", error);
+                </tr>`;
+            return;
         }
+
+        let html = '';
+        datos.forEach((vendedor, index) => {
+            const metaVendedor = 10000;
+            const progresoMeta = Math.min(100, Math.round((vendedor.montoVentas / metaVendedor) * 100));
+            let claseProgreso = 'bg-success';
+            let claseBadge = 'bg-success';
+
+            if (progresoMeta < 30) {
+                claseProgreso = 'bg-danger';
+                claseBadge = 'bg-danger';
+            } else if (progresoMeta < 70) {
+                claseProgreso = 'bg-warning';
+                claseBadge = 'bg-warning';
+            }
+
+            html += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${vendedor.nombre}</td>
+                <td>${Core.formatoMoneda(vendedor.montoVentas)}</td>
+                <td>${vendedor.clientes}</td>
+                <td>
+                    <div class="progress progress-xs">
+                        <div class="progress-bar ${claseProgreso}" style="width: ${progresoMeta}%"></div>
+                    </div>
+                    <span class="badge ${claseBadge}">${progresoMeta}%</span>
+                </td>
+            </tr>`;
+        });
+        tabla.innerHTML = html;
     }
 
-    /**
-     * Actualiza la lista de categorías
-     */
+    // Lista de categorías (progress bars)
     function actualizarListaCategorias(datos) {
-        try {
-            const listaCategorias = document.getElementById('lista-categorias');
+        const contenedor = document.getElementById('lista-categorias');
+        if (!contenedor) return;
 
-            if (!listaCategorias) {
-                console.error('Elemento lista-categorias no encontrado en el DOM');
-                return;
-            }
-
-            if (!datos || datos.length === 0) {
-                listaCategorias.innerHTML = `
-                    <li class="nav-item text-center py-3 text-muted">
-                        <i class="fas fa-info-circle mr-1"></i> No hay datos de categorías para este período
-                    </li>
-                `;
-                return;
-            }
-
-            const coloresCategorias = [
-                colores.verde,
-                colores.azul,
-                colores.amarillo,
-                colores.cian,
-                colores.naranja,
-                colores.morado,
-                colores.rosa
-            ];
-
-            let html = '';
-            datos.forEach((categoria, index) => {
-                const color = coloresCategorias[index % coloresCategorias.length];
-
-                // Estilo más compacto, similar al de métodos de pago
-                html += `
-                <li class="nav-item">
-                    <div class="progress-group">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="progress-text">
-                                <span class="badge mr-1" style="background-color: ${color}">&nbsp;</span>
-                                ${categoria.categoria}
-                            </span>
-                            <span class="float-right text-muted">${formatoMoneda(categoria.ventas)} (${formatoPorcentaje(categoria.porcentaje)})</span>
-                        </div>
-                        <div class="progress progress-sm">
-                            <div class="progress-bar" style="width: ${categoria.porcentaje}%; background-color: ${color}"></div>
-                        </div>
-                    </div>
-                </li>
-            `;
-            });
-
-            listaCategorias.innerHTML = html;
-        } catch (error) {
-            console.error("Error en actualizarListaCategorias:", error);
+        if (!datos || datos.length === 0) {
+            contenedor.innerHTML = `
+                <li class="nav-item text-center py-3 text-muted">
+                    <i class="fas fa-info-circle mr-1" aria-hidden="true"></i> No hay datos de categorías para este período
+                </li>`;
+            return;
         }
+
+        let html = '';
+        datos.forEach((categoria, index) => {
+            const color = colores.categorical[index % colores.categorical.length];
+
+            html += `
+            <li class="nav-item">
+                <div class="progress-group">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="progress-text">
+                            <span class="badge mr-1" style="background-color: ${color}">&nbsp;</span>
+                            ${categoria.categoria}
+                        </span>
+                        <span class="float-right text-muted">${Core.formatoMoneda(categoria.ventas)} (${Core.formatoPorcentaje(categoria.porcentaje)})</span>
+                    </div>
+                    <div class="progress progress-sm">
+                        <div class="progress-bar" style="width: ${categoria.porcentaje}%; background-color: ${color}"></div>
+                    </div>
+                </div>
+            </li>`;
+        });
+        contenedor.innerHTML = html;
     }
 
-    /**
-     * Actualiza la tabla de alertas de inventario
-     */
+    // Alertas de inventario
     function actualizarAlertasInventario(datos) {
-        try {
-            const tablaAlertas = document.getElementById('tabla-alertas');
+        const tabla = document.getElementById('tabla-alertas');
+        if (!tabla) return;
 
-            if (!tablaAlertas) {
-                console.error('Elemento tabla-alertas no encontrado en el DOM');
-                return;
-            }
-
-            if (!datos || datos.length === 0) {
-                tablaAlertas.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="text-center py-3 text-muted">
-                            <i class="fas fa-info-circle mr-1"></i> No hay productos con stock bajo actualmente
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            let html = '';
-            datos.forEach(producto => {
-                let claseBadge = producto.estado === 'crítico' ? 'badge-danger' : 'badge-warning';
-
-                html += `
+        if (!datos || datos.length === 0) {
+            tabla.innerHTML = `
                 <tr>
-                    <td>${producto.producto}</td>
-                    <td>${producto.categoria}</td>
-                    <td class="text-center">${producto.stockActual}</td>
-                    <td class="text-center">
-                        <span class="badge ${claseBadge}">${producto.estado === 'crítico' ? 'Crítico' : 'Bajo'}</span>
+                    <td colspan="5" class="text-center py-3 text-muted">
+                        <i class="fas fa-info-circle mr-1" aria-hidden="true"></i> ${t('table.sinAlertas')}
                     </td>
-                    <td class="text-center">
-                        <a href="#" class="btn btn-sm btn-primary">Comprar</a>
-                    </td>
-                </tr>
-            `;
-            });
-
-            tablaAlertas.innerHTML = html;
-        } catch (error) {
-            console.error("Error en actualizarAlertasInventario:", error);
+                </tr>`;
+            return;
         }
+
+        let html = '';
+        datos.forEach(producto => {
+            const claseBadge = producto.estado === 'crítico' ? 'badge-danger' : 'badge-warning';
+            const estadoTexto = producto.estado === 'crítico' ? 'Crítico' : 'Bajo';
+
+            html += `
+            <tr>
+                <td>${producto.producto}</td>
+                <td>${producto.categoria}</td>
+                <td class="text-center">${producto.stockActual}</td>
+                <td class="text-center">
+                    <span class="badge ${claseBadge}">${estadoTexto}</span>
+                </td>
+                <td class="text-center">
+                    <a href="#" class="btn btn-sm btn-primary">Comprar</a>
+                </td>
+            </tr>`;
+        });
+        tabla.innerHTML = html;
     }
 
-    /**
-     * Actualiza las estadísticas de conversión de clientes
-     */
+    // Estadísticas de conversión
     function actualizarEstadisticasConversion(datos) {
-        try {
-            if (!datos) return;
+        if (!datos) return;
 
-            const clientesNuevosEl = document.getElementById('clientes-nuevos');
-            const clientesRecurrentesEl = document.getElementById('clientes-recurrentes');
-            const tasaRetencionEl = document.getElementById('tasa-retencion');
-            const statsConversionEl = document.getElementById('stats-conversion');
+        const contenedor = document.getElementById('stats-conversion');
+        if (!contenedor) return;
 
-            // Si no existe el contenedor principal, salir
-            if (!statsConversionEl) {
-                console.warn("Elemento stats-conversion no encontrado");
-                return;
-            }
-
-            // Verificar si hay datos de conversión
-            if (!datos.clientesNuevos && !datos.clientesRecurrentes) {
-                // Mostrar mensaje de no hay datos
-                statsConversionEl.innerHTML = `
-                    <div class="text-center py-3 text-muted">
-                        <i class="fas fa-info-circle mr-1"></i> No hay datos de conversión para el período seleccionado
-                    </div>
-                `;
-                return;
-            }
-
-            // Actualizar valores individuales si existen los elementos
-            if (clientesNuevosEl) {
-                clientesNuevosEl.textContent = datos.clientesNuevos;
-            }
-
-            if (clientesRecurrentesEl) {
-                clientesRecurrentesEl.textContent = datos.clientesRecurrentes;
-            }
-
-            if (tasaRetencionEl) {
-                tasaRetencionEl.textContent = formatoPorcentaje(datos.tasaRetencion);
-            }
-        } catch (error) {
-            console.error("Error en actualizarEstadisticasConversion:", error);
+        if (!datos.clientesNuevos && !datos.clientesRecurrentes) {
+            contenedor.innerHTML = `
+                <div class="text-center py-3 text-muted">
+                    <i class="fas fa-info-circle mr-1" aria-hidden="true"></i> ${t('table.sinConversion')}
+                </div>`;
+            return;
         }
+
+        const nuevosEl = document.getElementById('clientes-nuevos');
+        const recurrentesEl = document.getElementById('clientes-recurrentes');
+        const retencionEl = document.getElementById('tasa-retencion');
+
+        if (nuevosEl) nuevosEl.textContent = datos.clientesNuevos || 0;
+        if (recurrentesEl) recurrentesEl.textContent = datos.clientesRecurrentes || 0;
+        if (retencionEl) retencionEl.textContent = Core.formatoPorcentaje(datos.tasaRetencion || 0);
     }
 
-    /**
-     * Actualiza los KPIs principales del dashboard
-     */
+    // KPIs
     function actualizarKPIs(resumen) {
-        try {
-            // Verificar si hay datos
-            if (!resumen) return;
+        if (!resumen) return;
 
-            // Ventas del equipo
-            const ventasEquipoEl = document.getElementById('ventas-equipo');
-            if (ventasEquipoEl) {
-                ventasEquipoEl.innerHTML = formatoMoneda(resumen.ventasEquipo);
-            }
+        const map = {
+            'ventas-equipo': Core.formatoMoneda(resumen.ventasEquipo),
+            'meta-equipo': Core.formatoPorcentaje(resumen.cumplimientoMeta),
+            'vendedores-activos': resumen.vendedoresActivos,
+            'ticket-promedio': Core.formatoMoneda(resumen.ticketPromedio)
+        };
 
-            // Cumplimiento de meta
-            const metaEquipoEl = document.getElementById('meta-equipo');
-            if (metaEquipoEl) {
-                metaEquipoEl.innerHTML = formatoPorcentaje(resumen.cumplimientoMeta);
-            }
-
-            // Vendedores activos
-            const vendedoresActivosEl = document.getElementById('vendedores-activos');
-            if (vendedoresActivosEl) {
-                vendedoresActivosEl.innerHTML = resumen.vendedoresActivos;
-            }
-
-            // Ticket promedio
-            const ticketPromedioEl = document.getElementById('ticket-promedio');
-            if (ticketPromedioEl) {
-                ticketPromedioEl.innerHTML = formatoMoneda(resumen.ticketPromedio);
-            }
-        } catch (error) {
-            console.error("Error en actualizarKPIs:", error);
-        }
+        Object.entries(map).forEach(([id, value]) => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = value;
+        });
     }
 
-    // Cargar datos según período seleccionado
+    // Cargar datos por período
     function cargarDatosPeriodo(periodo, fechaInicio = null, fechaFin = null) {
         periodoActual = periodo;
 
-        // Ocultar o mostrar el selector de fechas según corresponda
         const fechasPersonalizadas = document.getElementById('fechas-personalizadas');
         if (fechasPersonalizadas) {
             fechasPersonalizadas.classList.toggle('d-none', periodo !== 'personalizado');
         }
 
-        // Si es personalizado pero no hay fechas seleccionadas, no cargar datos aún
-        if (periodo === 'personalizado' && (!fechaInicio || !fechaFin)) {
-            return;
-        }
+        if (periodo === 'personalizado' && (!fechaInicio || !fechaFin)) return;
 
-        // Cargar datos del servidor
         cargarDatosDashboard(periodo, fechaInicio, fechaFin);
 
-        // Actualizar el valor seleccionado en el select
-        const selectorPeriodo = document.getElementById('selector-periodo');
-        if (selectorPeriodo && selectorPeriodo.value !== periodo) {
-            selectorPeriodo.value = periodo;
-            try {
-                $(selectorPeriodo).trigger('change.select2'); // Actualizar select2
-            } catch (e) {
-                console.warn("Error al actualizar select2:", e);
-            }
+        const selector = document.getElementById('selector-periodo');
+        if (selector && selector.value !== periodo) {
+            selector.value = periodo;
+            try { $(selector).trigger('change.select2'); } catch (e) { }
         }
     }
 
-    /**
-     * Crea elementos para mostrar mensajes de "no hay datos" en gráficos
-     */
-    function crearElementosNoDatosGraficos() {
-        try {
-            // Para el gráfico de vendedores
-            if (!document.getElementById('sin-datos-vendedores')) {
-                const contenedorVendedores = document.getElementById('grafico-vendedores');
-                if (contenedorVendedores && contenedorVendedores.parentNode) {
-                    const sinDatosVendedores = document.createElement('div');
-                    sinDatosVendedores.id = 'sin-datos-vendedores';
-                    sinDatosVendedores.className = 'text-center text-muted py-4';
-                    sinDatosVendedores.innerHTML = '<p><i class="fas fa-info-circle mr-1"></i> No hay datos de rendimiento de vendedores para el período seleccionado</p>';
-                    sinDatosVendedores.style.display = 'none';
-                    contenedorVendedores.parentNode.appendChild(sinDatosVendedores);
-                }
-            }
-
-            // Para el gráfico de tendencia
-            if (!document.getElementById('sin-datos-tendencia')) {
-                const contenedorTendencia = document.getElementById('grafico-tendencia');
-                if (contenedorTendencia && contenedorTendencia.parentNode) {
-                    const sinDatosTendencia = document.createElement('div');
-                    sinDatosTendencia.id = 'sin-datos-tendencia';
-                    sinDatosTendencia.className = 'text-center text-muted py-4';
-                    sinDatosTendencia.innerHTML = '<p><i class="fas fa-info-circle mr-1"></i> No hay datos de tendencia para el período seleccionado</p>';
-                    sinDatosTendencia.style.display = 'none';
-                    contenedorTendencia.parentNode.appendChild(sinDatosTendencia);
-                }
-            }
-
-            // Para el gráfico de categorías
-            if (!document.getElementById('sin-datos-categorias')) {
-                const contenedorCategorias = document.getElementById('grafico-categorias');
-                if (contenedorCategorias && contenedorCategorias.parentNode) {
-                    const sinDatosCategorias = document.createElement('div');
-                    sinDatosCategorias.id = 'sin-datos-categorias';
-                    sinDatosCategorias.className = 'text-center text-muted py-4';
-                    sinDatosCategorias.innerHTML = '<p><i class="fas fa-info-circle mr-1"></i> No hay datos de categorías para el período seleccionado</p>';
-                    sinDatosCategorias.style.display = 'none';
-                    contenedorCategorias.parentNode.appendChild(sinDatosCategorias);
-                }
-            }
-
-            // Para el gráfico de conversión
-            if (!document.getElementById('sin-datos-conversion')) {
-                const contenedorConversion = document.getElementById('grafico-conversion');
-                if (contenedorConversion && contenedorConversion.parentNode) {
-                    const sinDatosConversion = document.createElement('div');
-                    sinDatosConversion.id = 'sin-datos-conversion';
-                    sinDatosConversion.className = 'text-center text-muted py-4';
-                    sinDatosConversion.innerHTML = '<p><i class="fas fa-info-circle mr-1"></i> No hay datos de conversión para el período seleccionado</p>';
-                    sinDatosConversion.style.display = 'none';
-                    contenedorConversion.parentNode.appendChild(sinDatosConversion);
-                }
-            }
-        } catch (error) {
-            console.error("Error al crear elementos 'no hay datos' para gráficos:", error);
-        }
-    }
-
-    // Inicializar componentes interactivos
-    function inicializarComponentes() {
-        // Inicializar Select2 si está disponible
-        try {
-            if (typeof $ !== 'undefined' && $.fn.select2 && typeof initializeSelect2 === 'function') {
-                initializeSelect2('.select2', { minimumResultsForSearch: Infinity, dropdownAutoWidth: false });
-            }
-        } catch (e) {
-            console.warn("Error al inicializar Select2:", e);
-        }
-
-        // Selector de período — usar jQuery para capturar eventos de Select2
-        const selectorPeriodo = document.getElementById('selector-periodo');
-        if (selectorPeriodo) {
-            $(selectorPeriodo).on('change', function () {
-                const periodo = this.value;
-
-                if (periodo === 'personalizado') {
-                    const fechasPersonalizadas = document.getElementById('fechas-personalizadas');
-                    if (fechasPersonalizadas) {
-                        fechasPersonalizadas.classList.remove('d-none');
-                    }
-                    return;
-                }
-
-                cargarDatosPeriodo(periodo);
-            });
-        }
-
-        // Botón aplicar fechas personalizadas
-        const btnAplicarFechas = document.getElementById('btn-aplicar-fechas');
-        if (btnAplicarFechas) {
-            btnAplicarFechas.addEventListener('click', function () {
-                const fechaDesdeInput = document.getElementById('fecha-desde');
-                const fechaHastaInput = document.getElementById('fecha-hasta');
-
-                if (fechaDesdeInput && fechaHastaInput && fechaDesdeInput.value && fechaHastaInput.value) {
-                    // Actualizar variables globales
-                    fechaDesde = fechaDesdeInput.value;
-                    fechaHasta = fechaHastaInput.value;
-
-                    // Cargar datos con las nuevas fechas
-                    cargarDatosPeriodo('personalizado', fechaDesde, fechaHasta);
-                } else {
-                    try {
-                        Swal.fire({
-                            title: 'Error',
-                            text: 'Debe seleccionar ambas fechas para aplicar el filtro personalizado',
-                            icon: 'error',
-                            confirmButtonText: 'Entendido'
-                        });
-                    } catch (e) {
-                        alert('Debe seleccionar ambas fechas para aplicar el filtro personalizado');
-                    }
-                }
-            });
-        }
-
-        // Establecer fechas por defecto para el selector personalizado
-        const hoy = new Date();
-        const hace30Dias = new Date(hoy);
-        hace30Dias.setDate(hoy.getDate() - 30);
-
-        const fechaHastaInput = document.getElementById('fecha-hasta');
-        const fechaDesdeInput = document.getElementById('fecha-desde');
-
-        if (fechaHastaInput) {
-            fechaHastaInput.valueAsDate = hoy;
-        }
-
-        if (fechaDesdeInput) {
-            fechaDesdeInput.valueAsDate = hace30Dias;
-        }
-
-        // Almacenar fechas iniciales
-        if (fechaDesdeInput && fechaHastaInput) {
-            fechaDesde = fechaDesdeInput.value;
-            fechaHasta = fechaHastaInput.value;
-        }
-    }
-
-    // Inicializar dashboard
+    // Inicializar
     try {
-        // Crear elementos de "no hay datos" para los gráficos
-        crearElementosNoDatosGraficos();
-
-        // Inicializar componentes
-        inicializarComponentes();
-
-        // Cargar datos iniciales
         cargarDatosPeriodo('hoy');
     } catch (error) {
-        console.error("Error al inicializar dashboard:", error);
-
-        // Intentar cargar datos de prueba si falla
-        try {
-            cargarDatosDePrueba();
-        } catch (e) {
-            console.error("Error al cargar datos de prueba:", e);
-        }
+        console.error('Error al inicializar dashboard:', error);
+        cargarDatosDePrueba();
     }
 });
