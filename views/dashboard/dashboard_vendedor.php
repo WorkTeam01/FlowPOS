@@ -4,11 +4,11 @@ require_once __DIR__ . '/../../controllers/dashboard/DashboardVendedorController
 $dashboardController = new DashboardVendedorController();
 
 // Definir scripts específicos para este módulo
-$module_scripts = ['dashboard/dashboard_vendedor'];
+$module_scripts = ['dashboard/dashboard-core', 'dashboard/dashboard_vendedor'];
 ?>
 
 <!-- ChartJS (solo necesario en este dashboard) -->
-<script src="<?= $URL; ?>public/js/plugins/chart/Chart.js"></script>
+<script src="<?= $URL; ?>public/js/plugins/chart/Chart.js" defer></script>
 
 <!-- Content Header (Page header) -->
 <section class="content-header">
@@ -47,7 +47,37 @@ $module_scripts = ['dashboard/dashboard_vendedor'];
                                             <option value="hoy">Hoy</option>
                                             <option value="semana">Esta semana</option>
                                             <option value="mes">Este mes</option>
+                                            <option value="anio">Este año</option>
+                                            <option value="personalizado">Personalizado</option>
                                         </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Fechas personalizadas (inicialmente oculto) -->
+                            <div id="fechas-personalizadas" class="col-md-6 col-sm-12 mb-2 mb-md-0 d-none">
+                                <div class="row">
+                                    <div class="col-sm-5 mb-2 mb-sm-0">
+                                        <div class="input-group input-group-sm">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">Desde</span>
+                                            </div>
+                                            <input type="date" id="fecha-desde" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-5 mb-2 mb-sm-0">
+                                        <div class="input-group input-group-sm">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">Hasta</span>
+                                            </div>
+                                            <input type="date" id="fecha-hasta" class="form-control">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <button id="btn-aplicar-fechas" class="btn btn-sm btn-primary w-100">
+                                            <i class="fas fa-check d-sm-none"></i>
+                                            <span class="d-none d-sm-inline">Aplicar</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>

@@ -4,11 +4,11 @@ require_once __DIR__ . '/../../controllers/dashboard/DashboardSupervisorControll
 $dashboardController = new DashboardSupervisorController();
 
 // Definir scripts específicos para este módulo
-$module_scripts = ['dashboard/dashboard_supervisor'];
+$module_scripts = ['dashboard/dashboard-core', 'dashboard/dashboard_supervisor'];
 ?>
 
 <!-- ChartJS (solo necesario en este dashboard) -->
-<script src="<?= $URL; ?>public/js/plugins/chart/Chart.js"></script>
+<script src="<?= $URL; ?>public/js/plugins/chart/Chart.js" defer></script>
 
 <!-- Content Header (Page header) -->
 <section class="content-header">
@@ -239,11 +239,11 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
                             <table class="table table-striped table-hover">
                                 <thead>
                                     <tr>
-                                        <th style="width: 10px">#</th>
+                                        <th class="ranking-col-num">#</th>
                                         <th>Vendedor</th>
                                         <th>Ventas</th>
                                         <th>Clientes</th>
-                                        <th style="width: 40px">Meta</th>
+                                        <th class="ranking-col-meta">Meta</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tabla-ranking">
@@ -429,52 +429,4 @@ $module_scripts = ['dashboard/dashboard_supervisor'];
 <!-- /.content -->
 
 <link rel="stylesheet" href="<?= $URL; ?>public/css/modules/dashboard/dashboard.css">
-<style>
-    /* Estilos específicos para dashboard de supervisor */
-    .chart-legend {
-        list-style: none;
-        margin-top: 5px;
-        padding-left: 0;
-    }
-
-    .chart-legend li {
-        display: block;
-        padding: 5px 0;
-        position: relative;
-        padding-left: 25px;
-    }
-
-    .chart-legend li span {
-        display: block;
-        position: absolute;
-        left: 0;
-        top: 5px;
-        width: 15px;
-        height: 15px;
-        border-radius: 50%;
-    }
-
-    #lista-categorias .nav-item {
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        padding: 10px 0;
-    }
-
-    #lista-categorias .nav-item:last-child {
-        border-bottom: none;
-    }
-
-    /* Estilos para las listas de categorías en formato compacto */
-    #lista-categorias .progress-group {
-        margin-bottom: 5px;
-    }
-
-    #lista-categorias .progress {
-        height: 4px;
-        margin-bottom: 4px;
-    }
-
-    #lista-categorias .progress-text {
-        font-size: 0.9rem;
-        margin-bottom: 2px;
-    }
-</style>
+<link rel="stylesheet" href="<?= $URL; ?>public/css/modules/dashboard/dashboard-supervisor.css?v=<?= $appVersion ?>">

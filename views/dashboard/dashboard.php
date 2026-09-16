@@ -4,11 +4,11 @@ require_once __DIR__ . '/../../controllers/dashboard/DashboardController.php';
 $dashboardController = new DashboardController();
 
 // Definir scripts específicos para este módulo
-$module_scripts = ['dashboard/dashboard'];
+$module_scripts = ['dashboard/dashboard-core', 'dashboard/dashboard'];
 ?>
 
 <!-- ChartJS (solo necesario en este dashboard) -->
-<script src="<?= $URL; ?>public/js/plugins/chart/Chart.js"></script>
+<script src="<?= $URL; ?>public/js/plugins/chart/Chart.js" defer></script>
 
 <!-- Content Header (Page header) -->
 <section class="content-header">
@@ -286,7 +286,7 @@ $module_scripts = ['dashboard/dashboard'];
                         </div>
                     </div>
                     <div class="card-body">
-                        <canvas id="grafico-categorias" height="380" role="img" aria-label="Gráfico de ventas por categoría de producto"></canvas>
+                        <canvas id="grafico-categorias" height="220" role="img" aria-label="Gráfico de ventas por categoría de producto"></canvas>
                     </div>
                 </div>
             </div>
