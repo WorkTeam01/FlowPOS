@@ -342,5 +342,5 @@ Devuelve en este orden:
 
 ---
 
-_Última actualización: 2026-09-11_
+_Última actualización: 2026-09-16_
 _Mantener sincronizado con CLAUDE.md al hacer cambios de arquitectura._

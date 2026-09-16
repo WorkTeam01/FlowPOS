@@ -82,7 +82,7 @@ Variables principales:
 | Variable       | Descripción                      | Ejemplo                     |
 | -------------- | -------------------------------- | --------------------------- |
 | `APP_NAME`     | Nombre visible de la aplicación  | `FlowPOS`                   |
-| `APP_VERSION`  | Versión actual de la aplicación  | `1.2.4`                     |
+| `APP_VERSION`  | Versión actual de la aplicación  | `1.2.5`                     |
 | `APP_CURRENCY` | Símbolo de moneda                | `Bs`, `$`, `€`, `S/`        |
 | `APP_URL`      | URL base (debe terminar con `/`) | `http://localhost/FlowPOS/` |
 | `TIMEZONE`     | Zona horaria PHP                 | `America/La_Paz`            |
@@ -174,6 +174,7 @@ FlowPOS/
 - Auditoría de accesibilidad del módulo de roles (gestión y matriz de permisos): doble escape eliminado, matriz usable en móvil con columnas fijas y área táctil de 44px, contraste WCAG AA en botones/badges sólidos y anillo de foco de teclado restituido a nivel global; el botón "Desactivar" del último rol administrador activo se oculta; ver `CHANGELOG.md` [1.2.2].
 - Auditoría de accesibilidad del módulo de compras (WCAG AA): nombres accesibles en botones icon-only y de colapso de panel, mensajes de error enlazados a sus campos (`aria-describedby` + `aria-invalid`) en el carrito y la fecha, contraste del modal de productos y del total de compra, y layout compartido (sidebar y navbar con landmarks y nombres accesibles, breadcrumb y footer con contraste mejorado); el área de toque táctil de 44px ahora cubre también los `.btn-sm` aislados con un `::before` que no agranda la caja visible; ver `CHANGELOG.md` [1.2.3].
 - Auditoría de accesibilidad del módulo de usuarios (WCAG AA, 0 violaciones axe-core): contraste mejorado en pestañas inactivas de `card-outline-tabs`, enlaces/íconos del navbar y pills activos (global en `common.css`), nombre accesible en el botón de colapso, `role="presentation"` en los `<li>` de los tablists y `role="status"` en el badge de estado del avatar; `aria-selected` de las pestañas tipo pill sincronizado globalmente; reportes DataTables sin la columna de Imágen; confirmación de activar/desactivar migrada al helper compartido; previews de imagen sin `src="#"` y con `alt` descriptivo en español; ver `CHANGELOG.md` [1.2.4].
+- **Refactor masivo del módulo Dashboard (1.2.5)**: eliminado ~1,200 líneas duplicadas entre `dashboard.js`, `dashboard_supervisor.js`, `dashboard_vendedor.js` extrayendo lógica compartida a `dashboard-core.js` (cache 5 min, fetch con manejo de errores, Chart.js 4+ config, selector de período, impresión de tickets, tablas accesibles para gráficos); autorización consistente vía `AuthorizationService::tienePermisoNombre()` con permisos granulares `dashboard_supervisor`/`dashboard_vendedor`; theming con CSS custom properties `--chart-color-*` y dark mode funcional; paridad de features en vendedor (período "Este año" y "Personalizado"); lazy-load de gráficos con IntersectionObserver; `APP_VERSION` sincronizado a 1.2.5; ver `CHANGELOG.md` [1.2.5].
 
 ## Changelog
 

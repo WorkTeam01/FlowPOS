@@ -45,7 +45,7 @@ Ajustar los valores en `.env` — `config/env.php` lo carga automáticamente:
 
 ```
 APP_NAME=FlowPOS
-APP_VERSION=1.2.2
+APP_VERSION=1.2.5
 APP_CURRENCY=Bs
 DB_HOST=localhost
 DB_NAME=flowpos

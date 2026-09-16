@@ -5,6 +5,23 @@ Todos los cambios importantes de este proyecto se documentan en este archivo.
 Este formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.2.5] - 2026-09-15
+
+### Fixed
+
+- **Refactor masivo del módulo Dashboard (P0 implementation integrity)**: eliminado ~1,200 líneas duplicadas entre `dashboard.js`, `dashboard_supervisor.js`, `dashboard_vendedor.js` extrayendo lógica compartida a nuevo `dashboard-core.js` (cache 5 min, fetch con manejo de errores, loading states, Chart.js 4+ config, selector de período, fechas por defecto, impresión de tickets, formateo moneda/porcentaje/fechas, tablas accesibles para gráficos).
+- **Accesibilidad (P0 a11y)**: gráficos canvas ahora incluyen tablas `<table class="sr-only">` con `aria-describedby` para screen readers; indicadores de tendencia en KPIs usan texto (`+`/`-`, `▲`/`▼`) además de color (WCAG 1.4.1); Select2 inicializado con `dropdownParent` para teclado en móviles.
+- **Chart.js API moderna (P0 harden)**: migrado `Chart.defaults.global` (deprecated) a `Chart.defaults.font/color/responsive/plugins/animation` (Chart.js 4+).
+- **Autorización consistente (P0 harden)**: endpoints `get_supervisor_dashboard_data.php` y `get_vendedor_dashboard_data.php` usan `AuthorizationService::tienePermisoNombre($id, 'dashboard_supervisor'|'dashboard_vendedor')` en vez de `strtolower(rol)` — permisos nuevos agregados a BD y asignados a roles supervisor/vendedor/admin.
+- **Theming vía CSS custom properties (P1 theming)**: paleta de gráficos en `--chart-color-*` con overrides `[data-theme="dark"]`; dark mode funcional para canvas, info-boxes, cards, tablas, badges, progress bars, Select2.
+- **Paridad de features en vendedor**: selector de período ahora incluye "Este año" y "Personalizado" con date range picker.
+- **Performance**: `<script defer>` en Chart.js; lazy-load de gráficos preparado (IntersectionObserver pending).
+- **`APP_VERSION` subido a `1.2.5`**: `dashboard.css`, `dashboard-core.js`, assets de módulo se sirven con `?v=<APP_VERSION>`.
+
+### Note
+
+- `CLAUDE.md` actualizado: patrones de refactor (dashboard-core), a11y de gráficos (tablas sr-only + aria-describedby), autorización por permiso granular vs rol string, theming de Chart.js via CSS custom properties.
+
 ## [1.2.4] - 2026-09-15
 
 ### Fixed
