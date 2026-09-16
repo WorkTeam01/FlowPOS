@@ -59,13 +59,38 @@ function initializeSelect2(selector = '.select2', options = {}) {
 
     // Inicializar Select2 en los elementos seleccionados
     $(selector).each(function () {
+        const $select = $(this);
+
         // Si ya tiene Select2, destruirlo primero
-        if ($(this).data('select2')) {
-            $(this).select2('destroy');
+        if ($select.data('select2')) {
+            $select.select2('destroy');
         }
 
-        // Aplicar Select2 sin modificar las opciones existentes
-        $(this).select2(mergedOptions);
+        // Auto-detectar dropdownParent para modales (clave para teclado en móvil)
+        if (!mergedOptions.dropdownParent) {
+            const $modal = $select.closest('.modal');
+            if ($modal.length) {
+                mergedOptions.dropdownParent = $modal;
+            }
+        }
+
+        // En móviles, asegurar que el dropdown sea accesible por teclado
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        if (isTouchDevice && !mergedOptions.minimumResultsForSearch) {
+            mergedOptions.minimumResultsForSearch = 0; // Permitir búsqueda en móviles
+        }
+
+        // Aplicar Select2
+        $select.select2(mergedOptions);
+
+        // Accesibilidad: asegurar que el contenedor del dropdown tenga role correcto
+        $select.on('select2:open', function () {
+            const $dropdown = $('.select2-dropdown');
+            if ($dropdown.length) {
+                $dropdown.attr('role', 'listbox');
+                $dropdown.find('.select2-results__option').attr('role', 'option');
+            }
+        });
     });
 }
 
