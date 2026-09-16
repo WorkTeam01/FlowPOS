@@ -335,6 +335,8 @@ class DashboardVendedorController
                 return 'Esta semana (' . $formatoFecha($fechaInicio) . ' - ' . $formatoFecha($fechaFin) . ')';
             case 'mes':
                 return 'Este mes (' . $formatoFecha($fechaInicio) . ' - ' . $formatoFecha($fechaFin) . ')';
+            case 'anio':
+                return 'Este año (' . $formatoFecha($fechaInicio) . ' - ' . $formatoFecha($fechaFin) . ')';
             case 'personalizado':
                 return 'Período personalizado (' . $formatoFecha($fechaInicio) . ' - ' . $formatoFecha($fechaFin) . ')';
             default:

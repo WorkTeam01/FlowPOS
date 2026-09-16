@@ -18,14 +18,14 @@ require_once __DIR__ . '/../../views/layouts/session.php';
 // Verificar si el usuario está autenticado
 requireLogin();
 
-// Verificar si el usuario es supervisor
+// Verificar si el usuario tiene permiso de supervisor (dashboard_supervisor)
 require_once __DIR__ . '/../../services/AuthorizationService.php';
 $authService = new AuthorizationService();
 $currentUser = getCurrentUser();
 $idusuariosesion = $currentUser['id'];
 
-if (strtolower($currentUser['rol'] ?? '') !== 'supervisor') {
-    // Devolver error si no es supervisor
+if (!$authService->tienePermisoNombre($idusuariosesion, 'dashboard_supervisor')) {
+    // Devolver error si no tiene permiso
     header('Content-Type: application/json');
     echo json_encode([
         'success' => false,

@@ -18,14 +18,14 @@ require_once __DIR__ . '/../../views/layouts/session.php';
 // Verificar si el usuario está autenticado
 requireLogin();
 
-// Verificar si el usuario es vendedor
+// Verificar si el usuario tiene permiso de vendedor (dashboard_vendedor)
 require_once __DIR__ . '/../../services/AuthorizationService.php';
 $authService = new AuthorizationService();
 $currentUser = getCurrentUser();
 $idusuariosesion = $currentUser['id'];
 
-if (strtolower($currentUser['rol'] ?? '') !== 'vendedor') {
-    // Devolver error si no es vendedor
+if (!$authService->tienePermisoNombre($idusuariosesion, 'dashboard_vendedor')) {
+    // Devolver error si no tiene permiso
     header('Content-Type: application/json');
     echo json_encode([
         'success' => false,
@@ -46,7 +46,7 @@ try {
     $limite = isset($_GET['limite']) ? (int)$_GET['limite'] : 5;
 
     // Validar parámetros básicos
-    if (!in_array($periodo, ['hoy', 'semana', 'mes', 'personalizado'])) {
+    if (!in_array($periodo, ['hoy', 'semana', 'mes', 'anio', 'personalizado'])) {
         throw new Exception('Período no válido');
     }
 
