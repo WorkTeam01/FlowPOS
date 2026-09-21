@@ -236,27 +236,6 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('form-venta').addEventListener('submit', function (e) {
         e.preventDefault();
 
-        // Verificar específicamente si se seleccionó un cliente
-        const idCliente = document.getElementById('idcliente').value;
-        if (!idCliente) {
-            // Si no hay cliente seleccionado, mostrar mensaje amigable
-            Swal.fire({
-                title: 'Cliente requerido',
-                text: 'Por favor, seleccione un cliente antes de continuar',
-                icon: 'warning',
-                timer: 3000,
-                showConfirmButton: false,
-                position: 'top-end',
-                toast: true
-            });
-
-            // Abrir el modal de selección de cliente
-            document.getElementById('cliente-feedback').style.setProperty('display', 'block', 'important');
-            $('#modal-clientes').modal('show');
-
-            return false; // Detener el envío del formulario
-        }
-
         // Verificar cantidad/precio de los productos agregados
         if (!validarFilasProductos()) {
             Swal.fire({

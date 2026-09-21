@@ -51,7 +51,7 @@ $clientes = $clienteController->index();
         <form action="<?= $URL; ?>controllers/ventas/crear_venta.php" method="POST" id="form-venta" novalidate>
             <?= csrfField() ?>
             <input type="hidden" name="totalventa" id="totalventa-hidden" value="0">
-            <input type="hidden" id="idcliente" name="idcliente" required>
+            <input type="hidden" id="idcliente" name="idcliente">
 
             <div class="row">
                 <!-- Columna izquierda: productos -->
@@ -122,7 +122,7 @@ $clientes = $clienteController->index();
                                     </tbody>
                                 </table>
                             </div>
-                            <div id="carrito-vacio" class="text-center text-muted p-5">
+                            <div id="carrito-vacio" class="text-center text-muted p-5" aria-live="polite">
                                 <i class="fas fa-shopping-basket fa-2x mb-2"></i>
                                 <p class="mb-0">Aún no agregó productos. Use "Agregar Producto" para iniciar la venta.</p>
                             </div>
@@ -245,7 +245,7 @@ $clientes = $clienteController->index();
                                         <i class="fas fa-exchange-alt"></i> Cambiar cliente
                                     </button>
                                 </div>
-                                <div class="invalid-feedback d-block" id="cliente-feedback" aria-live="polite" style="display: none !important;">Seleccione un cliente</div>
+                                <div id="cliente-feedback" aria-live="polite" style="display: none !important;"></div>
                             </div>
                         </div>
 
@@ -297,7 +297,7 @@ $clientes = $clienteController->index();
                 </button>
             </div>
             <div class="modal-body">
-                <input type="text" class="form-control mb-3" id="modal-buscar-producto" placeholder="Buscar por nombre o código..." autocomplete="off">
+                <input type="text" class="form-control mb-3" id="modal-buscar-producto" placeholder="Buscar por nombre o código..." autocomplete="off" aria-label="Buscar producto por nombre o código">
                 <div id="lista-productos-modal" class="list-group"></div>
                 <p id="sin-resultados-productos" class="text-muted text-center mt-3" style="display: none;">No se encontraron productos.</p>
             </div>
@@ -319,7 +319,7 @@ $clientes = $clienteController->index();
                 </button>
             </div>
             <div class="modal-body">
-                <input type="text" class="form-control mb-3" id="modal-buscar-cliente" placeholder="Buscar por número de documento o nombre..." autocomplete="off">
+                <input type="text" class="form-control mb-3" id="modal-buscar-cliente" placeholder="Buscar por número de documento o nombre..." autocomplete="off" aria-label="Buscar cliente por documento o nombre">
                 <div id="lista-clientes-modal" class="list-group"></div>
                 <p id="sin-resultados-clientes" class="text-muted text-center mt-3" style="display: none;">No se encontraron clientes.</p>
             </div>
@@ -336,7 +336,7 @@ $clientes = $clienteController->index();
         <div class="card-header">
             <h3 class="card-title metodo-pago-titulo">Método de pago</h3>
             <div class="card-tools">
-                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer panel">
                     <i class="fas fa-minus"></i>
                 </button>
             </div>

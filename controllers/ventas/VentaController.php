@@ -132,7 +132,7 @@ class VentaController
     {
         // Información básica de la venta
         $datos = [
-            'idcliente' => isset($post_data['idcliente']) ? (int)$post_data['idcliente'] : null,
+            'idcliente' => !empty($post_data['idcliente']) ? (int)$post_data['idcliente'] : null,
             'idusuario' => (int)($_SESSION['usuario_id'] ?? 0),
             'totalventa' => 0, // Se recalcula server-side a partir de los detalles
             'fechaventa' => isset($post_data['fechaventa']) ? trim($post_data['fechaventa']) : date('Y-m-d'),
