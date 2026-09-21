@@ -65,6 +65,10 @@ _______________
 - Accesibilidad WCAG AA: callouts con `alert-default-*` (no `alert-*` sólidas de AdminLTE); overrides de contraste y touch targets táctiles de 44px ya centralizados en `common.css` (`badge-*`, `btn-primary`, `btn-info`, `btn:focus-visible`, `.card-outline-tabs` inactivas, `.main-header .navbar-nav .nav-link`, `.nav-pills[role="tablist"] .nav-link.active`, `.btn-group>.btn-sm` y `.btn-sm` aislados con `::before`) — no duplicar reglas por módulo; `aria-label` en botones icon-only y en el botón de colapso de panel; tablists con `<li>` wrapper → `role="presentation"` en el `<li>`; `aria-selected` de tabs/pills sincronizado globalmente en `common-utils.js` (no en JS de módulo); previews de imagen con `alt` descriptivo en español y SIN `src="#"`; `exportOptions.columns` sin columna de imagen ni Acciones; en formularios, cada input con mensaje de error enlazado (`aria-describedby` + `aria-invalid` + `invalid-feedback`, patrón del carrito de ventas/compras)
 - Si tocas `public/css/core/common.css` o cualquier asset versionado por `?v=<APP_VERSION>`, sube `APP_VERSION` en `.env` en el mismo cambio — si no, el navegador del usuario sigue sirviendo la copia cacheada
 - Si se modifica comportamiento funcional: actualizar `CHANGELOG.md` y mantener `APP_VERSION` sincronizado
+- Colores de UI compartidos entre módulos (SweetAlert2 buttons) van en `common.css :root` como tokens CSS, no hardcodeados en JS — usar `getComputedStyle(document.documentElement).getPropertyValue('--token').trim()` con fallback
+- Si un modal carga listas de 100+ items, usar lazy render (20 por carga + "Cargar más") en vez de renderizar todo de una vez; combinar con debounce en el input de búsqueda
+- `LEFT JOIN` + `GROUP BY` en queries de estadísticas puede devolver filas con valores NULL que parecen truthy — usar `!empty()` en vez de solo verificar truthiness del array
+- `(int)` sobre string vacío produce `0`, no `null` — usar `!empty()` para columnas nullable con FK
 
 [Formato de salida]
 _______________
@@ -212,6 +216,9 @@ Evalúa específicamente:
 - Flash messages: $_SESSION['mensaje'] + $_SESSION['icono'] antes de redirect
 - AJAX: JSON válido con header correcto
 - Accesibilidad: contraste WCAG AA (callouts `alert-default-*`, overrides de `common.css` para badges/botones), `aria-label` en botones ícono-only y en el botón de colapso de panel, foco de teclado visible, inputs con feedback enlazado (`aria-describedby` + `aria-invalid`)
+- Tokens SWAL: si hay `Swal.fire()` con colores, verificar que use `getComputedStyle()` en vez de hex hardcodeados
+- FKs nullable: verificar que `(int)` sobre string vacío no produzca `0` que viole la constraint — usar `!empty()`
+- Modales con listas grandes: lazy render en vez de renderizar todo de una vez
 - Si el diff toca `common.css` / assets versionados: verificar que `APP_VERSION` se subió en el mismo cambio
 - Casos edge que podrían fallar en producción
 
@@ -323,7 +330,10 @@ Criterios de aceptación:
 - Registrar permisos nuevos en database/schema.sql (INSERT en tabla permiso)
 - Uploads: ImagenService — nunca move_uploaded_file() directo
 - No introducir librerías externas nuevas
-- Accesibilidad WCAG AA: callouts `alert-default-*`, overrides de contraste y touch targets táctiles de 44px de `common.css` sin duplicar por módulo, `aria-label` en botones icon-only, tablists con `<li>` wrapper → `role="presentation"`, `aria-selected` sincronizado globalmente, previews sin `src="#"` con alt descriptivo, inputs con `invalid-feedback` enlazado (`aria-describedby` + `aria-invalid`)
+- Accesibilidad WCAG AA: callouts `alert-default-*`; usar los overrides de contraste y touch targets táctiles de 44px de `common.css` (`badge-*`, `btn-primary`, `btn-info`, `btn:focus-visible`, pestañas/navbar/pills activos), no duplicarlos por módulo; `aria-label` en botones icon-only; tablists con `<li>` wrapper → `role="presentation"`; `aria-selected` sincronizado globalmente; previews sin `src="#"` con alt descriptivo; inputs con `invalid-feedback` enlazado (`aria-describedby` + `aria-invalid`)
+- Tokens de colores de UI compartidos (SweetAlert2) en `common.css :root`; en JS usar `getComputedStyle()` con fallback
+- Modales con listas grandes (100+ items): lazy render (20 por carga + "Cargar más") + debounce en búsqueda
+- `(int)` sobre string vacío produce `0`, no `null` — usar `!empty()` para columnas nullable con FK
 - Tocar `common.css` / assets versionados obliga a subir `APP_VERSION` en el mismo cambio
 - Si se agregan cambios funcionales: documentarlos en `CHANGELOG.md` (`Unreleased`)
 
@@ -342,5 +352,5 @@ Devuelve en este orden:
 
 ---
 
-_Última actualización: 2026-09-16_
+_Última actualización: 2026-09-20_
 _Mantener sincronizado con CLAUDE.md al hacer cambios de arquitectura._

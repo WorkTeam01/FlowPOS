@@ -57,6 +57,8 @@ Se aceptan contribuciones en:
 - No incluyas credenciales, tokens ni datos sensibles.
 - Mantén compatibilidad con el stack actual del proyecto.
 - Mantén accesibilidad WCAG AA: `aria-label` en botones/íconos sin texto visible y en el botón de colapso de panel; mensajes de error enlazados a su campo (`aria-describedby` + `aria-invalid` + `invalid-feedback`); usa los overrides de contraste y de touch targets táctiles (44px) ya centralizados en `common.css` — no dupliques reglas por módulo.
+- Tokens de colores de UI compartidos (SweetAlert2) van en `common.css :root` con `getComputedStyle()` en JS — no hardcodear hex en `Swal.fire()`.
+- Modales con listas de 100+ items: usar lazy render (20 por carga + "Cargar más") en vez de renderizar todo; combinar con debounce en el input de búsqueda.
 
 ## Pull Requests
 
@@ -76,6 +78,7 @@ Checklist mínima:
 - [ ] Documentación actualizada (si aplica): `README.md`, `CLAUDE.md`, `PROMPTS.md`.
 - [ ] `CHANGELOG.md` actualizado y `APP_VERSION` sincronizado (si aplica; obligatorio si tocaste `common.css` o assets versionados).
 - [ ] Cambios de permisos/rol probados con las tres cuentas demo.
+- [ ] Si hay `Swal.fire()`, usar tokens de `common.css` via `getComputedStyle()` en vez de hex hardcodeados.
 
 ## Reportar issues
 

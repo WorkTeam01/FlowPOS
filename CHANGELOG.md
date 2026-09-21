@@ -5,6 +5,30 @@ Todos los cambios importantes de este proyecto se documentan en este archivo.
 Este formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.2.6] - 2026-09-20
+
+### Added
+
+- **Ventas sin cliente (Consumidor Final)**: removida la validación requerida del campo `idcliente` en el frontend; el backend ya soportaba `NULL` pero el controller ahora usa `!empty()` para evitar que un string vacío se convierta en `0` (que violaría la FK constraint). Las ventas sin cliente se muestran como "Consumidor Final" en index, show y recibo.
+
+### Changed
+
+- **Theming global de SweetAlert2**: tokens `--swal-confirm`, `--swal-cancel`, `--swal-danger` centralizados en `common.css :root`; todos los módulos (ventas, compras, empresas, sucursales, categorías, roles, sesiones, productos) ahora usan `getComputedStyle()` en vez de hex hardcodeados.
+- **Lazy render en modal de productos**: `renderizarListaProductos()` reescrito como `renderizarSiguientePagina()` con paginación de 20 productos por carga + botón "Cargar más"; evita renderizar cientos de nodos DOM al abrir el modal.
+- **Debounce en búsqueda de productos**: input del modal de productos usa `debounce(200ms)` para evitar re-renders en cada tecla.
+- **`APP_VERSION` subido a `1.2.6`**.
+
+### Fixed
+
+- **Cliente Top info-box con ventas Consumidor Final**: corregido edge case en `views/ventas/index.php` donde ventas sin cliente (`idcliente = NULL`) causaban que el `LEFT JOIN` devolviera una fila con `nombre_cliente = NULL`, renderizando string vacío en vez de "N/A". Fix: `!empty()` en vez de solo verificar truthiness del array.
+- **A11y en módulo ventas**: `aria-label="Contraer panel"` en 5 botones collapse (`index.php`, `create.php`, `show.php`); `aria-label` en 2 inputs de búsqueda del modal de productos/clientes; `aria-live="polite"` en `#carrito-vacio`; `role="listbox"` + `role="option"` en el listado de productos del modal.
+- **Performance en cálculos de totales**: `debounce(150ms)` en handlers de input de cantidad, precio y descuento del carrito (`create-venta.js`).
+- **Trailing space en show-venta.js**: eliminado espacio extra en `cancelButtonColor: '#6c757d '`.
+
+### Note
+
+- Auditoría impeccable del módulo ventas: score final 18/20 (A11y 3, Perf 4, Theming 3, Responsive 4, Integrity 4).
+
 ## [1.2.5] - 2026-09-15
 
 ### Fixed
