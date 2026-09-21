@@ -289,7 +289,7 @@ $(document).ready(function () {
                 tituloAlerta = `¿Cancelar compra ${tituloCompra}?`;
                 textoAlerta = 'La compra será cancelada y el stock de productos será revertido.';
                 confirmButtonText = 'Sí, cancelar';
-                confirmButtonColor = '#dc3545';
+                confirmButtonColor = getComputedStyle(document.documentElement).getPropertyValue('--swal-danger').trim() || '#dc3545';
             }
 
             Swal.fire({
@@ -298,7 +298,7 @@ $(document).ready(function () {
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: confirmButtonColor,
-                cancelButtonColor: '#6c757d',
+                cancelButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--swal-cancel').trim() || '#6c757d',
                 confirmButtonText: confirmButtonText,
                 cancelButtonText: 'Cancelar',
                 allowOutsideClick: false,

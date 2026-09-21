@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', function () {
             text: 'La compra será cancelada y el stock de productos será revertido. Esta acción no se puede deshacer.',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
+            confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--swal-danger').trim() || '#dc3545',
+            cancelButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--swal-cancel').trim() || '#6c757d',
             confirmButtonText: '<i class="fas fa-check mr-2"></i> Sí, cancelar',
             cancelButtonText: '<i class="fas fa-times mr-2"></i> Cancelar',
             reverseButtons: true

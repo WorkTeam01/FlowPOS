@@ -11,8 +11,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 text: "Esta acción restaurará el stock de los productos y no se puede deshacer.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#6c757d ',
+                confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--swal-danger').trim() || '#d33',
+                cancelButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--swal-cancel').trim() || '#6c757d',
                 confirmButtonText: 'Sí, anular',
                 cancelButtonText: 'Cancelar'
             }).then((result) => {

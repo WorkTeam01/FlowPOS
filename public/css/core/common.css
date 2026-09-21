@@ -1,5 +1,11 @@
 /* Estilos compartidos por todos los módulos */
 
+:root {
+    --swal-confirm: #3085d6;
+    --swal-cancel: #6c757d;
+    --swal-danger: #d33;
+}
+
 .tooltip-inner {
     max-width: 250px;
     text-align: left;

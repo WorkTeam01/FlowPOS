@@ -306,8 +306,8 @@ $(document).ready(function () {
             text: `La sucursal será ${textoEstado}da.`,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: estadoActual == 1 ? '#d33' : '#3085d6',
-            cancelButtonColor: '#6c757d',
+            confirmButtonColor: estadoActual == 1 ? getComputedStyle(document.documentElement).getPropertyValue('--swal-danger').trim() || '#d33' : getComputedStyle(document.documentElement).getPropertyValue('--swal-confirm').trim() || '#3085d6',
+            cancelButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--swal-cancel').trim() || '#6c757d',
             confirmButtonText: `Sí, ${textoEstado}`,
             cancelButtonText: 'Cancelar'
         }).then((result) => {

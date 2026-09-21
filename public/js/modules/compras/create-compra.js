@@ -242,8 +242,8 @@ document.addEventListener('DOMContentLoaded', function () {
             text: '¿Está seguro de registrar esta compra?',
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
+            confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--swal-confirm').trim() || '#3085d6',
+            cancelButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--swal-danger').trim() || '#d33',
             confirmButtonText: 'Sí, registrar',
             cancelButtonText: 'Cancelar'
         }).then((result) => {

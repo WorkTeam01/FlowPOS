@@ -1,6 +1,10 @@
-/* Badge para ventas con pago mixto (sin equivalente "purple" en la paleta de AdminLTE) */
+:root {
+    --badge-purple: #9c27b0;
+    --badge-purple-rgb: 156, 39, 176;
+}
+
 .badge-purple {
-    background-color: #9c27b0;
+    background-color: var(--badge-purple);
     color: white;
 }
 

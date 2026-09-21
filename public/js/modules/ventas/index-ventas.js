@@ -196,8 +196,8 @@ $(document).ready(function () {
                 text: 'La venta será anulada y el stock de productos será revertido. Esta acción no se puede deshacer.',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
+                confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--swal-danger').trim() || '#dc3545',
+                cancelButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--swal-cancel').trim() || '#6c757d',
                 confirmButtonText: 'Sí, anular',
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
