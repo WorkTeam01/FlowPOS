@@ -7,6 +7,14 @@
  * @version 1.0
  */
 
+function debounce(fn, ms) {
+    let timer;
+    return function () {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, arguments), ms);
+    };
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     // Datos exportados desde PHP vía atributos data-*
     const datosVenta = document.getElementById('datos-venta');
@@ -99,7 +107,11 @@ document.addEventListener('DOMContentLoaded', function () {
     // Añadir primer método de pago para el modo mixto
     btnAgregarPago.addEventListener('click', agregarMetodoPago);
 
-    // ---- Modal de productos ----
+    // ---- Modal de productos (render lazy: 20 por página) ----
+    const PRODUCTOS_POR_PAGINA = 20;
+    let productosFiltradosActual = [];
+    let productosRenderizados = 0;
+
     const modalProductos = $('#modal-productos');
     const modalBuscarProducto = document.getElementById('modal-buscar-producto');
     const listaProductosModal = document.getElementById('lista-productos-modal');
@@ -107,29 +119,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
     modalProductos.on('shown.bs.modal', function () {
         modalBuscarProducto.value = '';
-        renderizarListaProductos(productosDisponibles);
+        productosFiltradosActual = productosDisponibles;
+        productosRenderizados = 0;
+        listaProductosModal.innerHTML = '';
+        sinResultadosProductos.style.display = 'none';
+        renderizarSiguientePagina();
         modalBuscarProducto.focus();
     });
 
-    modalBuscarProducto.addEventListener('input', function () {
+    modalBuscarProducto.addEventListener('input', debounce(function () {
         const termino = this.value.trim().toLowerCase();
-        const filtrados = termino.length === 0
+        productosFiltradosActual = termino.length === 0
             ? productosDisponibles
             : productosDisponibles.filter(p =>
                 (p.nombre && p.nombre.toLowerCase().includes(termino)) ||
                 (p.codigo && p.codigo.toLowerCase().includes(termino))
             );
-        renderizarListaProductos(filtrados);
-    });
-
-    function renderizarListaProductos(productos) {
+        productosRenderizados = 0;
         listaProductosModal.innerHTML = '';
-        sinResultadosProductos.style.display = productos.length === 0 ? 'block' : 'none';
+        sinResultadosProductos.style.display = 'none';
+        renderizarSiguientePagina();
+    }, 200));
 
-        productos.forEach(producto => {
+    function renderizarSiguientePagina() {
+        const fragment = document.createDocumentFragment();
+        const fin = Math.min(productosRenderizados + PRODUCTOS_POR_PAGINA, productosFiltradosActual.length);
+
+        for (let i = productosRenderizados; i < fin; i++) {
+            const producto = productosFiltradosActual[i];
             const item = document.createElement('button');
             item.type = 'button';
             item.className = 'list-group-item list-group-item-action d-flex justify-content-between align-items-center';
+            item.setAttribute('role', 'option');
 
             const infoSpan = document.createElement('span');
             const nombreStrong = document.createElement('strong');
@@ -151,8 +172,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 agregarProductoAlDetalle(producto);
                 modalProductos.modal('hide');
             });
-            listaProductosModal.appendChild(item);
-        });
+            fragment.appendChild(item);
+        }
+
+        // Eliminar botón "Cargar más" previo
+        const btnPrevio = listaProductosModal.querySelector('.btn-cargar-mas');
+        if (btnPrevio) btnPrevio.remove();
+
+        listaProductosModal.appendChild(fragment);
+        productosRenderizados = fin;
+
+        sinResultadosProductos.style.display =
+            (productosFiltradosActual.length === 0 && productosRenderizados === 0) ? 'block' : 'none';
+
+        // Agregar botón "Cargar más" si quedan productos
+        if (productosRenderizados < productosFiltradosActual.length) {
+            const btnCargarMas = document.createElement('button');
+            btnCargarMas.type = 'button';
+            btnCargarMas.className = 'list-group-item list-group-item-action text-center btn-cargar-mas';
+            btnCargarMas.textContent = `Cargar más (${productosRenderizados} de ${productosFiltradosActual.length})`;
+            btnCargarMas.addEventListener('click', () => renderizarSiguientePagina());
+            listaProductosModal.appendChild(btnCargarMas);
+        }
+
+        listaProductosModal.setAttribute('role', 'listbox');
+        listaProductosModal.setAttribute('aria-label', 'Productos disponibles');
     }
 
     // ---- Modal de clientes ----
@@ -271,8 +315,8 @@ document.addEventListener('DOMContentLoaded', function () {
               </div>`,
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
+            confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--swal-confirm').trim() || '#3085d6',
+            cancelButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--swal-danger').trim() || '#d33',
             confirmButtonText: 'Sí, registrar',
             cancelButtonText: 'Cancelar'
         }).then((result) => {
@@ -664,7 +708,7 @@ document.addEventListener('DOMContentLoaded', function () {
             this.classList.toggle('is-invalid', invalido);
             this.setAttribute('aria-invalid', invalido ? 'true' : 'false');
             calcularSubtotal(fila);
-            calcularTotalesVenta();
+            calcularTotalesDebounced();
         });
 
         precio.addEventListener('input', function () {
@@ -672,12 +716,12 @@ document.addEventListener('DOMContentLoaded', function () {
             this.classList.toggle('is-invalid', invalido);
             this.setAttribute('aria-invalid', invalido ? 'true' : 'false');
             calcularSubtotal(fila);
-            calcularTotalesVenta();
+            calcularTotalesDebounced();
         });
 
         descuento.addEventListener('input', () => {
             calcularSubtotal(fila);
-            calcularTotalesVenta();
+            calcularTotalesDebounced();
         });
     }
 
@@ -779,6 +823,8 @@ document.addEventListener('DOMContentLoaded', function () {
         // Recalcular el total pagado y verificar diferencia
         calcularTotalPagado();
     }
+
+    const calcularTotalesDebounced = debounce(calcularTotalesVenta, 150);
 
     /**
      * Función para buscar clientes

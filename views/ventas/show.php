@@ -152,7 +152,7 @@ include_once '../layouts/header.php';
                                 <?php endif; ?>
                             </h3>
                             <div class="card-tools">
-                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer panel">
                                     <i class="fas fa-minus"></i>
                                 </button>
                             </div>
@@ -192,7 +192,7 @@ include_once '../layouts/header.php';
                     <div class="card-header">
                         <h3 class="card-title">Productos Vendidos</h3>
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer panel">
                                 <i class="fas fa-minus"></i>
                             </button>
                         </div>
@@ -269,7 +269,7 @@ include_once '../layouts/header.php';
                         <div class="card-header">
                             <h3 class="card-title">Información Adicional</h3>
                             <div class="card-tools">
-                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer panel">
                                     <i class="fas fa-minus"></i>
                                 </button>
                             </div>
