@@ -73,7 +73,7 @@ $estadisticas = $controller->getEstadisticas();
                     <div class="info-box-content">
                         <span class="info-box-text">Cliente Top</span>
                         <span class="info-box-number">
-                            <?= $estadisticas['cliente_mas_compro'] ? htmlspecialchars($estadisticas['cliente_mas_compro']['nombre_cliente']) : 'N/A'; ?>
+                            <?= !empty($estadisticas['cliente_mas_compro']['nombre_cliente']) ? htmlspecialchars($estadisticas['cliente_mas_compro']['nombre_cliente']) : 'N/A'; ?>
                         </span>
                     </div>
                 </div>
@@ -100,7 +100,7 @@ $estadisticas = $controller->getEstadisticas();
                             <a href="<?= $URL; ?>views/ventas/create.php" class="btn btn-primary btn-sm">
                                 <i class="fas fa-plus"></i> Nueva Venta
                             </a>
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer panel">
                                 <i class="fas fa-minus"></i>
                             </button>
                         </div>
