@@ -27,6 +27,9 @@ class AuthController
         // Incluir el servicio de rate limiting
         require_once __DIR__ . '/../../services/RateLimiterService.php';
 
+        // Incluir el servicio de tokens de revocación de sesiones
+        require_once __DIR__ . '/../../services/SesionTokenService.php';
+
         // Iniciar sesión si no está iniciada
         if (session_status() == PHP_SESSION_NONE) {
             session_start();
@@ -150,7 +153,12 @@ class AuthController
                 $rateLimiter->registrarExito($identificadorNormalizado, $ip);
 
                 // Iniciar sesión
-                $this->iniciarSesion($usuario);
+                if (!$this->iniciarSesion($usuario)) {
+                    $_SESSION['mensaje'] = 'No se pudo iniciar su sesión. Intente nuevamente.';
+                    $_SESSION['icono'] = 'error';
+                    header('Location: ' . getSafeRedirectBack($URL));
+                    exit;
+                }
 
                 // Redirigir al dashboard
                 $_SESSION['mensaje'] = 'Bienvenido al sistema ' . $_SESSION['usuario_nombre'];
@@ -174,11 +182,28 @@ class AuthController
      * Inicia la sesión del usuario
      * 
      * @param array $usuario Datos del usuario
+     * @return bool false si no se pudo registrar la sesión en BD (no hay login)
      */
     private function iniciarSesion($usuario)
     {
         // Regenerar ID de sesión para evitar session fixation
         session_regenerate_id(true);
+
+        // Registrar la sesión en BD y obtener su token de revocación.
+        // Sin fila de auditoría no hay sesión: el login se aborta para no
+        // dejar cuentas que ningún panel podrá cerrar.
+        $token = (new SesionTokenService())->registrar(
+            (int) $usuario['idusuario'],
+            $_SERVER['REMOTE_ADDR'] ?? '',
+            $_SERVER['HTTP_USER_AGENT'] ?? ''
+        );
+
+        if ($token === null) {
+            return false;
+        }
+
+        // El token en claro vive solo en esta sesión PHP; en BD está su SHA-256
+        $_SESSION[SesionTokenService::CLAVE_SESION] = $token;
 
         // Guardar datos del usuario en la sesión
         $_SESSION['usuario_id'] = $usuario['idusuario'];
@@ -198,26 +223,7 @@ class AuthController
         $_SESSION['ip'] = $_SERVER['REMOTE_ADDR'];
         $_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
 
-        // Registrar inicio de sesión en la tabla sesionusuario
-        try {
-            // Usar la clase Conexion directamente
-            require_once __DIR__ . '/../../config/conexion.php';
-            $db = Conexion::getInstance();
-
-            $sql = "INSERT INTO sesionusuario (idusuario, ipusuario, navegador) 
-                   VALUES (:idusuario, :ipusuario, :navegador)";
-
-            $params = [
-                ':idusuario' => $usuario['idusuario'],
-                ':ipusuario' => $_SERVER['REMOTE_ADDR'],
-                ':navegador' => $_SERVER['HTTP_USER_AGENT']
-            ];
-
-            $db->query($sql, $params);
-        } catch (Exception $e) {
-            // Silenciar errores al registrar sesión
-            // error_log('Error al registrar sesión: ' . $e->getMessage());
-        }
+        return true;
     }
 
     /**
@@ -225,26 +231,10 @@ class AuthController
      */
     public function logout()
     {
-        // Registrar cierre de sesión en la tabla sesionusuario
-        if (isset($_SESSION['usuario_id']) && isset($_SESSION['autenticado']) && $_SESSION['autenticado'] === true) {
-            try {
-                // Usar la clase Conexion directamente
-                require_once __DIR__ . '/../../config/conexion.php';
-                $db = Conexion::getInstance();
-
-                $sql = "UPDATE sesionusuario SET horasalida = NOW(), estado = 0 
-                       WHERE idusuario = :idusuario AND estado = 1 
-                       ORDER BY idsesion DESC LIMIT 1";
-
-                $params = [
-                    ':idusuario' => $_SESSION['usuario_id']
-                ];
-
-                $db->query($sql, $params);
-            } catch (Exception $e) {
-                // Silenciar errores al actualizar sesión
-                // error_log('Error al cerrar sesión: ' . $e->getMessage());
-            }
+        // Cerrar solo la fila de ESTA sesión (por su token), no la última
+        // activa del usuario: puede haber varias sesiones concurrentes.
+        if (isset($_SESSION['autenticado']) && $_SESSION['autenticado'] === true) {
+            (new SesionTokenService())->cerrarPorToken(SesionTokenService::MOTIVO_LOGOUT);
         }
 
         // Eliminar todas las variables de sesión

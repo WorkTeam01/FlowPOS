@@ -13,6 +13,12 @@ require_once __DIR__ . '/../config/conexion.php';
 class Sesion
 {
     /**
+     * Columnas seleccionadas en las consultas del historial.
+     * Excluye token_hash: es material sensible y nunca debe viajar a vistas ni JS.
+     */
+    const COLUMNAS_SESION = 's.idsesion, s.idusuario, s.horaingreso, s.horasalida, s.ipusuario, s.navegador, s.estado, s.motivo_cierre';
+
+    /**
      * Conexión a la base de datos
      * @var PDO
      */
@@ -57,7 +63,7 @@ class Sesion
     public function getAll($activas = false)
     {
         try {
-            $query = "SELECT s.*, 
+            $query = "SELECT " . self::COLUMNAS_SESION . ", 
                      u.nombre, u.apellidopaterno, u.apellidomaterno, u.correo, u.imagen, CONCAT(UPPER(LEFT(r.nombre,1)), SUBSTRING(r.nombre,2)) AS cargo
                      FROM {$this->tabla} s
                      JOIN usuarios u ON s.idusuario = u.idusuario
@@ -88,7 +94,7 @@ class Sesion
     public function getByUsuario($idUsuario, $activas = false)
     {
         try {
-            $query = "SELECT s.*, 
+            $query = "SELECT " . self::COLUMNAS_SESION . ", 
                      u.nombre, u.apellidopaterno, u.apellidomaterno, u.correo, u.imagen, CONCAT(UPPER(LEFT(r.nombre,1)), SUBSTRING(r.nombre,2)) AS cargo
                      FROM {$this->tabla} s
                      JOIN usuarios u ON s.idusuario = u.idusuario
@@ -120,7 +126,7 @@ class Sesion
     public function getById($id)
     {
         try {
-            $query = "SELECT s.*, 
+            $query = "SELECT " . self::COLUMNAS_SESION . ", 
                      u.nombre, u.apellidopaterno, u.apellidomaterno, u.correo, u.imagen, CONCAT(UPPER(LEFT(r.nombre,1)), SUBSTRING(r.nombre,2)) AS cargo
                      FROM {$this->tabla} s
                      JOIN usuarios u ON s.idusuario = u.idusuario
@@ -158,7 +164,8 @@ class Sesion
         try {
             $query = "UPDATE {$this->tabla} SET 
                      horasalida = NOW(), 
-                     estado = 0
+                     estado = 0,
+                     motivo_cierre = 'admin_row'
                      WHERE idsesion = :id AND estado = 1";
 
             $stmt = $this->conexion->prepare($query);
@@ -181,7 +188,8 @@ class Sesion
         try {
             $query = "UPDATE {$this->tabla} SET 
                      horasalida = NOW(), 
-                     estado = 0
+                     estado = 0,
+                     motivo_cierre = 'admin_user'
                      WHERE idusuario = :idusuario AND estado = 1";
 
             $stmt = $this->conexion->prepare($query);

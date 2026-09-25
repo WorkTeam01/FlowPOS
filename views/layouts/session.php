@@ -72,12 +72,21 @@ try {
  */
 function isAuthenticated()
 {
-    return isset($_SESSION['autenticado']) && $_SESSION['autenticado'] === true;
+    if (!isset($_SESSION['autenticado']) || $_SESSION['autenticado'] !== true) {
+        return false;
+    }
+
+    require_once __DIR__ . '/../../services/SesionTokenService.php';
+
+    return (new SesionTokenService())->estadoValidacion() === 'ok';
 }
 
 /**
  * Verificar tiempo de inactividad
- * 
+ *
+ * Predicado puro: no destruye la sesión ni cierra filas, el corte lo hace
+ * requireLogin() con el motivo correspondiente.
+ *
  * @param int $timeout Tiempo de inactividad en segundos (por defecto 86400 = 1 día)
  * @return bool True si la sesión sigue activa, False si ha expirado
  */
@@ -87,33 +96,30 @@ function checkSessionTimeout($timeout = 86400)
         $inactivo = time() - $_SESSION['ultimo_acceso'];
 
         if ($inactivo >= $timeout) {
-            // Sesión expirada, destruir sesión
-            session_unset();
-            session_destroy();
             return false;
         }
     }
 
-    // Actualizar tiempo de último acceso
+    // Actualizar tiempo de último acceso (ventana deslizante)
     $_SESSION['ultimo_acceso'] = time();
     return true;
 }
 
 /**
  * Verificar posible secuestro de sesión
- * 
+ *
+ * Predicado puro: no destruye la sesión ni cierra filas, el corte lo hace
+ * requireLogin() con el motivo correspondiente.
+ *
  * @return bool True si la sesión es segura, False si se detectó posible secuestro
  */
 function checkSessionSecurity()
 {
     if (isset($_SESSION['ip']) && isset($_SESSION['user_agent'])) {
         if (
-            $_SESSION['ip'] !== $_SERVER['REMOTE_ADDR'] ||
-            $_SESSION['user_agent'] !== $_SERVER['HTTP_USER_AGENT']
+            $_SESSION['ip'] !== ($_SERVER['REMOTE_ADDR'] ?? null) ||
+            $_SESSION['user_agent'] !== ($_SERVER['HTTP_USER_AGENT'] ?? null)
         ) {
-            // Posible session hijacking, destruir sesión
-            session_unset();
-            session_destroy();
             return false;
         }
     }
@@ -122,48 +128,73 @@ function checkSessionSecurity()
 
 /**
  * Requerir inicio de sesión para acceder a una página
- * 
+ *
  * @param string $redirect_url URL a la que redirigir si no hay sesión
  */
 function requireLogin($redirect_url = null)
 {
     global $URL;
 
+    require_once __DIR__ . '/../../services/SesionTokenService.php';
+
     if (!$redirect_url) {
         $redirect_url = $URL . 'views/login/login.php';
     }
 
-    if (!isAuthenticated() || !checkSessionTimeout() || !checkSessionSecurity()) {
-        // Guardar mensaje de sesión expirada
-        if (isset($_SESSION)) {
-            if (!isAuthenticated()) {
-                $_SESSION['mensaje'] = 'Debe iniciar sesión para acceder a esta página.';
-            } else {
-                $_SESSION['mensaje'] = 'Sesión expirada por inactividad. Por favor inicie sesión nuevamente.';
-            }
-            $_SESSION['icono'] = 'warning';
+    $motivoCierre = null;
+    $mensaje = null;
+
+    if (!isAuthenticated()) {
+        // Sesión sin bandera de login, o con token ausente/revocado
+        $sesionIniciada = isset($_SESSION['autenticado']) && $_SESSION['autenticado'] === true;
+        $mensaje = $sesionIniciada
+            ? 'Su sesión fue finalizada. Inicie sesión nuevamente.'
+            : 'Debe iniciar sesión para acceder a esta página.';
+        // Sesión iniciada pero sin token (p. ej. creada antes de un despliegue):
+        // su fila activa no es revocable por hash, se cierra por ID para que el
+        // panel no la muestre como activa. 'revocada' ya está cerrada en BD y
+        // 'error' no debe tumbar nada por un fallo transitorio de lectura.
+        if ($sesionIniciada && (new SesionTokenService())->estadoValidacion() === 'ausente') {
+            $motivoCierre = SesionTokenService::MOTIVO_SECURITY;
         }
-
-        // Registrar cierre de sesión en la tabla sesionusuario si expiró por inactividad
-        if (isset($_SESSION['usuario_id']) && !checkSessionTimeout()) {
-            try {
-                require_once __DIR__ . '/../../config/conexion.php';
-                $conn = Conexion::getInstance()->getConnection();
-
-                $sql = "UPDATE sesionusuario SET horasalida = NOW(), estado = 0 
-                        WHERE idusuario = ? AND estado = 1 
-                        ORDER BY idsesion DESC LIMIT 1";
-                $stmt = $conn->prepare($sql);
-                $stmt->execute([$_SESSION['usuario_id']]);
-            } catch (Exception $e) {
-                // Error al registrar cierre, continuar con el redireccionamiento
-            }
-        }
-
-        // Redirigir al login
-        header('Location: ' . $redirect_url);
-        exit;
+    } elseif (!checkSessionTimeout()) {
+        $motivoCierre = SesionTokenService::MOTIVO_TIMEOUT;
+        $mensaje = 'Sesión expirada por inactividad. Por favor inicie sesión nuevamente.';
+    } elseif (!checkSessionSecurity()) {
+        $motivoCierre = SesionTokenService::MOTIVO_SECURITY;
+        $mensaje = 'Sesión cerrada por seguridad. Inicie sesión nuevamente.';
     }
+
+    if ($mensaje === null) {
+        return;
+    }
+
+    // Cerrar la fila de auditoría ANTES de destruir la sesión PHP: una vez
+    // destruida ya no queda el token con el que identificarla. Sin token en
+    // la sesión (caso 'ausente') el cierre por hash no aplica y se usa el
+    // ID de fila guardado al registrar.
+    if ($motivoCierre !== null) {
+        $tokenService = new SesionTokenService();
+        if (!$tokenService->cerrarPorToken($motivoCierre) && isset($_SESSION[SesionTokenService::CLAVE_FILA])) {
+            $tokenService->cerrarPorId((int) $_SESSION[SesionTokenService::CLAVE_FILA], $motivoCierre);
+        }
+    }
+
+    // Abrir una sesión nueva solo para el mensaje flash: escribirlo sobre una
+    // sesión ya destruida no persiste en ninguna parte. Si ya salió contenido
+    // no hay nada que salvar: se redigirá igual y sin intentar arrancar sesión.
+    if (!headers_sent()) {
+        session_destroy();
+        session_start();
+        session_regenerate_id(true);
+
+        $_SESSION['mensaje'] = $mensaje;
+        $_SESSION['icono'] = 'warning';
+    }
+
+    // Redirigir al login
+    header('Location: ' . $redirect_url);
+    exit;
 }
 
 /**
