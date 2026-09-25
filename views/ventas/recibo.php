@@ -75,7 +75,7 @@ try {
     }
 
     // Verificar sesión
-    if (!isset($_SESSION['usuario_id'])) {
+    if (!isAuthenticated()) {
         die("Error: Sesión no iniciada");
     }
 

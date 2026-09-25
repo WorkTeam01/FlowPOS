@@ -12,8 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Verificar que el usuario esté autenticado
-if (!isset($_SESSION['usuario_id'])) {
+// Verificar que el usuario esté autenticado (exige token de sesión válido)
+if (!isAuthenticated()) {
     header('Content-Type: application/json');
     echo json_encode(['success' => false, 'message' => 'Usuario no autenticado']);
     exit;

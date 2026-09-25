@@ -45,7 +45,7 @@ class PerfilController
      */
     public function obtenerPerfil()
     {
-        if (!isset($_SESSION['usuario_id'])) {
+        if (!isAuthenticated()) {
             return false;
         }
 
@@ -64,7 +64,7 @@ class PerfilController
             return ['success' => false, 'message' => 'Acceso no permitido.', 'icon' => 'warning', 'redirect' => 'views/usuarios/perfil.php'];
         }
 
-        if (!isset($_SESSION['usuario_id'])) {
+        if (!isAuthenticated()) {
             return ['success' => false, 'message' => 'Sesión no iniciada.', 'icon' => 'error', 'redirect' => 'views/login/login.php'];
         }
 
@@ -116,7 +116,7 @@ class PerfilController
             return ['success' => false, 'message' => 'Acceso no permitido.'];
         }
 
-        if (!isset($_SESSION['usuario_id'])) {
+        if (!isAuthenticated()) {
             return ['success' => false, 'message' => 'Sesión no iniciada.'];
         }
 

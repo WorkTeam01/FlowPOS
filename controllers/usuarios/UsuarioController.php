@@ -358,7 +358,7 @@ class UsuarioController
             return ['success' => false, 'message' => 'Acceso no permitido.', 'icon' => 'warning', 'redirect' => 'views/usuarios/perfil.php'];
         }
 
-        if (!isset($_SESSION['usuario_id'])) {
+        if (!isAuthenticated()) {
             return ['success' => false, 'message' => 'Sesión no iniciada.', 'icon' => 'error', 'redirect' => 'views/login/login.php'];
         }
 

@@ -2,11 +2,8 @@
 // Incluir archivo de sesión
 require_once 'views/layouts/session.php';
 
-// Verificar si el usuario está autenticado
-if (!isAuthenticated()) {
-    header('Location: ' . $URL . 'views/login/login.php');
-    exit;
-}
+// Verificar si el usuario está autenticado (con mensaje de sesión finalizada si aplica)
+requireLogin();
 
 // Incluir el servicio de autorización
 require_once __DIR__ . '/services/AuthorizationService.php';
