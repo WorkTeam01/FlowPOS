@@ -190,6 +190,30 @@ class SesionController
     }
 
     /**
+     * Etiqueta legible para el motivo de cierre de una sesión
+     * 
+     * @param string|null $motivo Valor almacenado en motivo_cierre
+     * @return string Etiqueta para mostrar
+     */
+    public function formatearMotivo($motivo)
+    {
+        if ($motivo === null || $motivo === '') {
+            return '—';
+        }
+
+        $etiquetas = [
+            'logout' => 'Cierre de sesión',
+            'timeout' => 'Inactividad',
+            'security' => 'Cambio de seguridad',
+            'admin_row' => 'Cerrada por administrador',
+            'admin_user' => 'Todas del usuario',
+            'migration' => 'Migración',
+        ];
+
+        return $etiquetas[$motivo] ?? $motivo;
+    }
+
+    /**
      * Determina el tipo de dispositivo basado en el user agent
      * 
      * @param string $userAgent User Agent del navegador
