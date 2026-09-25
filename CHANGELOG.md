@@ -5,6 +5,31 @@ Todos los cambios importantes de este proyecto se documentan en este archivo.
 Este formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.2.7] - 2026-09-25
+
+### Added
+
+- **Revocación real de sesiones**: cada login genera un token aleatorio (guardado en `$_SESSION`) y su SHA-256 en la nueva columna `sesionusuario.token_hash` (migración `database/migrations/2026_09_sesiones_revocacion.sql`, idempotente). `isAuthenticated()` revalida la sesión en cada request (fail closed): si un administrador cerró la fila en BD, la sesión del navegador muere en el siguiente request. Motivos de cierre: `logout`, `timeout`, `security`, `admin_row`, `admin_user`, `migration`.
+- **Detalle de sesiones por usuario** (`views/sesiones/usuario.php`): nueva vista con info-boxes de estadísticas y tabla de sesiones del usuario; el nombre de usuario en el índice enlaza a ella.
+- **Gate admin para cierre de sesiones**: `cerrar_sesion.php` y `cerrar_sesiones_usuario.php` exigen `AuthorizationService::esAdministrador()`; el rol supervisor solo consulta (candado en la UI, POST directo rechazado con mensaje flash).
+
+### Changed
+
+- **Índice de sesiones migrado al layout full-width estándar**: eliminado el sidebar derecho de "Top usuarios" y el modal "Ver sesiones" (esa información ahora vive en la vista de detalle); tabla estándar con DataTables responsive, exportaciones sin columna Acciones y handlers delegados.
+- **`requireLogin()` distingue sesión revocada de sesión caducada**: muestra "Su sesión fue finalizada. Inicie sesión nuevamente." cuando la sesión fue cerrada por un administrador o por seguridad.
+- **Guards de sesión unificados**: `isset($_SESSION['usuario_id'])` → `isAuthenticated()` en `index.php`, `ventas/recibo.php` y los endpoints de perfil.
+
+### Fixed
+
+- **Contraste WCAG AA en `common.css`**: `.btn-success`/`.text-success` oscurecidos a `#1e7e34` (3.1:1 → 4.9:1), enlaces `.user-block .username a` a `#0056b3` (3.97:1 → ~7:1) y `flex-wrap` en la paginación de DataTables (elimina 20px de scroll horizontal a 375px con muchas páginas).
+- **`heading-order` en vistas de sesiones**: `card-title` pasó de `h3` a `h2.h3` (visual idéntico, sin salto tras el `h1` del content-header).
+- **`token_hash` fuera de HTML/JS/exportaciones**: `Sesion::COLUMNAS_SESION` excluye el hash en los tres SELECT del modelo.
+- **`APP_VERSION` subido a `1.2.7`**.
+
+### Note
+
+- Auditoría axe-core del módulo sesiones (índice y detalle, admin y supervisor, viewports 1440/768/375): 0 violaciones; sin overflow horizontal.
+
 ## [1.2.6] - 2026-09-20
 
 ### Added
