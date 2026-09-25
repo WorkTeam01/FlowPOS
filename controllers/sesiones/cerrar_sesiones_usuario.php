@@ -4,13 +4,14 @@ require_once __DIR__ . '/../../views/layouts/session.php';
 // Verificar si el usuario está autenticado
 requireLogin();
 
-// Verificar permisos sobre el módulo de sesiones
+// Cerrar todas las sesiones de un usuario es exclusivo de administradores:
+// el permiso granular 'sesiones' habilita la consulta, no la revocación.
 require_once __DIR__ . '/../../services/AuthorizationService.php';
 $authService = new AuthorizationService();
-if (!$authService->tienePermisoNombre($_SESSION['usuario_id'], 'sesiones') && !$authService->esAdministrador($_SESSION['usuario_id'])) {
-    $_SESSION['mensaje'] = 'No tiene permisos para realizar esta acción.';
+if (!$authService->esAdministrador($_SESSION['usuario_id'])) {
+    $_SESSION['mensaje'] = 'Solo un administrador puede cerrar sesiones.';
     $_SESSION['icono'] = 'error';
-    header('Location: ' . $URL . 'index.php');
+    header('Location: ' . $URL . 'views/sesiones/index.php');
     exit;
 }
 
