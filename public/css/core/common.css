@@ -151,6 +151,27 @@
 }
 
 /*
+ * La paginación de DataTables no envolvía sus <li> (flex default nowrap),
+ * así que con muchas páginas ("… Siguiente") se desbordaba el viewport en
+ * móviles angostos (20px de scroll horizontal a 375px). Con wrap, los
+ * botones bajan a una segunda línea cuando no caben. Solo DataTables, para
+ * no alterar paginadores estáticos de la app.
+ */
+.dataTables_wrapper .pagination {
+    flex-wrap: wrap;
+}
+
+/*
+ * Contraste del enlace de usuario dentro de .user-block: AdminLTE deja el
+ * <a> en #007bff (3.97:1 sobre blanco), falla WCAG AA (1.4.3). Se oscurece
+ * a #0056b3 (~7:1), mismo token del primary ya aplicado a paginación,
+ * breadcrumbs y botones. Aplica a cualquier .user-block con enlace.
+ */
+.user-block .username a {
+    color: #0056b3;
+}
+
+/*
  * Contraste de los badges de color de Bootstrap/AdminLTE: los fondos por
  * defecto con texto blanco fallan WCAG AA (1.4.3) al tamaño de un badge
  * (~12px, texto de cuerpo, requiere 4.5:1): success #28a745 → 3.1:1,
@@ -171,6 +192,17 @@
 
 .badge-primary {
     background-color: #0056b3;
+}
+
+/*
+ * Contraste del texto success: AdminLTE/Bootstrap dejan .text-success en
+ * #28a745 sobre blanco (3.1:1), falla WCAG AA (1.4.3) al tamaño de cuerpo
+ * (~16px). Se oscurece a #1e7e34 (~4.9:1), mismo token que .badge-success.
+ * Sin dark mode → sin contraparte. Global para estados "Activo/Habilitado"
+ * del proyecto (tablas, info-boxes, porcentajes de dashboard).
+ */
+.text-success {
+    color: #1e7e34 !important;
 }
 
 /*
@@ -205,6 +237,23 @@
 .btn-info:not(:disabled):not(.disabled):active {
     background-color: #0e6674;
     border-color: #0e6674;
+}
+
+/*
+ * Mismo criterio para .btn-success: #28a745 con texto blanco (~3.1:1),
+ * falla WCAG AA al tamaño ~14px del botón. Se lleva a #1e7e34 (~4.9:1)
+ * como el badge y .text-success. Estados deshabilitados exentos (1.4.3).
+ */
+.btn-success {
+    background-color: #1e7e34;
+    border-color: #1e7e34;
+}
+
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:not(:disabled):not(.disabled):active {
+    background-color: #19692c;
+    border-color: #18632a;
 }
 
 /*
