@@ -18,21 +18,22 @@ if (!($authService->tienePermisoNombre($idusuario, 'sesiones')) && !($authServic
 // Obtener parámetro de filtro
 $mostrarActivas = isset($_GET['activas']) && $_GET['activas'] == '1';
 
-// Incluir el encabezado DESPUÉS de verificar permisos
 $skip_select2 = true; // Esta vista no usa Select2
-include_once '../layouts/header.php';
-
 $module_scripts = ['sesiones/index-sesiones'];
+
+// Incluir el encabezado DESPUÉS de verificar permisos
+include_once '../layouts/header.php';
 
 $controller = new SesionController();
 $sesiones = $mostrarActivas ? $controller->getSesionesActivas() : $controller->index();
 $estadisticas = $controller->getEstadisticas();
+$puedeCerrar = $authService->esAdministrador($idusuario);
 ?>
 
 <!-- Content Header (Page header) -->
 <section class="content-header">
     <div class="container-fluid">
-        <div class="row mb-2">
+        <div class="row">
             <div class="col-sm-6">
                 <h1>Monitoreo de Sesiones</h1>
             </div>
@@ -90,253 +91,126 @@ $estadisticas = $controller->getEstadisticas();
         </div>
 
         <div class="row">
-            <div class="col-md-8">
-                <div class="card">
+            <div class="col-12">
+                <div class="card card-outline card-primary">
                     <div class="card-header">
-                        <h3 class="card-title"><?= $mostrarActivas ? 'Sesiones Activas' : 'Historial de Sesiones'; ?></h3>
-                        <div class="card-tools">
-                            <a href="<?= $URL; ?>views/sesiones/index.php<?= $mostrarActivas ? '' : '?activas=1'; ?>" class="btn btn-<?= $mostrarActivas ? 'info' : 'success'; ?> btn-sm">
-                                <i class="fas fa-<?= $mostrarActivas ? 'history' : 'user-check'; ?>"></i>
-                                <?= $mostrarActivas ? 'Ver todas las sesiones' : 'Ver solo sesiones activas'; ?>
-                            </a>
+                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center">
+                            <h2 class="card-title h3 mb-2 mb-sm-0"><?= $mostrarActivas ? 'Sesiones Activas' : 'Historial de Sesiones'; ?></h2>
+                            <div class="card-tools">
+                                <a href="<?= $URL; ?>views/sesiones/index.php<?= $mostrarActivas ? '' : '?activas=1'; ?>" class="btn btn-<?= $mostrarActivas ? 'info' : 'primary'; ?> btn-sm me-2">
+                                    <i class="fas fa-<?= $mostrarActivas ? 'history' : 'user-check'; ?>"></i>
+                                    <?= $mostrarActivas ? 'Ver todas las sesiones' : 'Ver solo sesiones activas'; ?>
+                                </a>
+                                <button type="button" class="btn btn-tool" data-card-widget="collapse" aria-label="Contraer panel">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                    <!-- /.card-header -->
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table id="tablaSesiones" class="table table-bordered table-striped table-hover">
-                                <thead>
+                    <div class="card-body" style="display: block;">
+                        <table id="tablaSesiones" class="table table-bordered table-hover table-striped table-sm">
+                            <thead>
+                                <tr>
+                                    <th class="text-center" style="width: 5%">Nro</th>
+                                    <th style="width: 17%">Usuario</th>
+                                    <th style="width: 12%">Inicio</th>
+                                    <th style="width: 12%">Fin</th>
+                                    <th style="width: 10%">Duración</th>
+                                    <th style="width: 15%">Origen</th>
+                                    <th class="text-center" style="width: 8%">Estado</th>
+                                    <th style="width: 11%">Motivo de cierre</th>
+                                    <th class="text-center" style="width: 10%">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $contador = 1;
+                                foreach ($sesiones as $sesion) :
+                                    $estado = $sesion['estado'];
+                                    $clase_estado = $estado ? 'badge-success' : 'badge-secondary';
+                                    $texto_estado = $estado ? 'Activa' : 'Cerrada';
+
+                                    $duracion = $controller->formatearDuracion(
+                                        $sesion['horaingreso'],
+                                        $estado ? null : $sesion['horasalida']
+                                    );
+
+                                    $dispositivo = $controller->detectarDispositivo($sesion['navegador']);
+                                    $navegador = $controller->detectarNavegador($sesion['navegador']);
+                                    $motivo = $controller->formatearMotivo($sesion['motivo_cierre'] ?? null);
+
+                                    $nombreCompleto = trim($sesion['nombre'] . ' ' . $sesion['apellidopaterno'] . ' ' . ($sesion['apellidomaterno'] ?? ''));
+                                    $ipusuario = $sesion['ipusuario'] ?? '';
+                                ?>
                                     <tr>
-                                        <th style="width: 10px">#</th>
-                                        <th>Usuario</th>
-                                        <th>Inicio</th>
-                                        <th>Fin</th>
-                                        <th>Duración</th>
-                                        <th>Dispositivo</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    $contador = 1;
-                                    foreach ($sesiones as $sesion) :
-                                        $estado = $sesion['estado'];
-                                        $clase_estado = $estado ? 'badge-success' : 'badge-secondary';
-                                        $texto_estado = $estado ? 'Activa' : 'Cerrada';
-
-                                        // Formatear duración
-                                        $duracion = $controller->formatearDuracion(
-                                            $sesion['horaingreso'],
-                                            $estado ? null : $sesion['horasalida']
-                                        );
-
-                                        // Detectar dispositivo
-                                        $dispositivo = $controller->detectarDispositivo($sesion['navegador']);
-                                        $navegador = $controller->detectarNavegador($sesion['navegador']);
-
-                                        // Formatear nombre completo
-                                        $nombreCompleto = $sesion['nombre'] . ' ' . $sesion['apellidopaterno'];
-                                    ?>
-                                        <tr>
-                                            <td><?= $contador++; ?></td>
-                                            <td>
-                                                <div class="user-block">
-                                                    <img class="img-circle img-bordered-sm" src="<?= $URL; ?>public/uploads/usuarios/<?= $sesion['imagen'] ?: 'user_default.jpg'; ?>" alt="Usuario">
-                                                    <span class="username">
-                                                        <a href="#"><?= htmlspecialchars($nombreCompleto); ?></a>
-                                                    </span>
-                                                    <span class="description"><?= htmlspecialchars($sesion['cargo']); ?></span>
-                                                </div>
-                                            </td>
-                                            <td><?= date('d/m/Y H:i:s', strtotime($sesion['horaingreso'])); ?></td>
-                                            <td>
-                                                <?= $sesion['horasalida'] ? date('d/m/Y H:i:s', strtotime($sesion['horasalida'])) : '<span class="text-success">Sesión en curso</span>'; ?>
-                                            </td>
-                                            <td><?= $duracion; ?></td>
-                                            <td>
-                                                <span class="badge badge-info">
-                                                    <?= $dispositivo; ?> - <?= $navegador; ?>
+                                        <td class="text-center"><?= $contador++; ?></td>
+                                        <td>
+                                            <div class="user-block">
+                                                <img class="img-circle img-bordered-sm" src="<?= $URL; ?>public/uploads/usuarios/<?= $sesion['imagen'] ?: 'user_default.jpg'; ?>" alt="Foto de <?= htmlspecialchars($nombreCompleto); ?>">
+                                                <span class="username">
+                                                    <a href="<?= $URL; ?>views/sesiones/usuario.php?id=<?= (int) $sesion['idusuario']; ?>"><?= htmlspecialchars($nombreCompleto); ?></a>
                                                 </span>
-                                            </td>
-                                            <td class="text-center">
-                                                <span class="badge <?= $clase_estado; ?>"><?= $texto_estado; ?></span>
-                                            </td>
-                                            <td class="text-center">
-                                                <?php if ($estado) : ?>
-                                                    <button type="button" class="btn btn-danger btn-sm btn-cerrar-sesion"
-                                                        data-id="<?= $sesion['idsesion']; ?>"
-                                                        data-usuario="<?= htmlspecialchars($nombreCompleto); ?>"
-                                                        data-toggle="tooltip" title="Cerrar sesión">
-                                                        <i class="fas fa-power-off"></i>
-                                                    </button>
-                                                <?php else : ?>
-                                                    <button type="button" class="btn btn-secondary btn-sm" disabled>
-                                                        <i class="fas fa-power-off"></i>
-                                                    </button>
-                                                <?php endif; ?>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <!-- /.card-body -->
-                </div>
-                <!-- /.card -->
-            </div>
-            <!-- /.col -->
-
-            <div class="col-md-4">
-                <!-- Top Usuarios -->
-                <div class="card">
-                    <div class="card-header bg-primary">
-                        <h3 class="card-title">
-                            <i class="fas fa-trophy"></i> Top Usuarios por Sesiones
-                        </h3>
-                    </div>
-                    <!-- /.card-header -->
-                    <div class="card-body p-0">
-                        <ul class="products-list product-list-in-card pl-2 pr-2">
-                            <?php foreach ($estadisticas['usuarios_top'] as $index => $usuario) : ?>
-                                <li class="item">
-                                    <div class="product-img">
-                                        <span class="badge badge-<?= $index === 0 ? 'warning' : 'info'; ?> p-2">
-                                            <i class="fas fa-award"></i> #<?= $index + 1; ?>
-                                        </span>
-                                    </div>
-                                    <div class="product-info">
-                                        <a href="javascript:void(0)" class="product-title">
-                                            <?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidopaterno']); ?>
-                                            <span class="badge badge-primary float-right"><?= $usuario['total_sesiones']; ?> sesiones</span>
-                                        </a>
-                                        <span class="product-description">
-                                            <button type="button" class="btn btn-xs btn-default btn-ver-sesiones-usuario"
-                                                data-id="<?= $usuario['idusuario']; ?>"
-                                                data-nombre="<?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidopaterno']); ?>">
-                                                <i class="fas fa-eye"></i> Ver sesiones
-                                            </button>
-                                            <?php if ($authService->tienePermiso($idusuario, 'admin_completo')) : ?>
-                                                <button type="button" class="btn btn-xs btn-danger btn-cerrar-todas-sesiones"
-                                                    data-id="<?= $usuario['idusuario']; ?>"
-                                                    data-nombre="<?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidopaterno']); ?>">
-                                                    <i class="fas fa-power-off"></i> Cerrar todas
-                                                </button>
+                                                <span class="description"><?= htmlspecialchars($sesion['cargo']); ?></span>
+                                            </div>
+                                        </td>
+                                        <td><?= date('d/m/Y H:i:s', strtotime($sesion['horaingreso'])); ?></td>
+                                        <td>
+                                            <?= $sesion['horasalida'] ? date('d/m/Y H:i:s', strtotime($sesion['horasalida'])) : '<span class="text-success">Sesión en curso</span>'; ?>
+                                        </td>
+                                        <td><?= $duracion; ?></td>
+                                        <td>
+                                            <span class="badge badge-info"><?= $dispositivo; ?> - <?= $navegador; ?></span>
+                                            <br>
+                                            <small class="text-muted"><?= htmlspecialchars($ipusuario !== '' ? $ipusuario : '—'); ?></small>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge <?= $clase_estado; ?>"><?= $texto_estado; ?></span>
+                                        </td>
+                                        <td>
+                                            <?php if ($motivo === '—') : ?>
+                                                <span class="text-muted"><?= $motivo; ?></span>
+                                            <?php else : ?>
+                                                <span class="badge badge-secondary"><?= htmlspecialchars($motivo); ?></span>
                                             <?php endif; ?>
-                                        </span>
-                                    </div>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
+                                        </td>
+                                        <td class="text-center">
+                                            <?php if ($estado) : ?>
+                                                <div class="btn-group">
+                                                    <?php if ($puedeCerrar) : ?>
+                                                        <button type="button" class="btn btn-danger btn-sm btn-cerrar-sesion"
+                                                            data-id="<?= $sesion['idsesion']; ?>"
+                                                            data-usuario="<?= htmlspecialchars($nombreCompleto); ?>"
+                                                            data-toggle="tooltip" title="Cerrar sesión"
+                                                            aria-label="Cerrar sesión de <?= htmlspecialchars($nombreCompleto); ?>">
+                                                            <i class="fas fa-power-off"></i>
+                                                        </button>
+                                                    <?php else : ?>
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm" disabled
+                                                            data-toggle="tooltip" title="Solo un administrador puede cerrar sesiones"
+                                                            aria-label="Solo un administrador puede cerrar sesiones">
+                                                            <i class="fas fa-lock"></i>
+                                                        </button>
+                                                    <?php endif; ?>
+                                                </div>
+                                            <?php else : ?>
+                                                <div class="btn-group">
+                                                    <button type="button" class="btn btn-secondary btn-sm" disabled aria-label="Sesión ya cerrada">
+                                                        <i class="fas fa-power-off"></i>
+                                                    </button>
+                                                </div>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
-                    <!-- /.card-body -->
                 </div>
-                <!-- /.card -->
-
-                <!-- Información -->
-                <div class="card card-outline card-info">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="fas fa-info-circle"></i> Información
-                        </h3>
-                    </div>
-                    <!-- /.card-header -->
-                    <div class="card-body">
-                        <div class="callout callout-info">
-                            <h5>Monitoreo de Sesiones</h5>
-                            <p>Este módulo le permite monitorear las sesiones de los usuarios en el sistema. Puede ver quién está conectado actualmente, cuándo iniciaron sesión, y desde qué dispositivo.</p>
-                        </div>
-                        <div class="callout callout-warning">
-                            <h5>Sesiones Activas</h5>
-                            <p>Las sesiones activas son aquellas donde el usuario aún está conectado al sistema. Puede cerrar sesiones activas utilizando el botón correspondiente.</p>
-                        </div>
-                        <div class="callout callout-danger">
-                            <h5>Cierre de Sesiones</h5>
-                            <p>Cerrar la sesión de un usuario lo desconectará del sistema. El usuario tendrá que iniciar sesión nuevamente para acceder.</p>
-                        </div>
-                    </div>
-                    <!-- /.card-body -->
-                </div>
-                <!-- /.card -->
-
-                <!-- Estadísticas adicionales -->
-                <div class="card card-outline card-success">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            <i class="fas fa-chart-pie"></i> Estadísticas de Sesiones
-                        </h3>
-                    </div>
-                    <!-- /.card-header -->
-                    <div class="card-body">
-                        <div class="info-box bg-gradient-info">
-                            <span class="info-box-icon"><i class="fas fa-users"></i></span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Usuarios Únicos</span>
-                                <span class="info-box-number"><?= $estadisticas['usuarios_unicos']; ?></span>
-                                <div class="progress">
-                                    <div class="progress-bar" style="width: 100%"></div>
-                                </div>
-                                <span class="progress-description">
-                                    Usuarios que han iniciado sesión en el sistema
-                                </span>
-                            </div>
-                        </div>
-                        <div class="info-box bg-gradient-success">
-                            <span class="info-box-icon"><i class="fas fa-clock"></i></span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Duración Promedio</span>
-                                <span class="info-box-number"><?= round($estadisticas['duracion_promedio']); ?> minutos</span>
-                                <div class="progress">
-                                    <div class="progress-bar" style="width: 100%"></div>
-                                </div>
-                                <span class="progress-description">
-                                    Tiempo promedio de una sesión
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- /.card-body -->
-                </div>
-                <!-- /.card -->
             </div>
-            <!-- /.col -->
         </div>
-        <!-- /.row -->
     </div>
-    <!-- /.container-fluid -->
 </section>
 <!-- /.content -->
-
-<!-- Modal para ver sesiones de usuario -->
-<div class="modal fade" id="modalSesionesUsuario">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-info">
-                <h4 class="modal-title">Sesiones de <span id="nombreUsuarioModal"></span></h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="text-center p-4" id="cargandoSesiones">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="sr-only">Cargando...</span>
-                    </div>
-                    <p class="mt-2">Cargando sesiones...</p>
-                </div>
-                <div id="contenidoSesionesUsuario"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-            </div>
-        </div>
-        <!-- /.modal-content -->
-    </div>
-    <!-- /.modal-dialog -->
-</div>
-<!-- /.modal -->
-
 
 <?php
 include_once '../layouts/mensajes.php';

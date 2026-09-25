@@ -1,17 +1,25 @@
 $(document).ready(function () {
+    // Limpia el HTML de una celda (badges, saltos de línea) para las exportaciones
+    const textoPlano = function (data, row, column, node) {
+        if (column === 1 || column === 3 || column === 5 || column === 6 || column === 7) {
+            return $(node).text().replace(/\s+/g, ' ').trim();
+        }
+        return data;
+    };
+
     // Inicializar DataTable
     $("#tablaSesiones").DataTable({
         "responsive": true,
         "autoWidth": false,
         buttons: [{
             extend: 'collection',
-            text: 'Exportar',
+            text: 'Reportes',
             orientation: 'landscape',
             buttons: [{
                 text: 'Copiar',
                 extend: 'copy',
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6]
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7]
                 }
             }, {
                 extend: 'pdf',
@@ -19,16 +27,14 @@ $(document).ready(function () {
                 filename: 'sesiones_sistema_' + new Date().toISOString().slice(0, 10),
                 pageSize: 'LETTER',
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6]
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7]
                 },
                 customize: function (doc) {
-                    // Estilo básico
                     doc.defaultStyle.fontSize = 10;
                     doc.styles.tableHeader.fontSize = 11;
                     doc.styles.tableHeader.fillColor = '#4b545c';
                     doc.styles.tableHeader.color = '#ffffff';
 
-                    // Agregar título con fecha
                     doc.content.splice(0, 1, {
                         text: 'SESIONES DEL SISTEMA - ' + window.APP.name.toUpperCase(),
                         style: {
@@ -39,11 +45,8 @@ $(document).ready(function () {
                         }
                     });
 
-                    // Agregar título
-                    let tituloTexto = 'Monitoreo de sesiones de usuarios';
-
                     doc.content.splice(1, 0, {
-                        text: tituloTexto,
+                        text: 'Monitoreo de sesiones de usuarios',
                         style: {
                             fontSize: 11,
                             alignment: 'center',
@@ -52,7 +55,6 @@ $(document).ready(function () {
                         }
                     });
 
-                    // Agregar fecha de generación
                     doc.content.splice(2, 0, {
                         text: 'Generado el: ' + new Date().toLocaleString('es-BO'),
                         style: {
@@ -62,14 +64,13 @@ $(document).ready(function () {
                         }
                     });
 
-                    // Formatear estado
+                    // Centrar la columna de Estado
                     doc.content[3].table.body.forEach(function (row) {
-                        if (row[6]) { // Columna de Estado
+                        if (row[6]) {
                             row[6].alignment = 'center';
                         }
                     });
 
-                    // Pie de página
                     doc.footer = function (currentPage, pageCount) {
                         return {
                             columns: [{
@@ -98,46 +99,18 @@ $(document).ready(function () {
                 messageTop: 'Monitoreo de sesiones de usuarios',
                 messageBottom: 'Documento generado el ' + new Date().toLocaleDateString('es-BO'),
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6],
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7],
                     format: {
-                        body: function (data, row, column, node) {
-                            // Extraer el nombre del usuario de la columna usuario (HTML complejo)
-                            if (column === 1) {
-                                return $(node).find('.username a').text();
-                            }
-                            // Formatear estado
-                            if (column === 6) {
-                                return $(node).find('span').text();
-                            }
-                            // Extraer dispositivo
-                            if (column === 5) {
-                                return $(node).find('span').text();
-                            }
-                            return data;
-                        }
+                        body: textoPlano
                     }
                 }
             }, {
                 extend: 'csv',
                 text: 'CSV',
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6],
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7],
                     format: {
-                        body: function (data, row, column, node) {
-                            // Extraer el nombre del usuario de la columna usuario (HTML complejo)
-                            if (column === 1) {
-                                return $(node).find('.username a').text();
-                            }
-                            // Formatear estado
-                            if (column === 6) {
-                                return $(node).find('span').text();
-                            }
-                            // Extraer dispositivo
-                            if (column === 5) {
-                                return $(node).find('span').text();
-                            }
-                            return data;
-                        }
+                        body: textoPlano
                     }
                 }
             }, {
@@ -146,15 +119,9 @@ $(document).ready(function () {
                 title: 'Sesiones del Sistema - ' + window.APP.name + '',
                 messageTop: 'Reporte generado el ' + new Date().toLocaleDateString('es-BO'),
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5, 6],
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7],
                     format: {
-                        body: function (data, row, column, node) {
-                            // Columnas que necesitan extraer texto específico
-                            if (column === 1 || column === 5 || column === 6) {
-                                return $(node).text().trim();
-                            }
-                            return data;
-                        }
+                        body: textoPlano
                     }
                 },
                 customize: function (win) {
@@ -166,7 +133,7 @@ $(document).ready(function () {
         },
         {
             extend: 'colvis',
-            text: 'Columnas'
+            text: 'Visualización de columnas'
         }
         ],
         "pageLength": 10,
@@ -197,87 +164,34 @@ $(document).ready(function () {
                 "sSortAscending": ": Activar para ordenar la columna de manera ascendente",
                 "sSortDescending": ": Activar para ordenar la columna de manera descendente"
             }
+        },
+        "drawCallback": function () {
+            initializeTooltips();
         }
     }).buttons().container().appendTo('#tablaSesiones_wrapper .col-md-6:eq(0)');
 
-    // Inicializar tooltips
-    $('[data-toggle="tooltip"]').tooltip();
+    initializeTooltips();
 
-    // Botones para cerrar sesión
-    const botonesCerrarSesion = document.querySelectorAll('.btn-cerrar-sesion');
-    botonesCerrarSesion.forEach(boton => {
-        boton.addEventListener('click', function() {
-            const sesionId = this.dataset.id;
-            const usuario = this.dataset.usuario;
+    // Cerrar una sesión activa (la fila se re-renderiza al paginar, por eso delegado)
+    $(document).on('click', '.btn-cerrar-sesion', function () {
+        const sesionId = $(this).data('id');
+        const usuario = $(this).data('usuario');
 
-            Swal.fire({
-                title: `¿Cerrar sesión de ${usuario}?`,
-                text: 'El usuario será desconectado del sistema.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--swal-danger').trim() || '#dc3545',
-                cancelButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--swal-cancel').trim() || '#6c757d',
-                confirmButtonText: 'Sí, cerrar sesión',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    submitCsrfForm(baseUrl + 'controllers/sesiones/cerrar_sesion.php', {
-                        id: sesionId
-                    });
-                }
-            });
-        });
-    });
-
-    // Botones para cerrar todas las sesiones de un usuario
-    const botonesCerrarTodasSesiones = document.querySelectorAll('.btn-cerrar-todas-sesiones');
-    botonesCerrarTodasSesiones.forEach(boton => {
-        boton.addEventListener('click', function() {
-            const usuarioId = this.dataset.id;
-            const nombre = this.dataset.nombre;
-
-            Swal.fire({
-                title: `¿Cerrar todas las sesiones de ${nombre}?`,
-                text: 'El usuario será desconectado de todas sus sesiones activas.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--swal-danger').trim() || '#dc3545',
-                cancelButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--swal-cancel').trim() || '#6c757d',
-                confirmButtonText: 'Sí, cerrar todas',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    submitCsrfForm(baseUrl + 'controllers/sesiones/cerrar_sesiones_usuario.php', {
-                        id: usuarioId
-                    });
-                }
-            });
-        });
-    });
-
-    // Botones para ver sesiones de un usuario
-    const botonesVerSesiones = document.querySelectorAll('.btn-ver-sesiones-usuario');
-    botonesVerSesiones.forEach(boton => {
-        boton.addEventListener('click', function() {
-            const usuarioId = this.dataset.id;
-            const nombre = this.dataset.nombre;
-
-            // Mostrar modal
-            $('#nombreUsuarioModal').text(nombre);
-            $('#cargandoSesiones').show();
-            $('#contenidoSesionesUsuario').empty();
-            $('#modalSesionesUsuario').modal('show');
-
-            // Cargar sesiones del usuario (simulado por ahora)
-            setTimeout(() => {
-                $('#cargandoSesiones').hide();
-                $('#contenidoSesionesUsuario').html(`
-                    <div class="alert alert-info">
-                        <p><strong>Nota:</strong> Esta funcionalidad estará disponible en una próxima actualización.</p>
-                        <p>Puede ver todas las sesiones del usuario ${nombre} en la tabla principal filtrando por su nombre.</p>
-                    </div>
-                `);
-            }, 1000);
+        Swal.fire({
+            title: `¿Cerrar sesión de ${usuario}?`,
+            text: 'El usuario será desconectado del sistema.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--swal-danger').trim() || '#dc3545',
+            cancelButtonColor: getComputedStyle(document.documentElement).getPropertyValue('--swal-cancel').trim() || '#6c757d',
+            confirmButtonText: 'Sí, cerrar sesión',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                submitCsrfForm(baseUrl + 'controllers/sesiones/cerrar_sesion.php', {
+                    id: sesionId
+                });
+            }
         });
     });
 });
