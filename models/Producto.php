@@ -548,18 +548,18 @@ class Producto
             $sqlVentas = "SELECT 
                         'venta' as tipo_movimiento,
                         v.idventa as id_movimiento,
-                        v.fechaventa as fecha,
+                        v.fechacreacion as fecha,
                         dv.cantidad,
                         dv.precioventa as precio,
                         (dv.cantidad * dv.precioventa) as total,
-                        CONCAT(p.nombre, ' ', COALESCE(p.apellidopaterno, '')) as referencia,
+                        CONCAT(c.nombres, ' ', COALESCE(c.apellidopaterno, '')) as referencia,
                         u.nombre as usuario
                     FROM detalleventa dv
                     JOIN venta v ON dv.idventa = v.idventa
-                    LEFT JOIN persona p ON v.idcliente = p.idpersona
+                    LEFT JOIN cliente c ON v.idcliente = c.idcliente
                     LEFT JOIN usuarios u ON v.idusuario = u.idusuario
                     WHERE dv.idproducto = :idproducto
-                    ORDER BY v.fechaventa DESC, v.idventa DESC
+                    ORDER BY v.fechacreacion DESC, v.idventa DESC
                     LIMIT :limite";
 
             $stmtVentas = $this->conexion->prepare($sqlVentas);
@@ -631,35 +631,42 @@ class Producto
                 // $esPapelHigienico = $esPapelHigienico || $producto['idcategoria'] == ID_CATEGORIA_CONSUMIBLES_BAÑO;
             }
 
-            // Si es papel higiénico, incluir consumos por servicios de baño
+            // Si es papel higiénico, incluir consumos por servicios de baño.
+            // Corre con su propio try/catch: si las tablas del módulo de baños
+            // no existen en este despliegue, se omite esa sección en lugar de
+            // tirar abajo también las ventas y compras ya obtenidas.
             if ($esPapelHigienico) {
-                $sqlServicios = "SELECT 
-                            'servicio_baño' as tipo_movimiento,
-                            sb.idservicio as id_movimiento,
-                            sb.fecha,
-                            1 as cantidad, -- Asumiendo que cada servicio usa 1 rollo
-                            0 as precio, -- No hay precio directo para este consumo
-                            0 as total,
-                            CONCAT('Baño: ', b.nombre) as referencia,
-                            u.nombre as usuario
-                        FROM servicio_bano sb
-                        JOIN bano b ON sb.idbano = b.idbano
-                        JOIN usuarios u ON sb.idusuario = u.idusuario
-                        WHERE sb.estado = 'finalizado'
-                        ORDER BY sb.fecha DESC
-                        LIMIT :limite";
+                try {
+                    $sqlServicios = "SELECT 
+                                'servicio_baño' as tipo_movimiento,
+                                sb.idservicio as id_movimiento,
+                                sb.fecha,
+                                1 as cantidad, -- Asumiendo que cada servicio usa 1 rollo
+                                0 as precio, -- No hay precio directo para este consumo
+                                0 as total,
+                                CONCAT('Baño: ', b.nombre) as referencia,
+                                u.nombre as usuario
+                            FROM servicio_bano sb
+                            JOIN bano b ON sb.idbano = b.idbano
+                            JOIN usuarios u ON sb.idusuario = u.idusuario
+                            WHERE sb.estado = 'finalizado'
+                            ORDER BY sb.fecha DESC
+                            LIMIT :limite";
 
-                $stmtServicios = $this->conexion->prepare($sqlServicios);
-                $stmtServicios->bindParam(':limite', $limite, PDO::PARAM_INT);
-                $stmtServicios->execute();
-                $servicios = $stmtServicios->fetchAll(PDO::FETCH_ASSOC);
+                    $stmtServicios = $this->conexion->prepare($sqlServicios);
+                    $stmtServicios->bindParam(':limite', $limite, PDO::PARAM_INT);
+                    $stmtServicios->execute();
+                    $servicios = $stmtServicios->fetchAll(PDO::FETCH_ASSOC);
 
-                // Añadir los servicios al array de movimientos
-                foreach ($servicios as $servicio) {
-                    $servicio['icono'] = 'fa-toilet-paper';
-                    $servicio['color'] = 'warning';
-                    $servicio['operacion'] = '-'; // Resta de stock
-                    $movimientos[] = $servicio;
+                    // Añadir los servicios al array de movimientos
+                    foreach ($servicios as $servicio) {
+                        $servicio['icono'] = 'fa-toilet-paper';
+                        $servicio['color'] = 'warning';
+                        $servicio['operacion'] = '-'; // Resta de stock
+                        $movimientos[] = $servicio;
+                    }
+                } catch (PDOException $e) {
+                    error_log('Movimientos de baño omitidos: ' . $e->getMessage());
                 }
             }
 
