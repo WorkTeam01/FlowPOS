@@ -1,0 +1,17 @@
+# FlowPOS guarda aquí archivos subidos por los usuarios. La extensión de cada
+# archivo se decide en ImagenService a partir del MIME real detectado con
+# finfo(), así que un script no debería poder llegar con extensión ejecutable:
+# estas reglas son defensa en profundidad para el caso de que esa puerta se
+# rompa (o para quien suba archivos por fuera de la aplicación).
+
+# Los directorios de subida son escribibles por Apache; que además puedan
+# ejecutar o entregar scripts es el patrón clásico de ejecución remota.
+<FilesMatch "(?i)\.(php|php\d|phtml|phps|phar|pl|py|cgi|sh)$">
+    Require all denied
+</FilesMatch>
+
+# Redundante con lo anterior mientras PHP corra como módulo Apache: apaga el
+# motor aunque cambien los handlers definidos por XAMPP.
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>

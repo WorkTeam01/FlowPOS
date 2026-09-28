@@ -202,15 +202,11 @@ class ProductoController
         }
 
         // Procesar nueva imagen si se subió
+        $nueva_imagen_path = null;
         if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
             $nueva_imagen_path = $this->imagenService->procesarImagen($_FILES['imagen']);
             if ($nueva_imagen_path) {
                 $datos['imagen'] = $nueva_imagen_path;
-
-                // Eliminar imagen anterior si existe
-                if ($imagen_antigua) {
-                    $this->imagenService->eliminarImagen($imagen_antigua);
-                }
             } else {
                 return ['success' => false, 'message' => 'Error al procesar la nueva imagen. Verifique el formato y tamaño.', 'icon' => 'error', 'redirect' => "update.php?id=$id"];
             }
@@ -218,8 +214,20 @@ class ProductoController
 
         // Actualizar producto
         if ($this->modelo->actualizar($id, $datos)) {
+            // La imagen anterior se borra recién con el UPDATE confirmado: si
+            // fallara, el registro seguiría apuntando a un fichero borrado.
+            // producto_default.png es compartido por todos los productos, no
+            // se elimina aunque figure como valor de una fila.
+            if ($nueva_imagen_path && $imagen_antigua && $imagen_antigua !== 'producto_default.png' && $imagen_antigua !== $nueva_imagen_path) {
+                $this->imagenService->eliminarImagen($imagen_antigua);
+            }
             return ['success' => true, 'message' => 'Producto actualizado correctamente', 'icon' => 'success', 'redirect' => 'index.php'];
         } else {
+            // El UPDATE no se aplicó: se descarta la recién subida para no
+            // dejarla huérfana en disco.
+            if ($nueva_imagen_path) {
+                $this->imagenService->eliminarImagen($nueva_imagen_path);
+            }
             $error_message = 'Error al actualizar el producto: ' . $this->modelo->getLastError();
             return ['success' => false, 'message' => $error_message, 'icon' => 'error', 'redirect' => "update.php?id=$id"];
         }

@@ -291,15 +291,11 @@ class UsuarioController
         }
 
         // Procesar nueva imagen si se subió
+        $nueva_imagen_path = null;
         if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
             $nueva_imagen_path = $this->imagenService->procesarImagen($_FILES['imagen']);
             if ($nueva_imagen_path) {
                 $datos['imagen'] = $nueva_imagen_path;
-
-                // Eliminar imagen anterior si no es la predeterminada
-                if ($imagen_antigua && $imagen_antigua !== 'user_default.jpg') {
-                    $this->imagenService->eliminarImagen($imagen_antigua);
-                }
             } else {
                 return ['success' => false, 'message' => 'Error al procesar la nueva imagen. Verifique el formato y tamaño.', 'icon' => 'error', 'redirect' => "update.php?id=$id"];
             }
@@ -307,6 +303,20 @@ class UsuarioController
 
         // Actualizar usuario
         $actualizado = $this->modelo->actualizar($id, $datos);
+
+        // El cambio de imagen recién se concreta acá, no antes: mientras el
+        // UPDATE no confirme, el registro sigue apuntando a la imagen vieja y
+        // borrarla dejaría al usuario con la foto rota. Si el UPDATE falló, lo
+        // que se descarta es la recién subida para no dejarla huérfana.
+        if ($nueva_imagen_path) {
+            if ($actualizado) {
+                if ($imagen_antigua && $imagen_antigua !== 'user_default.jpg' && $imagen_antigua !== $nueva_imagen_path) {
+                    $this->imagenService->eliminarImagen($imagen_antigua);
+                }
+            } else {
+                $this->imagenService->eliminarImagen($nueva_imagen_path);
+            }
+        }
 
         // Procesar cambio de contraseña si se proporcionó
         $clave = isset($_POST['clave']) ? trim($_POST['clave']) : '';
@@ -426,21 +436,23 @@ class UsuarioController
         }
 
         // Procesar nueva imagen si se subió
+        $nueva_imagen_path = null;
         if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
             $nueva_imagen_path = $this->imagenService->procesarImagen($_FILES['imagen']);
             if ($nueva_imagen_path) {
                 $datos['imagen'] = $nueva_imagen_path;
-
-                // Eliminar imagen anterior si no es la predeterminada
-                if ($imagen_antigua && $imagen_antigua !== 'user_default.jpg' && $imagen_antigua !== $nueva_imagen_path) {
-                    $this->imagenService->eliminarImagen($imagen_antigua);
-                }
             } else {
                 return ['success' => false, 'message' => 'Error al procesar la nueva imagen. Verifique el formato y tamaño.', 'icon' => 'error', 'redirect' => 'views/usuarios/perfil.php'];
             }
         }
 
         if ($this->modelo->actualizar($id, $datos)) {
+            // La imagen anterior se borra solo después de que el UPDATE
+            // confirmó (mismo criterio que en la actualización de usuario):
+            // si falla, el registro sigue apuntando al fichero viejo.
+            if ($nueva_imagen_path && $imagen_antigua && $imagen_antigua !== 'user_default.jpg' && $imagen_antigua !== $nueva_imagen_path) {
+                $this->imagenService->eliminarImagen($imagen_antigua);
+            }
             // Actualizar datos de sesión
             $_SESSION['usuario_nombre'] = $datos['nombre'];
             $_SESSION['usuario_correo'] = $datos['correo'];
@@ -449,6 +461,11 @@ class UsuarioController
             }
             return ['success' => true, 'message' => 'Perfil actualizado correctamente', 'icon' => 'success', 'redirect' => 'views/usuarios/perfil.php'];
         } else {
+            // El UPDATE no se aplicó: se descarta la recién subida para no
+            // dejarla huérfana en disco.
+            if ($nueva_imagen_path) {
+                $this->imagenService->eliminarImagen($nueva_imagen_path);
+            }
             $db_error = $this->modelo->getLastError();
             return ['success' => false, 'message' => 'Error al actualizar el perfil: ' . ($db_error ?: 'Error desconocido.'), 'icon' => 'error', 'redirect' => 'views/usuarios/perfil.php'];
         }

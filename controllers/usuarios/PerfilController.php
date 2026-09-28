@@ -91,17 +91,21 @@ class PerfilController
             return ['success' => false, 'message' => 'Error al procesar la imagen. Verifique el formato y tamaño.', 'icon' => 'error', 'redirect' => 'views/usuarios/perfil.php'];
         }
 
-        // Eliminar imagen anterior si no es la predeterminada
-        if ($imagen_antigua && $imagen_antigua !== 'user_default.jpg' && $imagen_antigua !== $nueva_imagen) {
-            $this->imagenService->eliminarImagen($imagen_antigua);
-        }
-
         // Actualizar solo la imagen del perfil
         if ($this->modelo->actualizarImagen($id, $nueva_imagen)) {
+            // La imagen anterior se borra recién acá: si el UPDATE fallara, el
+            // registro seguiría apuntando a un fichero ya borrado y el perfil
+            // quedaría con la imagen rota.
+            if ($imagen_antigua && $imagen_antigua !== 'user_default.jpg' && $imagen_antigua !== $nueva_imagen) {
+                $this->imagenService->eliminarImagen($imagen_antigua);
+            }
             // Actualizar la imagen en la sesión
             $_SESSION['usuario_imagen'] = $nueva_imagen;
             return ['success' => true, 'message' => 'Imagen de perfil actualizada correctamente', 'icon' => 'success', 'redirect' => 'views/usuarios/perfil.php'];
         } else {
+            // El UPDATE no se aplicó: se descarta la recién subida para no
+            // dejarla huérfana en disco; la vieja sigue siendo la válida.
+            $this->imagenService->eliminarImagen($nueva_imagen);
             return ['success' => false, 'message' => 'Error al actualizar la imagen de perfil: ' . $this->modelo->getLastError(), 'icon' => 'error', 'redirect' => 'views/usuarios/perfil.php'];
         }
     }
