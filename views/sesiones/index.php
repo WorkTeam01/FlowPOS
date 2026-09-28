@@ -146,11 +146,11 @@ $puedeCerrar = $authService->esAdministrador($idusuario);
                                         <td class="text-center"><?= $contador++; ?></td>
                                         <td>
                                             <div class="user-block">
-                                                <img class="img-circle img-bordered-sm" src="<?= $URL; ?>public/uploads/usuarios/<?= $sesion['imagen'] ?: 'user_default.jpg'; ?>" alt="Foto de <?= htmlspecialchars($nombreCompleto); ?>">
+                                                <img class="img-circle img-bordered-sm" src="<?= $URL; ?>public/uploads/usuarios/<?= $sesion['imagen'] ?: 'user_default.jpg'; ?>" alt="Foto de <?= $nombreCompleto; ?>">
                                                 <span class="username">
-                                                    <a href="<?= $URL; ?>views/sesiones/usuario.php?id=<?= (int) $sesion['idusuario']; ?>"><?= htmlspecialchars($nombreCompleto); ?></a>
+                                                    <a href="<?= $URL; ?>views/sesiones/usuario.php?id=<?= (int) $sesion['idusuario']; ?>"><?= $nombreCompleto; ?></a>
                                                 </span>
-                                                <span class="description"><?= htmlspecialchars($sesion['cargo']); ?></span>
+                                                <span class="description"><?= $sesion['cargo']; ?></span>
                                             </div>
                                         </td>
                                         <td><?= date('d/m/Y H:i:s', strtotime($sesion['horaingreso'])); ?></td>
@@ -179,9 +179,9 @@ $puedeCerrar = $authService->esAdministrador($idusuario);
                                                     <?php if ($puedeCerrar) : ?>
                                                         <button type="button" class="btn btn-danger btn-sm btn-cerrar-sesion"
                                                             data-id="<?= $sesion['idsesion']; ?>"
-                                                            data-usuario="<?= htmlspecialchars($nombreCompleto); ?>"
+                                                            data-usuario="<?= $nombreCompleto; ?>"
                                                             data-toggle="tooltip" title="Cerrar sesión"
-                                                            aria-label="Cerrar sesión de <?= htmlspecialchars($nombreCompleto); ?>">
+                                                            aria-label="Cerrar sesión de <?= $nombreCompleto; ?>">
                                                             <i class="fas fa-power-off"></i>
                                                         </button>
                                                     <?php else : ?>

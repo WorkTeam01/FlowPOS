@@ -107,11 +107,11 @@ include_once '../layouts/header.php';
                                 </li>
                                 <li class="list-group-item">
                                     <b><i class="fas fa-user mr-2"></i>Cliente</b>
-                                    <span class="float-right"><?= htmlspecialchars($venta['cliente_nombre'] ?? 'Consumidor Final'); ?></span>
+                                    <span class="float-right"><?= $venta['cliente_nombre'] ?? 'Consumidor Final'; ?></span>
                                 </li>
                                 <li class="list-group-item">
                                     <b><i class="fas fa-user-tie mr-2"></i>Vendedor</b>
-                                    <span class="float-right"><?= htmlspecialchars($venta['usuario_nombre'] ?? 'Usuario no registrado'); ?></span>
+                                    <span class="float-right"><?= $venta['usuario_nombre'] ?? 'Usuario no registrado'; ?></span>
                                 </li>
                                 <li class="list-group-item">
                                     <b><i class="fas fa-toggle-on mr-2"></i>Estado</b>
@@ -222,9 +222,9 @@ include_once '../layouts/header.php';
                                         <tr>
                                             <td><?= $contador++; ?></td>
                                             <td>
-                                                <?= htmlspecialchars($detalle['producto_nombre']); ?>
+                                                <?= $detalle['producto_nombre']; ?>
                                                 <small class="text-muted d-block">
-                                                    Código: <?= htmlspecialchars($detalle['producto_codigo'] ?? 'N/A'); ?>
+                                                    Código: <?= $detalle['producto_codigo'] ?? 'N/A'; ?>
                                                 </small>
                                             </td>
                                             <td class="text-right"><?= number_format($precioUnitario, 2); ?> <?= $appCurrency ?></td>

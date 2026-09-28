@@ -131,8 +131,8 @@ $estadisticas = $controller->getEstadisticas();
                                 ?>
                                     <tr>
                                         <td class="text-center"><?= $contador++; ?></td>
-                                        <td><?= htmlspecialchars($empresa['nombre']); ?></td>
-                                        <td class="text-center"><?= htmlspecialchars($empresa['nit']); ?></td>
+                                        <td><?= $empresa['nombre']; ?></td>
+                                        <td class="text-center"><?= $empresa['nit']; ?></td>
                                         <td class="text-center">
                                             <span class="badge <?= $clase_sucursales; ?>">
                                                 <?= $total_sucursales; ?> sucursal<?= $total_sucursales != 1 ? 'es' : ''; ?>
@@ -145,11 +145,11 @@ $estadisticas = $controller->getEstadisticas();
                                             <div class="btn-group">
                                                 <button type="button" class="btn btn-warning btn-sm btn-editar"
                                                     data-id="<?= $empresa['idempresa']; ?>"
-                                                    data-nombre="<?= htmlspecialchars($empresa['nombre']); ?>"
-                                                    data-nit="<?= htmlspecialchars($empresa['nit']); ?>"
-                                                    data-direccion="<?= htmlspecialchars($empresa['direccion']); ?>"
-                                                    data-telefono="<?= htmlspecialchars($empresa['telefono']); ?>"
-                                                    data-email="<?= htmlspecialchars($empresa['email']); ?>"
+                                                    data-nombre="<?= $empresa['nombre']; ?>"
+                                                    data-nit="<?= $empresa['nit']; ?>"
+                                                    data-direccion="<?= $empresa['direccion']; ?>"
+                                                    data-telefono="<?= $empresa['telefono']; ?>"
+                                                    data-email="<?= $empresa['email']; ?>"
                                                     data-imagen="<?= htmlspecialchars($empresa['imagen']); ?>"
                                                     data-estado="<?= $empresa['estado']; ?>"
                                                     data-toggle="tooltip" title="Editar empresa">

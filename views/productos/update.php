@@ -91,7 +91,7 @@ include_once '../layouts/header.php';
                                             <?php foreach ($categorias as $categoria) : ?>
                                                 <option value="<?= $categoria['idcategoria']; ?>"
                                                     <?= $producto['idcategoria'] == $categoria['idcategoria'] ? 'selected' : ''; ?>>
-                                                    <?= htmlspecialchars($categoria['nombre']); ?>
+                                                    <?= $categoria['nombre']; ?>
                                                 </option>
                                             <?php endforeach; ?>
                                         </select>
@@ -108,7 +108,7 @@ include_once '../layouts/header.php';
                                                 <span class="input-group-text"><i class="fas fa-barcode"></i></span>
                                             </div>
                                             <input type="text" class="form-control" id="codigo" name="codigo"
-                                                placeholder="Ingrese el código del producto" value="<?= htmlspecialchars($producto['codigo'] ?? ''); ?>">
+                                                placeholder="Ingrese el código del producto" value="<?= $producto['codigo'] ?? ''; ?>">
                                         </div>
                                         <small class="form-text text-muted">Opcional - Código único del producto (SKU, código de barras, etc.)</small>
                                     </div>
@@ -126,7 +126,7 @@ include_once '../layouts/header.php';
                                             </div>
                                             <input type="text" class="form-control" id="nombre" name="nombre"
                                                 placeholder="Ingrese el nombre del producto"
-                                                value="<?= htmlspecialchars($producto['nombre']); ?>" required>
+                                                value="<?= $producto['nombre']; ?>" required>
                                         </div>
                                         <small class="form-text text-muted">Nombre completo y descriptivo del producto</small>
                                     </div>
@@ -143,7 +143,7 @@ include_once '../layouts/header.php';
                                                 <span class="input-group-text"><i class="fas fa-align-left"></i></span>
                                             </div>
                                             <textarea class="form-control" id="descripcion" name="descripcion" rows="3"
-                                                placeholder="Ingrese una descripción detallada del producto"><?= htmlspecialchars($producto['descripcion'] ?? ''); ?></textarea>
+                                                placeholder="Ingrese una descripción detallada del producto"><?= $producto['descripcion'] ?? ''; ?></textarea>
                                         </div>
                                         <small class="form-text text-muted">Características, usos, dimensiones u otra información relevante</small>
                                     </div>

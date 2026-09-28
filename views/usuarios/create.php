@@ -169,7 +169,7 @@ include_once '../layouts/header.php';
                                         <select class="form-control select2" id="idrol" name="idrol" required>
                                             <option value="">Seleccione un rol</option>
                                             <?php foreach ($roles as $rol) : ?>
-                                                <option value="<?= $rol['idrol'] ?>" <?= ($rol['es_admin'] && !$puedeAsignarAdmin) ? 'disabled' : '' ?>><?= htmlspecialchars(ucfirst($rol['nombre'])) ?></option>
+                                                <option value="<?= $rol['idrol'] ?>" <?= ($rol['es_admin'] && !$puedeAsignarAdmin) ? 'disabled' : '' ?>><?= ucfirst($rol['nombre']) ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                         <?php if (!$puedeAsignarAdmin): ?>

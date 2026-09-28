@@ -73,7 +73,7 @@ $estadisticas = $controller->getEstadisticas();
                     <div class="info-box-content">
                         <span class="info-box-text">Cliente Top</span>
                         <span class="info-box-number">
-                            <?= !empty($estadisticas['cliente_mas_compro']['nombre_cliente']) ? htmlspecialchars($estadisticas['cliente_mas_compro']['nombre_cliente']) : 'N/A'; ?>
+                            <?= !empty($estadisticas['cliente_mas_compro']['nombre_cliente']) ? $estadisticas['cliente_mas_compro']['nombre_cliente'] : 'N/A'; ?>
                         </span>
                     </div>
                 </div>
@@ -84,7 +84,7 @@ $estadisticas = $controller->getEstadisticas();
                     <div class="info-box-content">
                         <span class="info-box-text">Producto Top</span>
                         <span class="info-box-number">
-                            <?= $estadisticas['producto_mas_vendido'] ? htmlspecialchars($estadisticas['producto_mas_vendido']['producto_nombre']) : 'N/A'; ?>
+                            <?= $estadisticas['producto_mas_vendido'] ? $estadisticas['producto_mas_vendido']['producto_nombre'] : 'N/A'; ?>
                         </span>
                     </div>
                 </div>
@@ -142,8 +142,8 @@ $estadisticas = $controller->getEstadisticas();
                                             <td class="text-center"><?= $contador++; ?></td>
                                             <td>VENT-<?= str_pad($venta['idventa'], 6, '0', STR_PAD_LEFT); ?></td>
                                             <td><?= date('d/m/Y', strtotime($venta['fechacreacion'])); ?></td>
-                                            <td><?= htmlspecialchars($venta['cliente_nombre'] ?? 'Consumidor Final'); ?></td>
-                                            <td><?= htmlspecialchars($venta['usuario_nombre'] ?? 'N/A'); ?></td>
+                                            <td><?= $venta['cliente_nombre'] ?? 'Consumidor Final'; ?></td>
+                                            <td><?= $venta['usuario_nombre'] ?? 'N/A'; ?></td>
                                             <td class="text-right"><?= number_format($venta['totalventa'], 2); ?> <?= $appCurrency ?></td>
                                             <td class="text-center">
                                                 <?php if ($tienePagosMixtos): ?>

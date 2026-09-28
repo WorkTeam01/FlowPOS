@@ -205,7 +205,7 @@ if (!$usuario) {
                                             <?php foreach ($roles as $rol) : ?>
                                                 <option value="<?= $rol['idrol'] ?>"
                                                     <?= ((int) $usuario['idrol'] === (int) $rol['idrol']) ? 'selected' : '' ?>
-                                                    <?= ($rol['es_admin'] && !$puedeAsignarAdmin) ? 'disabled' : '' ?>><?= htmlspecialchars(ucfirst($rol['nombre'])) ?></option>
+                                                    <?= ($rol['es_admin'] && !$puedeAsignarAdmin) ? 'disabled' : '' ?>><?= ucfirst($rol['nombre']) ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                         <?php if (!$puedeAsignarAdmin && $rolEsAdminActual): ?>

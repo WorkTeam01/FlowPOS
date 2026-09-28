@@ -90,18 +90,18 @@ if (!$producto) {
                         </div>
 
                         <h3 class="profile-username text-center">
-                            <?= htmlspecialchars($producto['nombre']); ?>
+                            <?= $producto['nombre']; ?>
                         </h3>
 
                         <p class="text-muted text-center">
-                            <?= htmlspecialchars($producto['categoria_nombre'] ?? 'Sin categoría'); ?>
+                            <?= $producto['categoria_nombre'] ?? 'Sin categoría'; ?>
                         </p>
 
                         <ul class="list-group list-group-unbordered mb-4">
                             <li class="list-group-item">
                                 <b><i class="fas fa-barcode mr-2"></i>Código</b>
                                 <span class="float-right">
-                                    <?= !empty($producto['codigo']) ? htmlspecialchars($producto['codigo']) : 'N/A'; ?>
+                                    <?= !empty($producto['codigo']) ? $producto['codigo'] : 'N/A'; ?>
                                 </span>
                             </li>
                             <li class="list-group-item">
@@ -142,7 +142,7 @@ if (!$producto) {
                         <button type="button" class="btn btn-block <?= $producto['estado'] == 1 ? 'btn-danger' : 'btn-success'; ?>" id="btnCambiarEstado"
                             data-id="<?= $producto['idproducto']; ?>"
                             data-estado="<?= $producto['estado']; ?>"
-                            data-nombre="<?= htmlspecialchars($producto['nombre']); ?>">
+                            data-nombre="<?= $producto['nombre']; ?>">
                             <i class="fas <?= $producto['estado'] == 1 ? 'fa-ban' : 'fa-check'; ?> mr-2"></i>
                             <?= $producto['estado'] == 1 ? 'Desactivar Producto' : 'Activar Producto'; ?>
                         </button>
@@ -187,7 +187,7 @@ if (!$producto) {
                                                 <h5 class="info-box-text text-center text-muted">Descripción del Producto</h5>
                                                 <div class="info-box-number text-center text-muted mb-0">
                                                     <?php if (!empty($producto['descripcion'])): ?>
-                                                        <?= nl2br(htmlspecialchars($producto['descripcion'])); ?>
+                                                        <?= nl2br($producto['descripcion']); ?>
                                                     <?php else: ?>
                                                         <span class="text-muted">No hay descripción disponible</span>
                                                     <?php endif; ?>
@@ -208,15 +208,15 @@ if (!$producto) {
                                                     <tbody>
                                                         <tr>
                                                             <td><i class="fas fa-signature mr-2"></i>Nombre:</td>
-                                                            <td><?= htmlspecialchars($producto['nombre']); ?></td>
+                                                            <td><?= $producto['nombre']; ?></td>
                                                         </tr>
                                                         <tr>
                                                             <td><i class="fas fa-list-alt mr-2"></i>Categoría:</td>
-                                                            <td><?= htmlspecialchars($producto['categoria_nombre'] ?? 'Sin categoría'); ?></td>
+                                                            <td><?= $producto['categoria_nombre'] ?? 'Sin categoría'; ?></td>
                                                         </tr>
                                                         <tr>
                                                             <td><i class="fas fa-barcode mr-2"></i>Código:</td>
-                                                            <td><?= !empty($producto['codigo']) ? htmlspecialchars($producto['codigo']) : 'N/A'; ?></td>
+                                                            <td><?= !empty($producto['codigo']) ? $producto['codigo'] : 'N/A'; ?></td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
@@ -425,12 +425,12 @@ if (!$producto) {
                                                                 </td>
                                                                 <td>
                                                                     <?php if ($movimiento['tipo_movimiento'] == 'venta'): ?>
-                                                                        <?= !empty($movimiento['referencia']) ? htmlspecialchars($movimiento['referencia']) : 'Cliente no registrado'; ?>
+                                                                        <?= !empty($movimiento['referencia']) ? $movimiento['referencia'] : 'Cliente no registrado'; ?>
                                                                     <?php elseif ($movimiento['tipo_movimiento'] == 'servicio_baño'): ?>
                                                                         <?= htmlspecialchars($movimiento['referencia']); ?>
-                                                                        <small class="d-block text-muted">Por: <?= htmlspecialchars($movimiento['usuario']); ?></small>
+                                                                        <small class="d-block text-muted">Por: <?= $movimiento['usuario']; ?></small>
                                                                     <?php else: ?>
-                                                                        <?= htmlspecialchars($movimiento['referencia']); ?>
+                                                                        <?= $movimiento['referencia']; ?>
                                                                     <?php endif; ?>
                                                                 </td>
                                                             </tr>

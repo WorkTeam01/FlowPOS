@@ -112,8 +112,8 @@ global $URL;
                         <li class="user-header">
                             <img src="<?= $URL; ?>public/uploads/usuarios/<?= $currentUser['imagen']; ?>" loading="eager" class="img-circle elevation-2" alt="User Image">
                             <p>
-                                <?= htmlspecialchars($currentUser['nombre'], ENT_QUOTES, 'UTF-8'); ?>
-                                <small><?= htmlspecialchars($currentUser['cargo'], ENT_QUOTES, 'UTF-8'); ?></small>
+                                <?= $currentUser['nombre']; ?>
+                                <small><?= $currentUser['cargo']; ?></small>
                             </p>
                         </li>
                         <!-- Menu Footer-->

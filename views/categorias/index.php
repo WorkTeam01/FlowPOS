@@ -125,7 +125,7 @@ $estadisticas = $controller->getEstadisticas();
                                 ?>
                                     <tr>
                                         <td class="text-center"><?= $contador++; ?></td>
-                                        <td><?= htmlspecialchars($categoria['nombre']); ?></td>
+                                        <td><?= $categoria['nombre']; ?></td>
                                         <td class="text-center">
                                             <span class="badge <?= $clase_productos; ?>">
                                                 <?= $total_productos; ?> producto<?= $total_productos != 1 ? 's' : ''; ?>
@@ -138,10 +138,10 @@ $estadisticas = $controller->getEstadisticas();
                                             <div class="btn-group">
                                                 <button type="button" class="btn btn-warning btn-sm btn-editar"
                                                     data-id="<?= $categoria['idcategoria']; ?>"
-                                                    data-nombre="<?= htmlspecialchars($categoria['nombre']); ?>"
+                                                    data-nombre="<?= $categoria['nombre']; ?>"
                                                     data-estado="<?= $categoria['estado']; ?>"
                                                     data-toggle="tooltip" title="Editar categoría"
-                                                    aria-label="Editar categoría <?= htmlspecialchars($categoria['nombre']); ?>">
+                                                    aria-label="Editar categoría <?= $categoria['nombre']; ?>">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
                                                 <button type="button" class="btn <?= $estado_actual == 1 ? 'btn-danger' : 'btn-success'; ?> btn-sm cambiar-estado"
@@ -150,7 +150,7 @@ $estadisticas = $controller->getEstadisticas();
                                                     data-productos="<?= $total_productos; ?>"
                                                     data-toggle="tooltip"
                                                     title="<?= $estado_actual == 1 ? 'Desactivar' : 'Activar'; ?>"
-                                                    aria-label="<?= $estado_actual == 1 ? 'Desactivar' : 'Activar'; ?> categoría <?= htmlspecialchars($categoria['nombre']); ?>">
+                                                    aria-label="<?= $estado_actual == 1 ? 'Desactivar' : 'Activar'; ?> categoría <?= $categoria['nombre']; ?>">
                                                     <i class="fas <?= $estado_actual == 1 ? 'fa-times' : 'fa-check'; ?>"></i>
                                                 </button>
                                             </div>

@@ -53,10 +53,10 @@ function formatearFecha($fecha): string
 
 try {
     // Include required files con manejo de errores
-    if (!file_exists('../../libs/TCPDF-main/tcpdf.php')) {
+    if (!file_exists(__DIR__ . '/../../libs/TCPDF-main/tcpdf.php')) {
         die("Error: No se encontró TCPDF en la ruta especificada");
     }
-    require_once('../../libs/TCPDF-main/tcpdf.php');
+    require_once __DIR__ . '/../../libs/TCPDF-main/tcpdf.php';
 
     require_once __DIR__ . '/../../config/config.php';
     require_once __DIR__ . '/../../views/layouts/session.php';

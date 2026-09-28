@@ -136,8 +136,8 @@ $estadisticas = $controller->getEstadisticas();
                                     ?>
                                         <tr>
                                             <td class="text-center"><?= $contador++; ?></td>
-                                            <td><?= htmlspecialchars($sucursal['nombre']); ?></td>
-                                            <td><?= htmlspecialchars($sucursal['empresa_nombre'] ?? 'Sin empresa'); ?></td>
+                                            <td><?= $sucursal['nombre']; ?></td>
+                                            <td><?= $sucursal['empresa_nombre'] ?? 'Sin empresa'; ?></td>
                                             <td class="text-center">
                                                 <span class="badge <?= $clase_usuarios; ?>">
                                                     <?= $total_usuarios; ?> usuario<?= $total_usuarios != 1 ? 's' : ''; ?>
@@ -150,7 +150,7 @@ $estadisticas = $controller->getEstadisticas();
                                                 <div class="btn-group">
                                                     <button type="button" class="btn btn-warning btn-sm btn-editar"
                                                         data-id="<?= $sucursal['idsucursal']; ?>"
-                                                        data-nombre="<?= htmlspecialchars($sucursal['nombre']); ?>"
+                                                        data-nombre="<?= $sucursal['nombre']; ?>"
                                                         data-idempresa="<?= $sucursal['idempresa']; ?>"
                                                         data-estado="<?= $sucursal['estado']; ?>"
                                                         data-toggle="tooltip" title="Editar sucursal">
@@ -203,7 +203,7 @@ $estadisticas = $controller->getEstadisticas();
                             <option value="">Seleccione una empresa</option>
                             <?php foreach ($empresas as $empresa) : ?>
                                 <option value="<?= $empresa['idempresa']; ?>">
-                                    <?= htmlspecialchars($empresa['nombre']); ?>
+                                    <?= $empresa['nombre']; ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>

@@ -81,7 +81,7 @@ include_once '../layouts/header.php';
                                     <div class="form-group">
                                         <label for="nombre_usuario"><i class="fas fa-user"></i> Responsable</label>
                                         <input type="text" class="form-control" id="nombre_usuario"
-                                            value="<?= htmlspecialchars($_SESSION['usuario_nombre']); ?>" readonly>
+                                            value="<?= $_SESSION['usuario_nombre']; ?>" readonly>
                                     </div>
                                 </div>
                                 <div class="col-md-6">

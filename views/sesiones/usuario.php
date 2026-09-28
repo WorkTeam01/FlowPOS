@@ -86,7 +86,7 @@ $estadoUsuario = $usuario['estado'] ?? 1;
                 <div class="card card-outline card-info">
                     <div class="card-header">
                         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center">
-                            <h2 class="card-title h3 mb-2 mb-sm-0"><?= htmlspecialchars($nombreCompleto); ?></h2>
+                            <h2 class="card-title h3 mb-2 mb-sm-0"><?= $nombreCompleto; ?></h2>
                             <div class="card-tools">
                                 <a href="<?= $URL; ?>views/sesiones/index.php" class="btn btn-secondary btn-sm me-2">
                                     <i class="fas fa-arrow-left"></i> Volver
@@ -94,7 +94,7 @@ $estadoUsuario = $usuario['estado'] ?? 1;
                                 <?php if ($puedeCerrar && $totalActivas > 0) : ?>
                                     <button type="button" class="btn btn-danger btn-sm me-2 btn-cerrar-todas"
                                         data-id="<?= (int) $id; ?>"
-                                        data-nombre="<?= htmlspecialchars($nombreCompleto); ?>">
+                                        data-nombre="<?= $nombreCompleto; ?>">
                                         <i class="fas fa-power-off"></i> Cerrar todas las sesiones (<?= $totalActivas; ?>)
                                     </button>
                                 <?php endif; ?>
@@ -106,12 +106,12 @@ $estadoUsuario = $usuario['estado'] ?? 1;
                     </div>
                     <div class="card-body" style="display: block;">
                         <div class="user-block">
-                            <img class="img-circle img-bordered-sm" src="<?= $URL; ?>public/uploads/usuarios/<?= $imagen ?: 'user_default.jpg'; ?>" alt="Foto de <?= htmlspecialchars($nombreCompleto); ?>">
+                            <img class="img-circle img-bordered-sm" src="<?= $URL; ?>public/uploads/usuarios/<?= $imagen ?: 'user_default.jpg'; ?>" alt="Foto de <?= $nombreCompleto; ?>">
                             <span class="username">
-                                <?= htmlspecialchars($correo !== '' ? $correo : 'Sin correo registrado'); ?>
+                                <?= $correo !== '' ? $correo : 'Sin correo registrado'; ?>
                             </span>
                             <span class="description">
-                                <?= htmlspecialchars($cargo); ?>
+                                <?= $cargo; ?>
                                 <span class="badge badge-<?= $estadoUsuario == 1 ? 'success' : 'danger'; ?>">
                                     <?= $estadoUsuario == 1 ? 'Usuario activo' : 'Usuario inactivo'; ?>
                                 </span>
@@ -230,9 +230,9 @@ $estadoUsuario = $usuario['estado'] ?? 1;
                                                     <?php if ($puedeCerrar) : ?>
                                                         <button type="button" class="btn btn-danger btn-sm btn-cerrar-sesion"
                                                             data-id="<?= $sesion['idsesion']; ?>"
-                                                            data-usuario="<?= htmlspecialchars($nombreCompleto); ?>"
+                                                            data-usuario="<?= $nombreCompleto; ?>"
                                                             data-toggle="tooltip" title="Cerrar esta sesión"
-                                                            aria-label="Cerrar sesión de <?= htmlspecialchars($nombreCompleto); ?>">
+                                                            aria-label="Cerrar sesión de <?= $nombreCompleto; ?>">
                                                             <i class="fas fa-power-off"></i>
                                                         </button>
                                                     <?php else : ?>

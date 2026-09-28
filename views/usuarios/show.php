@@ -267,7 +267,7 @@ $esAdmin = $authService->esAdministrador($usuario['idusuario']);
                                     <?php else: ?>
                                         <div class="col-12">
                                             <div class="alert alert-secondary mb-3">
-                                                <i class="fas fa-info-circle"></i> Permisos heredados del rol <strong><?= htmlspecialchars($usuario['cargo'] ?? '') ?></strong>.
+                                                <i class="fas fa-info-circle"></i> Permisos heredados del rol <strong><?= $usuario['cargo'] ?? '' ?></strong>.
                                             </div>
                                         </div>
                                         <?php foreach ($todosLosPermisos as $permiso): ?>

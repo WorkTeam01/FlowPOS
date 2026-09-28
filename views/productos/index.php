@@ -87,9 +87,9 @@ $productos = $controller->index();
                                 ?>
                                     <tr>
                                         <td><?= $contador++; ?></td>
-                                        <td><?= htmlspecialchars($producto['codigo'] ?? 'N/A'); ?></td>
-                                        <td><?= htmlspecialchars($producto['nombre']); ?></td>
-                                        <td><?= htmlspecialchars($producto['categoria_nombre']); ?></td>
+                                        <td><?= $producto['codigo'] ?? 'N/A'; ?></td>
+                                        <td><?= $producto['nombre']; ?></td>
+                                        <td><?= $producto['categoria_nombre']; ?></td>
                                         <td class="text-center">
                                             <?php if (!empty($producto['imagen'])): ?>
                                                 <img src="<?= $URL; ?>public/uploads/productos/<?= $producto['imagen']; ?>" loading="lazy" alt="Imagen" class="img-thumbnail" width="50">
@@ -122,7 +122,7 @@ $productos = $controller->index();
                                                 <button type="button" class="btn <?= $clase_boton_estado; ?> btn-sm btn-cambiar-estado"
                                                     data-id="<?= $producto['idproducto']; ?>"
                                                     data-estado="<?= $estado_actual; ?>"
-                                                    data-nombre="<?= htmlspecialchars($producto['nombre']); ?>"
+                                                    data-nombre="<?= $producto['nombre']; ?>"
                                                     data-toggle="tooltip" title="<?= $texto_boton_estado; ?>">
                                                     <i class="fas <?= $icono_boton_estado; ?>"></i>
                                                 </button>
