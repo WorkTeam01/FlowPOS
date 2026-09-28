@@ -247,15 +247,6 @@ function verifyCSRFToken($token)
 }
 
 /**
- * Regenerar el token CSRF (útil después de usarlo)
- */
-function regenerateCSRFToken()
-{
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-    return $_SESSION['csrf_token'];
-}
-
-/**
  * Generar el meta tag con el token CSRF para que el JS lo lea en peticiones AJAX
  *
  * @return string Tag <meta> con el token

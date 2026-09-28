@@ -110,20 +110,6 @@ class Conexion
     }
 
     /**
-     * Ejecuta una consulta SQL y devuelve el resultado
-     * 
-     * @param string $sql Consulta SQL a ejecutar
-     * @param array $params Parámetros para la consulta preparada
-     * @return PDOStatement Resultado de la consulta
-     */
-    public function query($sql, $params = [])
-    {
-        $stmt = $this->connection->prepare($sql);
-        $stmt->execute($params);
-        return $stmt;
-    }
-
-    /**
      * Convierte el nombre de zona horaria a formato de offset para MariaDB
      * 
      * @param string $timezone Nombre de la zona horaria (ej. America/La_Paz)

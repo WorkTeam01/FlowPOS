@@ -94,8 +94,7 @@ class AuthorizationService
      * Verifica si un usuario tiene un permiso específico
      *
      * Los permisos se resuelven por el rol del usuario (rolpermiso), no por
-     * asignación individual — permisousuario queda deprecado desde la fase 5
-     * del RBAC (docs/plan-rbac-permisos.md).
+     * asignación individual a cada cuenta.
      *
      * @param int $idusuario ID del usuario
      * @param int $idpermiso ID del permiso a verificar
@@ -157,9 +156,7 @@ class AuthorizationService
 
     /**
      * Verifica si un usuario es administrador (rol.es_admin), con memo-cache
-     * por request. Reemplaza la comparación de string sobre usuarios.cargo
-     * (fase 5 del RBAC, docs/plan-rbac-permisos.md) — desacopla el bypass
-     * total de permisos del nombre del rol.
+     * por request. Desacopla el bypass total de permisos del nombre del rol.
      *
      * @param int $idusuario ID del usuario
      * @return bool True si es administrador, False en caso contrario
@@ -190,8 +187,7 @@ class AuthorizationService
 
     /**
      * Obtiene todos los permisos de un usuario, resueltos por su rol
-     * (rolpermiso) — no por asignación individual (permisousuario, deprecado
-     * desde la fase 5 del RBAC).
+     * (rolpermiso) — FlowPOS no guarda permisos por cuenta individual.
      *
      * @param int $idusuario ID del usuario
      * @return array Lista de permisos
@@ -226,85 +222,6 @@ class AuthorizationService
             // Registrar error
             error_log('Error al obtener permisos: ' . $e->getMessage());
             return [];
-        }
-    }
-
-    /**
-     * Asigna un permiso a un usuario
-     * 
-     * @param int $idusuario ID del usuario
-     * @param int $idpermiso ID del permiso
-     * @return bool True si se asignó correctamente, False en caso contrario
-      *
-     * @deprecated Fase 5 del RBAC (docs/plan-rbac-permisos.md): los permisos
-     * se administran por rol (rolpermiso), no por usuario individual.
-     * permisousuario queda sin lectores activos en el sistema.
-     */
-    public function asignarPermiso($idusuario, $idpermiso)
-    {
-        try {
-            // Verificar si ya existe la asignación
-            $query = "SELECT COUNT(*) FROM permisousuario 
-                     WHERE idusuario = :idusuario AND idpermiso = :idpermiso";
-            $stmt = $this->conexion->prepare($query);
-            $stmt->bindParam(':idusuario', $idusuario, PDO::PARAM_INT);
-            $stmt->bindParam(':idpermiso', $idpermiso, PDO::PARAM_INT);
-            $stmt->execute();
-
-            if ($stmt->fetchColumn() > 0) {
-                // Ya existe, no hacer nada
-                return true;
-            } else {
-                // No existe, crear nueva asignación
-                $query = "INSERT INTO permisousuario (idpermiso, idusuario) 
-                         VALUES (:idpermiso, :idusuario)";
-                $stmt = $this->conexion->prepare($query);
-                $stmt->bindParam(':idusuario', $idusuario, PDO::PARAM_INT);
-                $stmt->bindParam(':idpermiso', $idpermiso, PDO::PARAM_INT);
-                return $stmt->execute();
-            }
-        } catch (PDOException $e) {
-            error_log('Error al asignar permiso: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Revoca un permiso a un usuario
-     * 
-     * @param int $idusuario ID del usuario
-     * @param int $idpermiso ID del permiso
-     * @return bool True si se revocó correctamente, False en caso contrario
-      *
-     * @deprecated Fase 5 del RBAC (docs/plan-rbac-permisos.md): los permisos
-     * se administran por rol (rolpermiso), no por usuario individual.
-     * permisousuario queda sin lectores activos en el sistema.
-     */
-    public function revocarPermiso($idusuario, $idpermiso)
-    {
-        try {
-            // Verificar si existe la asignación
-            $query = "SELECT COUNT(*) FROM permisousuario 
-                     WHERE idusuario = :idusuario AND idpermiso = :idpermiso";
-            $stmt = $this->conexion->prepare($query);
-            $stmt->bindParam(':idusuario', $idusuario, PDO::PARAM_INT);
-            $stmt->bindParam(':idpermiso', $idpermiso, PDO::PARAM_INT);
-            $stmt->execute();
-
-            if ($stmt->fetchColumn() > 0) {
-                // Si existe, eliminar la asignación
-                $query = "DELETE FROM permisousuario 
-                         WHERE idusuario = :idusuario AND idpermiso = :idpermiso";
-                $stmt = $this->conexion->prepare($query);
-                $stmt->bindParam(':idusuario', $idusuario, PDO::PARAM_INT);
-                $stmt->bindParam(':idpermiso', $idpermiso, PDO::PARAM_INT);
-                return $stmt->execute();
-            }
-
-            return true; // Si no existe, no hay que revocar nada
-        } catch (PDOException $e) {
-            error_log('Error al revocar permiso: ' . $e->getMessage());
-            return false;
         }
     }
 
@@ -394,108 +311,6 @@ class AuthorizationService
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             error_log('Error al obtener todos los permisos: ' . $e->getMessage());
-            return [];
-        }
-    }
-
-    /**
-     * Verifica si un usuario tiene asignado un permiso específico
-     * 
-     * @param int $idusuario ID del usuario
-     * @param int $idpermiso ID del permiso
-     * @return bool True si tiene el permiso asignado, False en caso contrario
-      *
-     * @deprecated Fase 5 del RBAC (docs/plan-rbac-permisos.md): los permisos
-     * se administran por rol (rolpermiso), no por usuario individual.
-     * permisousuario queda sin lectores activos en el sistema.
-     */
-    public function tienePermisoAsignado($idusuario, $idpermiso)
-    {
-        try {
-            $query = "SELECT COUNT(*) FROM permisousuario 
-                     WHERE idusuario = :idusuario AND idpermiso = :idpermiso";
-            $stmt = $this->conexion->prepare($query);
-            $stmt->bindParam(':idusuario', $idusuario, PDO::PARAM_INT);
-            $stmt->bindParam(':idpermiso', $idpermiso, PDO::PARAM_INT);
-            $stmt->execute();
-
-            return $stmt->fetchColumn() > 0;
-        } catch (PDOException $e) {
-            error_log('Error al verificar permiso asignado: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Actualiza los permisos de un usuario (elimina todos y asigna los nuevos)
-     * 
-     * @param int $idusuario ID del usuario
-     * @param array $permisos Lista de IDs de permisos a asignar
-     * @return bool True si se actualizaron correctamente, False en caso contrario
-      *
-     * @deprecated Fase 5 del RBAC (docs/plan-rbac-permisos.md): los permisos
-     * se administran por rol (rolpermiso), no por usuario individual.
-     * permisousuario queda sin lectores activos en el sistema.
-     */
-    public function actualizarPermisosUsuario($idusuario, $permisos)
-    {
-        try {
-            // Iniciar transacción
-            $this->conexion->beginTransaction();
-
-            // Eliminar todos los permisos actuales del usuario
-            $query = "DELETE FROM permisousuario WHERE idusuario = :idusuario";
-            $stmt = $this->conexion->prepare($query);
-            $stmt->bindParam(':idusuario', $idusuario, PDO::PARAM_INT);
-            $stmt->execute();
-
-            // Asignar los nuevos permisos
-            foreach ($permisos as $idpermiso) {
-                $query = "INSERT INTO permisousuario (idpermiso, idusuario) 
-                         VALUES (:idpermiso, :idusuario)";
-                $stmt = $this->conexion->prepare($query);
-                $stmt->bindParam(':idpermiso', $idpermiso, PDO::PARAM_INT);
-                $stmt->bindParam(':idusuario', $idusuario, PDO::PARAM_INT);
-                $stmt->execute();
-            }
-
-            // Confirmar transacción
-            $this->conexion->commit();
-            return true;
-        } catch (PDOException $e) {
-            // Revertir cambios en caso de error
-            $this->conexion->rollBack();
-            error_log('Error al actualizar permisos de usuario: ' . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Obtiene los permisos asignados a un usuario específico
-     * 
-     * @param int $idusuario ID del usuario
-     * @return array Lista de IDs de permisos asignados
-      *
-     * @deprecated Fase 5 del RBAC (docs/plan-rbac-permisos.md): los permisos
-     * se administran por rol (rolpermiso), no por usuario individual.
-     * permisousuario queda sin lectores activos en el sistema.
-     */
-    public function obtenerPermisosAsignados($idusuario)
-    {
-        try {
-            $query = "SELECT idpermiso FROM permisousuario WHERE idusuario = :idusuario";
-            $stmt = $this->conexion->prepare($query);
-            $stmt->bindParam(':idusuario', $idusuario, PDO::PARAM_INT);
-            $stmt->execute();
-
-            $permisos = [];
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $permisos[] = $row['idpermiso'];
-            }
-
-            return $permisos;
-        } catch (PDOException $e) {
-            error_log('Error al obtener permisos asignados: ' . $e->getMessage());
             return [];
         }
     }
