@@ -12,10 +12,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Verificar que el usuario esté autenticado (exige token de sesión válido)
-if (!isAuthenticated()) {
+// Aplicar las mismas reglas de corte que requireLogin() (token de revocación,
+// inactividad, IP/User-Agent), pero respondiendo JSON: una redirección aquí
+// dejaría al cliente con un parse error en silencio. El motivo de cierre se
+// registra igualmente en BD, para que el panel no muestre la sesión como activa.
+$corteSesion = motivoCorteSesion();
+if ($corteSesion !== null) {
+    http_response_code(401);
     header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'message' => 'Usuario no autenticado']);
+    echo json_encode(['success' => false, 'message' => $corteSesion]);
     exit;
 }
 

@@ -10,6 +10,7 @@
 
 // Incluir el servicio de imágenes
 require_once __DIR__ . '/../../services/ImagenService.php';
+require_once __DIR__ . '/../../services/SesionTokenService.php';
 require_once __DIR__ . '/../../models/Usuario.php';
 
 class PerfilController
@@ -146,6 +147,12 @@ class PerfilController
 
         // Actualizar la contraseña
         if ($this->modelo->actualizarClave($id, $nueva_clave)) {
+            // Cerrar todas las sesiones abiertas de este usuario, la actual
+            // incluida: una contraseña que cambió invalida cualquier sesión
+            // existente (el escenario es precisamente una sesión robada). El
+            // cliente ya vuelve a pedir inicio de sesión después del cambio.
+            (new SesionTokenService())->cerrarPorUsuario($id, SesionTokenService::MOTIVO_CAMBIO_CLAVE);
+
             return [
                 'success' => true,
                 'message' => 'Contraseña actualizada correctamente.'

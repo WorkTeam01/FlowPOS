@@ -11,6 +11,7 @@
 // Incluir el servicio de imágenes
 require_once __DIR__ . '/../../services/ImagenService.php';
 require_once __DIR__ . '/../../services/AuthorizationService.php';
+require_once __DIR__ . '/../../services/SesionTokenService.php';
 
 class UsuarioController
 {
@@ -331,6 +332,14 @@ class UsuarioController
 
             // Actualizar la contraseña
             $clave_actualizada = $this->modelo->actualizarClave($id, $clave);
+
+            if ($clave_actualizada) {
+                // Invalidar todas las sesiones abiertas de ESA cuenta (no de la
+                // actual, que es del administrador que ejecuta el cambio): con
+                // una clave nueva, cualquier sesión existente deja de ser
+                // confiable — mismo criterio que en el cambio de perfil propio.
+                (new SesionTokenService())->cerrarPorUsuario($id, SesionTokenService::MOTIVO_CAMBIO_CLAVE);
+            }
         }
 
         if ($actualizado && $clave_actualizada) {

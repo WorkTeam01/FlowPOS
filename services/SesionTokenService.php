@@ -30,6 +30,7 @@ class SesionTokenService
     const MOTIVO_ADMIN_FILA = 'admin_row';
     const MOTIVO_ADMIN_USUARIO = 'admin_user';
     const MOTIVO_MIGRACION = 'migration';
+    const MOTIVO_CAMBIO_CLAVE = 'password_change';
 
     /**
      * Conexión a la base de datos

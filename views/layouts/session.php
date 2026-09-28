@@ -127,19 +127,21 @@ function checkSessionSecurity()
 }
 
 /**
- * Requerir inicio de sesión para acceder a una página
+ * Aplica todas las reglas de corte de sesión vigentes y, si alguna salta,
+ * cierra la fila de auditoría correspondiente.
  *
- * @param string $redirect_url URL a la que redirigir si no hay sesión
+ * Es la única fuente de verdad de "¿esta sesión sigue siendo válida?": la
+ * usan tanto el gate de páginas (requireLogin) como los endpoints que
+ * responden JSON, donde redirigir rompería la respuesta. El motivo de cierre
+ * se calcula aquí para que ambos destinos se lleven el mismo, y la fila se
+ * cierra antes de que nadie destruya la sesión PHP (sin el token ya no se
+ * podría identificar).
+ *
+ * @return string|null null si la sesión sigue válida, o el mensaje para el usuario
  */
-function requireLogin($redirect_url = null)
+function motivoCorteSesion()
 {
-    global $URL;
-
     require_once __DIR__ . '/../../services/SesionTokenService.php';
-
-    if (!$redirect_url) {
-        $redirect_url = $URL . 'views/login/login.php';
-    }
 
     $motivoCierre = null;
     $mensaje = null;
@@ -166,18 +168,36 @@ function requireLogin($redirect_url = null)
     }
 
     if ($mensaje === null) {
-        return;
+        return null;
     }
 
-    // Cerrar la fila de auditoría ANTES de destruir la sesión PHP: una vez
-    // destruida ya no queda el token con el que identificarla. Sin token en
-    // la sesión (caso 'ausente') el cierre por hash no aplica y se usa el
-    // ID de fila guardado al registrar.
     if ($motivoCierre !== null) {
         $tokenService = new SesionTokenService();
         if (!$tokenService->cerrarPorToken($motivoCierre) && isset($_SESSION[SesionTokenService::CLAVE_FILA])) {
             $tokenService->cerrarPorId((int) $_SESSION[SesionTokenService::CLAVE_FILA], $motivoCierre);
         }
+    }
+
+    return $mensaje;
+}
+
+/**
+ * Requerir inicio de sesión para acceder a una página
+ *
+ * @param string $redirect_url URL a la que redirigir si no hay sesión
+ */
+function requireLogin($redirect_url = null)
+{
+    global $URL;
+
+    if (!$redirect_url) {
+        $redirect_url = $URL . 'views/login/login.php';
+    }
+
+    $mensaje = motivoCorteSesion();
+
+    if ($mensaje === null) {
+        return;
     }
 
     // Abrir una sesión nueva solo para el mensaje flash: escribirlo sobre una

@@ -205,7 +205,7 @@ CREATE TABLE sesionusuario (
   navegador VARCHAR(255) DEFAULT NULL,
   estado tinyint(1) DEFAULT 1, -- 1=Conectado, 0=Desconectado
   token_hash char(64) DEFAULT NULL, -- SHA-256 del token de revocación (el token en claro vive solo en la sesión PHP)
-  motivo_cierre varchar(20) DEFAULT NULL, -- logout|timeout|security|admin_row|admin_user|migration
+  motivo_cierre varchar(20) DEFAULT NULL, -- logout|timeout|security|admin_row|admin_user|migration|password_change
   FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario),
   UNIQUE KEY uq_sesionusuario_token (token_hash),
   KEY idx_sesionusuario_usuario_estado (idusuario, estado)
