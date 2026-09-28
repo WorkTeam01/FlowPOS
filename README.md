@@ -116,7 +116,7 @@ Credenciales demo (si importaste `seed.sql`):
 ### 5. Permisos de escritura para uploads
 
 ```bash
-chmod 755 public/uploads/ public/uploads/productos/ public/uploads/clientes/ public/uploads/usuarios/
+chmod 777 public/uploads/ public/uploads/productos/ public/uploads/usuarios/
 ```
 
 ### 6. Iniciar servicios y abrir la app

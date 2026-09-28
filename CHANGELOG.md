@@ -5,6 +5,38 @@ Todos los cambios importantes de este proyecto se documentan en este archivo.
 Este formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.2.8] - 2026-09-28
+
+### Added
+
+- **`exportarTextoPlano()` en `public/js/core/common-utils.js`**: normaliza una celda de DataTables (borra etiquetas, colapsa espacios, decodifica entidades) antes de exportarla. Es obligatorio como primer paso de toda función `exportOptions.format.body` — declarar ese callback **desactiva** el `stripHtml` por defecto de DataTables, así que sin este filtro cualquier badge/imagen/link de la celda sale como HTML crudo en Excel/PDF. Los 14 `format.body` del proyecto ahora lo usan.
+- **`motivoCorteSesion()` en `views/layouts/session.php`**: helper único que cierra la fila de auditoría con el motivo correcto (`timeout`/`security`/`logout`/`password_change`) y devuelve el string de flash. Lo usan `requireLogin()` y el cambio de clave del perfil; un corte de sesión sin él dejaba `motivo_cierre` en `NULL`.
+- **`public/uploads/.htaccess`**: bloquea la ejecución de scripts en los directorios de subida (`<FilesMatch>` sobre extensiones ejecutables + `php_flag engine off`).
+
+### Changed
+
+- **Eliminado el doble escape de XSS en 18 vistas (63 llamadas de `htmlspecialchars()` redundantes)**: el patrón "escape-at-storage" de `sanitizarDatos()` ya escapa al guardar, así que las vistas devolvían texto como `A &amp;amp; B` en lugar de `A &amp; B`. Credenciales de escritura, nombres, descripciones, direcciones y observaciones en categorías, usuarios, sesiones, sucursales, permisos, dashboards, productos, ventas, compras y empresa.
+- **`AuthorizationService` sin código muerto**: borrados los 5 métodos `@deprecated` (`obtener*PorUsuario`) que seguían leyendo la tabla `permisousuario`, eliminada en la migración a RBAC. Sin call sites rotos.
+- **Código muerto eliminado**: `regenerateCSRFToken()` (`views/layouts/session.php`) y `Conexion::query()` (`config/conexion.php`), ambos sin llamadores.
+- **Exportaciones de DataTables corregidas en 11 módulos**: `clientes` dejó de exportar la columna "Acciones"; `productos` dejó de exportar "Imagen" y ahora sí exporta "Estado" (`[0,1,2,3,5,6,7]`). Verificado empíricamente: 24/24 exportaciones (CSV + Excel × 12 módulos) sin HTML crudo ni entidades.
+- **Permisos de subida corregidos en docs**: `chmod 777 public/uploads/ public/uploads/productos/ public/uploads/usuarios/` (Apache corre como `daemon`); se quitó la referencia a `public/uploads/clientes/`, directorio inexistente.
+- **38 archivos migrados de CRLF a LF** (normalización de fin de línea, sin cambios de contenido).
+- **`APP_VERSION` subido a `1.2.8`** (`.env` y `.env.example`).
+
+### Fixed
+
+- **`Producto::getUltimosMovimientos()` devolvía siempre `[]`**: la consulta hacía `JOIN` sobre la tabla inexistente `persona` (la real es `cliente`), usaba `v.fechaventa` (la real es `fechacreacion`) y referenciaba `bano`/`servicio_bano`, tampoco existentes — la tabla "Últimos Movimientos" del detalle de producto salía vacía sin error en logs. Corregido a `cliente` + `fechacreacion`, con la rama de baños aislada en su propio `try/catch`.
+- **HTML crudo en exportaciones Excel**: `categorias` (badge "N productos"), `clientes` (badge de Estado) y `productos` (`<img>` de imagen + `<i>` de stock) volcaban el marcado literal al archivo porque su `format.body` no cubría esas columnas.
+- **Imagen de perfil/producto borrada antes de confirmar el guardado**: en los 4 flujos con subida de imagen (`PerfilController`, `UsuarioController::actualizar()`, `UsuarioController::actualizarPerfil()`, `ProductoController::actualizar()`) la imagen vieja ahora se elimina solo después de un `UPDATE` exitoso, y la nueva se descarta si el guardado falla — antes un fallo de base de datos dejaba al usuario con el archivo viejo ya borrado. `producto_default.png` (asset compartido) no se borra.
+- **Cambio de clave cierra la sesión de auditoría**: `PerfilController::cambiarClave()` y el reset desde `UsuarioController::actualizar()` llaman a `SesionTokenService::cerrarPorUsuario()` con el motivo `password_change` (nueva constante, comentario de `schema.sql` actualizado).
+- **`ajax_cambiar_clave_perfil.php` ahora responde 401 + JSON** al fallar el corte de sesión, en vez de seguir la rama de redirect de `isAuthenticated()` que rompía la llamada AJAX.
+- **`views/ventas/recibo.php` incluye TCPDF vía `__DIR__`**, no con ruta relativa al CWD del script.
+
+### Note
+
+- Verificación de exportaciones por Blob (wrapper sobre `URL.createObjectURL` + lectura de `xl/worksheets/sheet1.xml` y del CSV) en sesión de navegador con caché fría.
+- Dos hallazgos descartados por análisis: `Usuario.cargo` se resuelve como alias SQL sobre `rol.nombre` en `Usuario::getById()` (no depende de la columna `cargo`, ya eliminada) y el `min-height` de `.select2-container` en `dashboard.css` no entra en conflicto con `common.css`.
+
 ## [1.2.7] - 2026-09-25
 
 ### Added
