@@ -103,15 +103,15 @@ $(document).ready(function () {
                     format: {
                         body: function (data, row, column, node) {
                             if (column === 7) { // Columna de estado
-                                return $(node).find('span').text();
+                                return exportarTextoPlano($(node).find('span').text());
                             }
                             if (column === 5) { // Columna de total
                                 return data.replace((window.APP.currency || 'Bs') + '.', '').trim();
                             }
                             if (column === 6) { // Columna de método de pago
-                                return $(node).find('span').text();
+                                return exportarTextoPlano($(node).find('span').text());
                             }
-                            return data;
+                            return exportarTextoPlano(data);
                         }
                     }
                 }
@@ -131,9 +131,9 @@ $(document).ready(function () {
                     format: {
                         body: function (data, row, column, node) {
                             if (column === 7 || column === 6) { // Columna de estado y método de pago
-                                return $(node).find('span').text();
+                                return exportarTextoPlano($(node).find('span').text());
                             }
-                            return data;
+                            return exportarTextoPlano(data);
                         }
                     }
                 },

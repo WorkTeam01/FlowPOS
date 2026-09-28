@@ -277,6 +277,31 @@ function formatCurrency(amount, decimals = 2) {
 }
 
 /**
+ * Normaliza una celda de DataTables para exportarla (CSV, Excel, PDF, impresión).
+ *
+ * Al declarar `exportOptions.format.body` en un botón de export se desactiva el
+ * `stripHtml` por defecto de DataTables, así que los badges, íconos e imágenes de
+ * la celda saldrían como HTML crudo en el archivo. Toda función `format.body`
+ * debe pasar `data` por esta función antes de aplicar sus reglas por columna.
+ *
+ * @param {*} data - Valor crudo de la celda
+ * @returns {string} Texto plano sin etiquetas, sin espacios sobrantes y con entidades decodificadas
+ */
+function exportarTextoPlano(data) {
+    if (data === null || data === undefined) {
+        return '';
+    }
+    let texto = String(data);
+    texto = texto.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+    texto = texto.replace(/<!--.*?-->/g, '');
+    texto = texto.replace(/<[^>]*>/g, ' ');
+    texto = texto.replace(/\s+/g, ' ').trim();
+    const decodificador = document.createElement('textarea');
+    decodificador.innerHTML = texto;
+    return decodificador.value;
+}
+
+/**
  * Muestra una notificación toast usando SweetAlert2
  * 
  * @param {string} message - Mensaje a mostrar

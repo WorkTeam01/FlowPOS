@@ -16,9 +16,9 @@ $(document).ready(function () {
                         "body": function (data, row, column, node) {
                             // Formatear estado para copiar el texto del badge
                             if (column === 5) {
-                                return $(node).find('span').text();
+                                return exportarTextoPlano($(node).find('span').text());
                             }
-                            return data;
+                            return exportarTextoPlano(data);
                         }
                     }
                 }
@@ -33,10 +33,10 @@ $(document).ready(function () {
                         "body": function (data, row, column, node) {
                             // Formatear estado para PDF
                             if (column === 5) {
-                                const estado = $(node).find('span').text();
+                                const estado = exportarTextoPlano($(node).find('span').text());
                                 return estado === 'Activa' ? 'Activa (1)' : 'Cancelada (0)';
                             }
-                            return data;
+                            return exportarTextoPlano(data);
                         }
                     }
                 },
@@ -125,10 +125,10 @@ $(document).ready(function () {
                             }
                             // Formatear estado
                             if (column === 5) {
-                                const estado = $(node).find('span').text();
+                                const estado = exportarTextoPlano($(node).find('span').text());
                                 return estado === 'Activa' ? '1' : '0';
                             }
-                            return data;
+                            return exportarTextoPlano(data);
                         }
                     }
                 }
@@ -141,10 +141,10 @@ $(document).ready(function () {
                         "body": function (data, row, column, node) {
                             // Formatear estado para CSV
                             if (column === 5) {
-                                const estado = $(node).find('span').text();
+                                const estado = exportarTextoPlano($(node).find('span').text());
                                 return estado === 'Activa' ? '1' : '0';
                             }
-                            return data;
+                            return exportarTextoPlano(data);
                         }
                     }
                 }
@@ -159,9 +159,9 @@ $(document).ready(function () {
                         "body": function (data, row, column, node) {
                             // Formatear estado para impresión
                             if (column === 5) {
-                                return $(node).find('span').text();
+                                return exportarTextoPlano($(node).find('span').text());
                             }
-                            return data;
+                            return exportarTextoPlano(data);
                         }
                     }
                 },

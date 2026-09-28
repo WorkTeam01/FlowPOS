@@ -98,9 +98,9 @@ $(document).ready(function () {
                                 var roles = $(node).find('.badge').map(function () {
                                     return $(this).text().trim();
                                 }).get();
-                                return roles.length ? roles.join(', ') : $(node).text().trim();
+                                return roles.length ? roles.join(', ') : exportarTextoPlano($(node).text());
                             }
-                            return data;
+                            return exportarTextoPlano(data);
                         }
                     }
                 }
@@ -123,9 +123,9 @@ $(document).ready(function () {
                                 var roles = $(node).find('.badge').map(function () {
                                     return $(this).text().trim();
                                 }).get();
-                                return roles.length ? roles.join(', ') : $(node).text().trim();
+                                return roles.length ? roles.join(', ') : exportarTextoPlano($(node).text());
                             }
-                            return data;
+                            return exportarTextoPlano(data);
                         }
                     }
                 },

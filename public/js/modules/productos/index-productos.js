@@ -11,7 +11,7 @@ $(document).ready(function () {
                 "text": 'Copiar',
                 "extend": 'copy',
                 "exportOptions": {
-                    "columns": [0, 1, 2, 3, 4, 5, 6]
+                    "columns": [0, 1, 2, 3, 5, 6, 7]
                 }
             }, {
                 "extend": 'pdf',
@@ -19,7 +19,7 @@ $(document).ready(function () {
                 "filename": 'inventario_productos_' + new Date().toISOString().slice(0, 10),
                 "pageSize": 'LETTER',
                 "exportOptions": {
-                    "columns": [0, 1, 2, 3, 4, 5, 6]
+                    "columns": [0, 1, 2, 3, 5, 6, 7]
                 },
                 "customize": function (doc) {
                     // Estilo básico
@@ -97,18 +97,14 @@ $(document).ready(function () {
                 "messageTop": 'Registro de productos en inventario',
                 "messageBottom": 'Documento generado el ' + new Date().toLocaleDateString('es-BO'),
                 "exportOptions": {
-                    "columns": [0, 1, 2, 3, 4, 5, 6],
+                    "columns": [0, 1, 2, 3, 5, 6, 7],
                     "format": {
                         "body": function (data, row, column, node) {
-                            // Formatear columna de estado
-                            if (column === 7) {
-                                return $(node).find('span').text();
+                            const texto = exportarTextoPlano(data);
+                            if (column === 4) { // Precio de venta: solo el número
+                                return texto.replace(/[^\d.-]/g, '');
                             }
-                            // Formatear columna de precio
-                            if (column === 5) {
-                                return data.replace(/[^\d.-]/g, '');
-                            }
-                            return data;
+                            return texto;
                         }
                     }
                 }
@@ -116,7 +112,7 @@ $(document).ready(function () {
                 "extend": 'csv',
                 "text": 'CSV',
                 "exportOptions": {
-                    "columns": [0, 1, 2, 3, 4, 5, 6]
+                    "columns": [0, 1, 2, 3, 5, 6, 7]
                 }
             }, {
                 "extend": 'print',
@@ -124,7 +120,7 @@ $(document).ready(function () {
                 "title": 'Inventario de Productos - ' + window.APP.name + '',
                 "messageTop": 'Reporte generado el ' + new Date().toLocaleDateString('es-BO'),
                 "exportOptions": {
-                    "columns": [0, 1, 2, 3, 4, 5, 6]
+                    "columns": [0, 1, 2, 3, 5, 6, 7]
                 },
                 "customize": function (win) {
                     $(win.document.body).find('table')

@@ -11,7 +11,7 @@ $(document).ready(function () {
                 text: 'Copiar',
                 extend: 'copy',
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5]
+                    columns: [0, 1, 2, 3, 4]
                 }
             }, {
                 extend: 'pdf',
@@ -19,7 +19,7 @@ $(document).ready(function () {
                 filename: 'clientes_registrados_' + new Date().toISOString().slice(0, 10),
                 pageSize: 'LETTER',
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5]
+                    columns: [0, 1, 2, 3, 4]
                 },
                 customize: function (doc) {
                     // Estilo básico
@@ -89,13 +89,10 @@ $(document).ready(function () {
                 messageTop: 'Registro de clientes del sistema',
                 messageBottom: 'Documento generado el ' + new Date().toLocaleDateString('es-BO'),
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5],
+                    columns: [0, 1, 2, 3, 4],
                     format: {
                         body: function (data, row, column, node) {
-                            if (column === 6) { // Columna de estado
-                                return $(node).find('span').text();
-                            }
-                            return data;
+                            return exportarTextoPlano(data);
                         }
                     }
                 }
@@ -103,7 +100,7 @@ $(document).ready(function () {
                 extend: 'csv',
                 text: 'CSV',
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4, 5]
+                    columns: [0, 1, 2, 3, 4]
                 }
             }, {
                 extend: 'print',

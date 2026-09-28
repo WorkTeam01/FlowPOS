@@ -4,7 +4,7 @@ $(document).ready(function () {
         if (column === 2 || column === 4 || column === 5 || column === 6) {
             return $(node).text().replace(/\s+/g, ' ').trim();
         }
-        return data;
+        return exportarTextoPlano(data);
     };
 
     // Inicializar DataTable

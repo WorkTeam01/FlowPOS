@@ -107,9 +107,9 @@ $(document).ready(function () {
                     format: {
                         body: function (data, row, column, node) {
                             if (column === 3 || column === 4) {
-                                return $(node).find('span').text();
+                                return exportarTextoPlano($(node).find('span').text());
                             }
-                            return data;
+                            return exportarTextoPlano(data);
                         }
                     }
                 }

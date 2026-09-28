@@ -103,10 +103,7 @@ $(document).ready(function () {
                     columns: [0, 1, 2, 3],
                     format: {
                         body: function (data, row, column, node) {
-                            if (column === 3) {
-                                return $(node).find('span').text();
-                            }
-                            return data;
+                            return exportarTextoPlano(data);
                         }
                     }
                 }
