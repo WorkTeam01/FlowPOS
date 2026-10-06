@@ -73,6 +73,9 @@ _______________
 - Todo endpoint `controllers/**/*_ajax.php` y toda acción de escritura verifica permiso (`tienePermisoNombre() || esAdministrador()`) además de `requireLogin()` y `requireCSRF()`: ocultar el botón en la vista no protege del POST directo
 - Operaciones que revierten stock (anular venta, cancelar compra) bloquean la fila (`SELECT … FOR UPDATE`) dentro de la transacción; el stock se ajusta con `stock = stock ± n`, nunca con un valor absoluto leído antes. El descuento de venta es POR UNIDAD (`cantidad × (precio − descuento)`) en formulario, servidor, recibo y dashboards
 - El `.htaccess` de la raíz bloquea `.env`, `.git/`, `database/`, `docs/` y `*.md`/`*.sql`: no quitarlo ni desplegar sin él (verificar con `curl -I .../.env` → 403)
+- Errores de BD: nunca `'Error …: ' . getLastError()` hacia el usuario — usar `mensajeErrorSeguro('Error al …', $this->modelo->getLastError())` (el detalle técnico va a `error_log`); el login no distingue usuario inexistente de contraseña incorrecta; texto de BD con `textContent` → `textoDesdeBD()`, nunca en `innerHTML`
+- Ventas por POST directo: el servidor valida que el cliente exista y los productos estén activos, y calcula él mismo el total, el descuento y el cambio; no confiar en nada que venga del formulario
+- No dejar código muerto: toda función nueva debe tener un llamador, y al reemplazar un flujo se elimina el anterior (`grep` de los llamadores antes de borrar)
 
 [Formato de salida]
 _______________
@@ -139,6 +142,7 @@ Descripción: [criterios de aceptación]
 - Si cambia funcionalidad visible: actualizar `CHANGELOG.md` en `Unreleased`
 - XSS con escape-at-storage: el escape de `sanitizarDatos()` solo vale para nodos de texto. Un valor en un atributo `data-*` que el JS lee llega DECODIFICADO — en SweetAlert2 usar `titleText`/`text` (nunca `title`/`html` con datos de usuario) y nunca `.html()`/`innerHTML` con ese valor; el botón print de DataTables inyecta con `innerHTML` (`common-utils.js` ya escapa el resultado de `format.body`)
 - Todo endpoint `controllers/**/*_ajax.php` y toda acción de escritura verifica permiso (`tienePermisoNombre() || esAdministrador()`) además de `requireLogin()` y `requireCSRF()`: ocultar el botón en la vista no protege del POST directo
+- Errores de BD: nunca `'Error …: ' . getLastError()` hacia el usuario — usar `mensajeErrorSeguro('Error al …', $this->modelo->getLastError())` (el detalle técnico va a `error_log`); el login no distingue usuario inexistente de contraseña incorrecta; texto de BD con `textContent` → `textoDesdeBD()`, nunca en `innerHTML`
 
 [Formato de salida]
 Devuelve en este orden:
@@ -227,6 +231,8 @@ Evalúa específicamente:
 - XSS por `data-*`: un `data-nombre` que llega a `Swal.fire({title})`, `.html()` o `innerHTML` se decodifica y ejecuta aunque se haya guardado escapado — exigir `titleText`/`text`; si el diff QUITA un `htmlspecialchars()`, rastrear también los consumidores JS del valor
 - Endpoints de escritura (`*_ajax.php` incluidos): permiso del módulo verificado en el servidor, no solo en la vista
 - Stock y concurrencia: anulaciones/cancelaciones con `FOR UPDATE`, ajustes de stock relativos; descuento por unidad
+- Errores de BD hacia el usuario solo vía `mensajeErrorSeguro()`; login sin enumeración de usuarios; no dejar código muerto ni `error_log` de depuración
+- Cuentas: no se puede desactivar ni quitar el rol al último administrador activo
 - Modales con listas grandes: lazy render en vez de renderizar todo de una vez
 - Si el diff toca `common.css` / assets versionados: verificar que `APP_VERSION` se subió en el mismo cambio
 - Casos edge que podrían fallar en producción
@@ -301,7 +307,7 @@ Stack: PHP 7.4+, MariaDB/MySQL, Apache mod_rewrite, JavaScript vanilla ES6+,
 Versionado: `APP_VERSION` en `.env` + `CHANGELOG.md`.
 
 BD existente relevante:
-- empresa (id, nombre, nit, direccion, telefono, logo, ...)
+- empresa (id, nombre, nit, direccion, telefono, imagen, ...) — el logo se sube con ImagenService a public/uploads/empresas/
 - sucursal (id, idempresa FK, nombre, direccion, ...)
 - usuarios (id, nombre, apellido, email, password, idrol FK, idsucursal FK, foto, estado)
 - rol (id, nombre, es_admin, es_sistema, dashboard, estado) — roles del sistema
@@ -346,6 +352,7 @@ Criterios de aceptación:
 - Tocar `common.css` / assets versionados obliga a subir `APP_VERSION` en el mismo cambio
 - XSS con escape-at-storage: el escape de `sanitizarDatos()` solo vale para nodos de texto. Un valor en un atributo `data-*` que el JS lee llega DECODIFICADO — en SweetAlert2 usar `titleText`/`text` (nunca `title`/`html` con datos de usuario) y nunca `.html()`/`innerHTML` con ese valor; el botón print de DataTables inyecta con `innerHTML` (`common-utils.js` ya escapa el resultado de `format.body`)
 - Todo endpoint `controllers/**/*_ajax.php` y toda acción de escritura verifica permiso (`tienePermisoNombre() || esAdministrador()`) además de `requireLogin()` y `requireCSRF()`: ocultar el botón en la vista no protege del POST directo
+- Errores de BD: nunca `'Error …: ' . getLastError()` hacia el usuario — usar `mensajeErrorSeguro('Error al …', $this->modelo->getLastError())` (el detalle técnico va a `error_log`); el login no distingue usuario inexistente de contraseña incorrecta; texto de BD con `textContent` → `textoDesdeBD()`, nunca en `innerHTML`
 - Si se agregan cambios funcionales: documentarlos en `CHANGELOG.md` (`Unreleased`)
 
 [Formato de salida]
@@ -363,5 +370,5 @@ Devuelve en este orden:
 
 ---
 
-_Última actualización: 2026-10-06_
+_Última actualización: 2026-10-06 (1.2.10)_
 _Mantener sincronizado con CLAUDE.md al hacer cambios de arquitectura._

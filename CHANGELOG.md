@@ -5,6 +5,34 @@ Todos los cambios importantes de este proyecto se documentan en este archivo.
 Este formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.2.10] - 2026-10-06
+
+### Security
+
+- **`ImagenService::eliminarImagen()` rechaza nombres con directorios** (`../`): el nombre sale de la BD y, antes de 1.2.9, `empresa.imagen` se guardaba desde el POST, así que una fila antigua podía apuntar fuera del directorio de subida.
+- **Login sin enumeración de usuarios**: correo inexistente, documento inexistente y contraseña incorrecta responden lo mismo ("Credenciales incorrectas"); "cuenta desactivada" solo se revela si la contraseña es correcta.
+- **Sin errores técnicos al usuario**: `mensajeErrorSeguro()` (`session.php`) reemplaza los 34 `'… : ' . getLastError()` de los controladores; el SQLSTATE/constraint va a `error_log` y solo se muestran los motivos de negocio. Los endpoints de dashboard dejan de devolver `$e->getMessage()`.
+- **El sistema no puede quedarse sin administradores**: no se puede desactivar ni quitar el rol al último administrador activo (`Usuario::contarOtrosAdministradoresActivos()`).
+- **`recibo.php` usa `requireLogin()`** (timeout, IP/User-Agent y revocación), no solo la bandera de sesión.
+- **Vistas `views/dashboard/*.php` exigen sesión** si se piden directamente.
+- **Flash de `common-utils.js` y `login.js` con `titleText`** (el mensaje ya no se interpreta como HTML).
+
+### Fixed
+
+- **Ventas por POST directo**: se rechazan clientes inexistentes y productos inactivos, y el cambio del efectivo lo calcula el servidor (`pagorecibido − monto`).
+- **Estadísticas de ventas y compras filtradas por usuario** para quien no es administrador (antes mostraban el total global junto a un listado filtrado).
+- **Estado en la edición de categorías y sucursales**: el modal lo ofrecía pero no se guardaba; ahora se aplica con la misma regla que el botón de desactivar (productos/usuarios asociados).
+- **Doble escape visible**: nombres y documentos en `create-venta.js` se decodifican con `textoDesdeBD()` antes de `textContent`; `dashboard_general.js` deja de escapar un dato ya escapado.
+- Quitado el `error_log` de depuración de `DashboardSupervisorController`.
+
+### Removed
+
+- Código muerto sin llamadores: `VentaController` (`guardara`, `generarTicket`, `obtenerPorRangoFechas`, `reportePorFechas`, `tienePagosMixtos`), `CompraController::obtenerPorRangoFechas`, `Venta::tienePagosMixtos`, `Producto` (`reducirStock`, `incrementarStock`, `verificarStock`, `getByNombre`), `ImagenService::redimensionarImagen`, `AuthController::showLoginForm`, `Usuario::obtenerEstadoPorCorreo`, `UsuarioController::actualizarPerfil`, `ClienteController::buscar` y `showToast()`.
+
+### Changed
+
+- **`APP_VERSION` subido a `1.2.10`** (`.env` y `.env.example`).
+
 ## [1.2.9] - 2026-10-06
 
 ### Security

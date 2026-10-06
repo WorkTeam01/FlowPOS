@@ -62,6 +62,8 @@ Se aceptan contribuciones en:
 - Mantén accesibilidad WCAG AA: `aria-label` en botones/íconos sin texto visible y en el botón de colapso de panel; mensajes de error enlazados a su campo (`aria-describedby` + `aria-invalid` + `invalid-feedback`); usa los overrides de contraste y de touch targets táctiles (44px) ya centralizados en `common.css` — no dupliques reglas por módulo.
 - Seguridad: los datos de usuario se guardan escapados (`sanitizarDatos()`), por lo que un valor leído de un atributo `data-*` llega decodificado. En SweetAlert2 usa `titleText`/`text` (nunca `title`/`html` con datos de usuario) y evita `.html()`/`innerHTML` con esos valores.
 - Todo endpoint de escritura (incluidos los `*_ajax.php`) debe verificar permiso en el servidor además de sesión y CSRF; ocultar el botón en la vista no basta.
+- No muestres errores técnicos al usuario: en los controladores usa `mensajeErrorSeguro()` en vez de concatenar `getLastError()`, y en el login no distingas "usuario inexistente" de "contraseña incorrecta".
+- No dejes código muerto ni `error_log` de depuración: borra lo que reemplazas, previa búsqueda de sus llamadores.
 - Tokens de colores de UI compartidos (SweetAlert2) van en `common.css :root` con `getComputedStyle()` en JS — no hardcodear hex en `Swal.fire()`.
 - Modales con listas de 100+ items: usar lazy render (20 por carga + "Cargar más") en vez de renderizar todo; combinar con debounce en el input de búsqueda.
 
@@ -84,10 +86,13 @@ Checklist mínima:
 - [ ] `CHANGELOG.md` actualizado y `APP_VERSION` sincronizado (si aplica; obligatorio si tocaste `common.css` o assets versionados).
 - [ ] Cambios de permisos/rol probados con las tres cuentas demo.
 - [ ] Endpoints de escritura nuevos con permiso verificado en el servidor (probado con la cuenta vendedor por POST directo).
+- [ ] Sin errores de BD crudos en mensajes (`mensajeErrorSeguro()`) y sin código muerto nuevo.
 - [ ] Si hay `Swal.fire()` con datos de usuario, usar `titleText`/`text`, no `title`/`html`.
 - [ ] Si hay `Swal.fire()`, usar tokens de `common.css` via `getComputedStyle()` en vez de hex hardcodeados.
 
 ## Reportar issues
+
+Si encuentras una vulnerabilidad de seguridad (XSS, acceso sin permiso, exposición de archivos), no abras un issue público: avisa de forma privada a los mantenedores.
 
 Al crear un issue, incluye:
 
