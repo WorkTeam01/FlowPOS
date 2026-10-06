@@ -70,7 +70,7 @@ class DashboardVendedorController
         if (empty($datos) && $this->modelo->getLastError()) {
             return [
                 'success' => false,
-                'message' => 'Error al obtener datos: ' . $this->modelo->getLastError(),
+                'message' => mensajeErrorSeguro('Error al obtener datos', $this->modelo->getLastError()),
                 'icon' => 'error'
             ];
         }

@@ -107,7 +107,7 @@ class SesionController
         } else {
             return [
                 'success' => false,
-                'message' => 'Error al cerrar la sesión: ' . $this->modelo->getLastError(),
+                'message' => mensajeErrorSeguro('Error al cerrar la sesión', $this->modelo->getLastError()),
                 'icon' => 'error'
             ];
         }
@@ -141,7 +141,7 @@ class SesionController
         } else {
             return [
                 'success' => false,
-                'message' => 'Error al cerrar las sesiones: ' . $this->modelo->getLastError(),
+                'message' => mensajeErrorSeguro('Error al cerrar las sesiones', $this->modelo->getLastError()),
                 'icon' => 'error'
             ];
         }

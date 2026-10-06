@@ -60,7 +60,7 @@ class DashboardController
         if (empty($datos['estadisticas']) && $this->modelo->getLastError()) {
             return [
                 'success' => false,
-                'message' => 'Error al obtener datos: ' . $this->modelo->getLastError(),
+                'message' => mensajeErrorSeguro('Error al obtener datos', $this->modelo->getLastError()),
                 'icon' => 'error'
             ];
         }

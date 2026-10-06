@@ -106,7 +106,7 @@ class PerfilController
             // El UPDATE no se aplicó: se descarta la recién subida para no
             // dejarla huérfana en disco; la vieja sigue siendo la válida.
             $this->imagenService->eliminarImagen($nueva_imagen);
-            return ['success' => false, 'message' => 'Error al actualizar la imagen de perfil: ' . $this->modelo->getLastError(), 'icon' => 'error', 'redirect' => 'views/usuarios/perfil.php'];
+            return ['success' => false, 'message' => mensajeErrorSeguro('Error al actualizar la imagen de perfil', $this->modelo->getLastError()), 'icon' => 'error', 'redirect' => 'views/usuarios/perfil.php'];
         }
     }
 
@@ -162,7 +162,7 @@ class PerfilController
                 'message' => 'Contraseña actualizada correctamente.'
             ];
         } else {
-            return ['success' => false, 'message' => 'Error al actualizar la contraseña: ' . $this->modelo->getLastError()];
+            return ['success' => false, 'message' => mensajeErrorSeguro('Error al actualizar la contraseña', $this->modelo->getLastError())];
         }
     }
 }

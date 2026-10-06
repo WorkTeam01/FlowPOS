@@ -120,7 +120,7 @@ class EmpresaController
                 ]
             ];
         } else {
-            return ['success' => false, 'message' => 'Error al crear la empresa: ' . $this->modelo->getLastError()];
+            return ['success' => false, 'message' => mensajeErrorSeguro('Error al crear la empresa', $this->modelo->getLastError())];
         }
     }
 
@@ -218,7 +218,7 @@ class EmpresaController
                 ]
             ];
         } else {
-            $error_message = 'Error al actualizar la empresa: ' . $this->modelo->getLastError();
+            $error_message = mensajeErrorSeguro('Error al actualizar la empresa', $this->modelo->getLastError());
             return ['success' => false, 'message' => $error_message];
         }
     }
@@ -263,7 +263,7 @@ class EmpresaController
         } else {
             return [
                 'success' => false,
-                'message' => 'Error al cambiar el estado de la empresa: ' . $this->modelo->getLastError()
+                'message' => mensajeErrorSeguro('Error al cambiar el estado de la empresa', $this->modelo->getLastError())
             ];
         }
     }

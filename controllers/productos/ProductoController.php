@@ -127,7 +127,7 @@ class ProductoController
         if ($this->modelo->crear($datos)) {
             return ['success' => true, 'message' => 'Producto creado correctamente', 'icon' => 'success', 'redirect' => 'index.php'];
         } else {
-            return ['success' => false, 'message' => 'Error al crear el producto: ' . $this->modelo->getLastError(), 'icon' => 'error', 'redirect' => 'create.php'];
+            return ['success' => false, 'message' => mensajeErrorSeguro('Error al crear el producto', $this->modelo->getLastError()), 'icon' => 'error', 'redirect' => 'create.php'];
         }
     }
 
@@ -251,7 +251,7 @@ class ProductoController
             if ($nueva_imagen_path) {
                 $this->imagenService->eliminarImagen($nueva_imagen_path);
             }
-            $error_message = 'Error al actualizar el producto: ' . $this->modelo->getLastError();
+            $error_message = mensajeErrorSeguro('Error al actualizar el producto', $this->modelo->getLastError());
             return ['success' => false, 'message' => $error_message, 'icon' => 'error', 'redirect' => "update.php?id=$id"];
         }
     }
@@ -275,7 +275,7 @@ class ProductoController
             $accion = $nuevo_estado == 1 ? 'activado' : 'desactivado';
             return ['success' => true, 'message' => "Producto $accion correctamente", 'icon' => 'success'];
         } else {
-            return ['success' => false, 'message' => 'Error al cambiar el estado del producto: ' . $this->modelo->getLastError(), 'icon' => 'error'];
+            return ['success' => false, 'message' => mensajeErrorSeguro('Error al cambiar el estado del producto', $this->modelo->getLastError()), 'icon' => 'error'];
         }
     }
 

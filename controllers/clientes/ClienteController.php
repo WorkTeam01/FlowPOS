@@ -92,7 +92,7 @@ class ClienteController
         if ($this->modelo->crear($datos)) {
             return ['success' => true, 'message' => 'Cliente registrado correctamente', 'icon' => 'success', 'redirect' => 'index.php'];
         } else {
-            return ['success' => false, 'message' => 'Error al registrar el cliente: ' . $this->modelo->getLastError(), 'icon' => 'error', 'redirect' => 'create.php'];
+            return ['success' => false, 'message' => mensajeErrorSeguro('Error al registrar el cliente', $this->modelo->getLastError()), 'icon' => 'error', 'redirect' => 'create.php'];
         }
     }
 
@@ -176,7 +176,7 @@ class ClienteController
         if ($this->modelo->actualizar($id, $datos)) {
             return ['success' => true, 'message' => 'Cliente actualizado correctamente', 'icon' => 'success', 'redirect' => 'index.php'];
         } else {
-            $error_message = 'Error al actualizar el cliente: ' . $this->modelo->getLastError();
+            $error_message = mensajeErrorSeguro('Error al actualizar el cliente', $this->modelo->getLastError());
             return ['success' => false, 'message' => $error_message, 'icon' => 'error', 'redirect' => "update.php?id=$id"];
         }
     }
@@ -200,19 +200,8 @@ class ClienteController
             $accion = $nuevo_estado == 1 ? 'activado' : 'desactivado';
             return ['success' => true, 'message' => "Cliente $accion correctamente", 'icon' => 'success'];
         } else {
-            return ['success' => false, 'message' => 'Error al cambiar el estado del cliente: ' . $this->modelo->getLastError(), 'icon' => 'error'];
+            return ['success' => false, 'message' => mensajeErrorSeguro('Error al cambiar el estado del cliente', $this->modelo->getLastError()), 'icon' => 'error'];
         }
-    }
-
-    /**
-     * Busca clientes según criterios
-     *
-     * @param array $criterios Criterios de búsqueda
-     * @return array Resultados de la búsqueda
-     */
-    public function buscar($criterios)
-    {
-        return $this->modelo->buscar($criterios);
     }
 
     /**

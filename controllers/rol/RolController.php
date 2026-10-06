@@ -92,7 +92,7 @@ class RolController
                 ]
             ];
         } else {
-            return ['success' => false, 'message' => 'Error al crear el rol: ' . $this->modelo->getLastError()];
+            return ['success' => false, 'message' => mensajeErrorSeguro('Error al crear el rol', $this->modelo->getLastError())];
         }
     }
 
@@ -168,7 +168,7 @@ class RolController
                 ]
             ];
         } else {
-            return ['success' => false, 'message' => 'Error al actualizar el rol: ' . $this->modelo->getLastError()];
+            return ['success' => false, 'message' => mensajeErrorSeguro('Error al actualizar el rol', $this->modelo->getLastError())];
         }
     }
 
@@ -224,7 +224,7 @@ class RolController
         } else {
             return [
                 'success' => false,
-                'message' => 'Error al cambiar el estado del rol: ' . $this->modelo->getLastError()
+                'message' => mensajeErrorSeguro('Error al cambiar el estado del rol', $this->modelo->getLastError())
             ];
         }
     }
@@ -270,7 +270,7 @@ class RolController
         if ($this->modelo->eliminar($id)) {
             return ['success' => true, 'message' => 'Rol eliminado correctamente'];
         } else {
-            return ['success' => false, 'message' => 'Error al eliminar el rol: ' . $this->modelo->getLastError()];
+            return ['success' => false, 'message' => mensajeErrorSeguro('Error al eliminar el rol', $this->modelo->getLastError())];
         }
     }
 

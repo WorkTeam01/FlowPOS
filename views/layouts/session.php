@@ -20,6 +20,29 @@ if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
+/**
+ * Mensaje de error apto para el usuario a partir del último error de un modelo.
+ *
+ * El detalle técnico (SQLSTATE, nombres de tabla/constraint) va al log; al
+ * usuario solo llegan los motivos de negocio que el modelo lanzó a propósito
+ * (p. ej. "La compra no existe o ya está cancelada").
+ *
+ * @param string $prefijo Texto inicial del mensaje (p. ej. "Error al crear el producto")
+ * @param string|null $detalle Resultado de getLastError() del modelo
+ * @return string Mensaje seguro para mostrar
+ */
+function mensajeErrorSeguro($prefijo, $detalle)
+{
+    if (!$detalle) {
+        return $prefijo . '.';
+    }
+    if (preg_match('/SQLSTATE|PDOException|constraint|syntax|SQL|table|column/i', $detalle)) {
+        error_log($prefijo . ': ' . $detalle);
+        return $prefijo . '. Intente nuevamente o contacte al administrador.';
+    }
+    return $prefijo . ': ' . $detalle;
+}
+
 // Cargar configuración desde .env
 try {
     // Cargar variables de entorno desde .env

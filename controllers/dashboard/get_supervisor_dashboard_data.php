@@ -67,6 +67,6 @@ try {
     header('Content-Type: application/json');
     echo json_encode([
         'success' => false,
-        'message' => 'Error del servidor: ' . $e->getMessage()
+        'message' => 'Error del servidor. Intente nuevamente.'
     ]);
 }
