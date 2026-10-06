@@ -192,7 +192,7 @@ $(document).ready(function () {
             const tituloVenta = this.dataset.titulo;
 
             Swal.fire({
-                title: `¿Anular venta ${tituloVenta}?`,
+                titleText: `¿Anular venta ${tituloVenta}?`,
                 text: 'La venta será anulada y el stock de productos será revertido. Esta acción no se puede deshacer.',
                 icon: 'warning',
                 showCancelButton: true,

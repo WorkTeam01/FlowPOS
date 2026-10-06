@@ -302,7 +302,7 @@ $(document).ready(function () {
         const textoEstadoCapitalizado = textoEstado.charAt(0).toUpperCase() + textoEstado.slice(1);
 
         Swal.fire({
-            title: `¿${textoEstadoCapitalizado} esta sucursal?`,
+            titleText: `¿${textoEstadoCapitalizado} esta sucursal?`,
             text: `La sucursal será ${textoEstado}da.`,
             icon: 'warning',
             showCancelButton: true,

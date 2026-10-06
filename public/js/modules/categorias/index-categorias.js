@@ -293,7 +293,7 @@ $(document).ready(function () {
         const textoEstadoCapitalizado = textoEstado.charAt(0).toUpperCase() + textoEstado.slice(1);
 
         Swal.fire({
-            title: `¿${textoEstadoCapitalizado} esta categoría?`,
+            titleText: `¿${textoEstadoCapitalizado} esta categoría?`,
             text: `La categoría será ${textoEstado}da.`,
             icon: 'warning',
             showCancelButton: true,

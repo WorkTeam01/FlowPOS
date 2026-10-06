@@ -302,6 +302,34 @@ function exportarTextoPlano(data) {
 }
 
 /**
+ * El botón de impresión de DataTables (build 2016) inyecta cada celda con
+ * `innerHTML` sin escapar. Cuando `format.body` devuelve texto plano ya
+ * decodificado (exportarTextoPlano), un `&lt;img onerror&gt;` guardado en BD
+ * volvería a ser HTML ejecutable en la ventana de impresión. Se escapa el
+ * resultado solo en este botón; Excel/CSV/PDF lo tratan como texto.
+ */
+(function () {
+    if (!window.jQuery || !$.fn.dataTable || !$.fn.dataTable.ext.buttons.print) {
+        return;
+    }
+    const impresion = $.fn.dataTable.ext.buttons.print;
+    const accionOriginal = impresion.action;
+    const escaparHtml = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+    impresion.action = function (e, dt, button, config) {
+        const formato = config.exportOptions && config.exportOptions.format;
+        const bodyOriginal = formato && formato.body;
+        if (bodyOriginal && !bodyOriginal.__escapaParaImpresion) {
+            formato.body = function () {
+                return escaparHtml(bodyOriginal.apply(this, arguments));
+            };
+            formato.body.__escapaParaImpresion = true;
+        }
+        return accionOriginal.call(this, e, dt, button, config);
+    };
+})();
+
+/**
  * Muestra una notificación toast usando SweetAlert2
  * 
  * @param {string} message - Mensaje a mostrar
@@ -435,7 +463,7 @@ function confirmarCambioEstado({ id, estadoActual, titulo, texto, actionUrl }) {
     const activo = estadoActual == 1;
 
     Swal.fire({
-        title: titulo,
+        titleText: titulo,
         text: texto,
         icon: 'warning',
         showCancelButton: true,

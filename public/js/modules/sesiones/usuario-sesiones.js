@@ -178,7 +178,7 @@ $(document).ready(function () {
         const usuario = $(this).data('usuario');
 
         Swal.fire({
-            title: `¿Cerrar sesión de ${usuario}?`,
+            titleText: `¿Cerrar sesión de ${usuario}?`,
             text: 'El usuario será desconectado del sistema.',
             icon: 'warning',
             showCancelButton: true,
@@ -201,7 +201,7 @@ $(document).ready(function () {
         const nombre = $(this).data('nombre');
 
         Swal.fire({
-            title: `¿Cerrar todas las sesiones de ${nombre}?`,
+            titleText: `¿Cerrar todas las sesiones de ${nombre}?`,
             text: 'El usuario será desconectado de todas sus sesiones activas.',
             icon: 'warning',
             showCancelButton: true,

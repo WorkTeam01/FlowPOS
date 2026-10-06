@@ -271,7 +271,7 @@ $(document).ready(function () {
         const textoEstadoCapitalizado = textoEstado.charAt(0).toUpperCase() + textoEstado.slice(1);
 
         Swal.fire({
-            title: `¿${textoEstadoCapitalizado} este rol?`,
+            titleText: `¿${textoEstadoCapitalizado} este rol?`,
             text: `El rol será ${textoEstado}do.`,
             icon: 'warning',
             showCancelButton: true,
@@ -329,7 +329,7 @@ $(document).ready(function () {
         }
 
         Swal.fire({
-            title: `¿Eliminar el rol "${nombre}"?`,
+            titleText: `¿Eliminar el rol "${nombre}"?`,
             text: 'Esta acción no se puede deshacer.',
             icon: 'warning',
             showCancelButton: true,

@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const nombreVenta = this.dataset.nombre;
 
             Swal.fire({
-                title: `¿Anular ${nombreVenta}?`,
+                titleText: `¿Anular ${nombreVenta}?`,
                 text: "Esta acción restaurará el stock de los productos y no se puede deshacer.",
                 icon: 'warning',
                 showCancelButton: true,
