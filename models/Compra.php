@@ -301,6 +301,11 @@ class Compra
         try {
             $this->conexion->beginTransaction();
 
+            // Bloquea la fila: dos cancelaciones concurrentes restarían el stock dos veces
+            $lock = $this->conexion->prepare("SELECT estado FROM {$this->tabla} WHERE idcompra = :id FOR UPDATE");
+            $lock->bindParam(':id', $id, PDO::PARAM_INT);
+            $lock->execute();
+
             // Obtener los detalles de la compra
             $compra = $this->getById($id);
             if (!$compra || $compra['estado'] == 0) {
@@ -449,8 +454,8 @@ class Compra
                 if (empty($detalle['cantidad']) || $detalle['cantidad'] <= 0) {
                     $errores[] = "La cantidad debe ser mayor que cero";
                 }
-                if (empty($detalle['preciocompra'])) {
-                    $errores[] = "Todos los productos deben tener un precio de compra";
+                if (empty($detalle['preciocompra']) || $detalle['preciocompra'] < 0) {
+                    $errores[] = "Todos los productos deben tener un precio de compra válido";
                 }
             }
         }

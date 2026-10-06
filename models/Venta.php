@@ -318,6 +318,11 @@ class Venta
         try {
             $this->conexion->beginTransaction();
 
+            // Bloquea la fila: dos anulaciones concurrentes revertirían el stock dos veces
+            $lock = $this->conexion->prepare("SELECT estado FROM {$this->tabla} WHERE idventa = :id FOR UPDATE");
+            $lock->bindParam(':id', $id, PDO::PARAM_INT);
+            $lock->execute();
+
             // Obtener los detalles de la venta
             $venta = $this->getById($id);
             if (!$venta || $venta['estado'] == 0) {
@@ -535,6 +540,11 @@ class Venta
                 }
                 if (empty($detalle['precioventa']) || $detalle['precioventa'] <= 0) {
                     $errores[] = "Todos los productos deben tener un precio de venta";
+                }
+                // Un POST directo puede dejar la línea en negativo; el descuento es por unidad
+                $descuento = $detalle['descuento'] ?? 0;
+                if ($descuento < 0 || $descuento > ($detalle['precioventa'] ?? 0)) {
+                    $errores[] = "El descuento no puede ser negativo ni superar el precio unitario";
                 }
             }
         }

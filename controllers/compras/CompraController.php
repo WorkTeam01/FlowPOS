@@ -63,6 +63,23 @@ class CompraController
     }
 
     /**
+     * Normaliza la fecha del formulario (datetime-local) a 'Y-m-d H:i:s'.
+     * Vacía → ahora; ilegible → '' para que la validación del modelo la rechace.
+     *
+     * @param string|null $valor Valor crudo del POST
+     * @return string Fecha normalizada o cadena vacía si no es válida
+     */
+    private function normalizarFecha($valor)
+    {
+        $valor = trim((string) $valor);
+        if ($valor === '') {
+            return date('Y-m-d H:i:s');
+        }
+        $timestamp = strtotime($valor);
+        return $timestamp === false ? '' : date('Y-m-d H:i:s', $timestamp);
+    }
+
+    /**
      * Prepara los datos de la compra desde $_POST
      * 
      * @param array $post_data Datos del formulario
@@ -73,7 +90,7 @@ class CompraController
         $datos = [
             'idusuario' => (int)($_SESSION['usuario_id'] ?? 0),
             'totalcompra' => 0, // Se recalcula server-side a partir de los detalles
-            'fechacompra' => isset($post_data['fechacompra']) ? trim($post_data['fechacompra']) : date('Y-m-d H:i:s'),
+            'fechacompra' => $this->normalizarFecha($post_data['fechacompra'] ?? null),
             'estado' => 1, // Por defecto activa (1)
             'observaciones' => isset($post_data['observaciones']) && !empty($post_data['observaciones']) ? trim($post_data['observaciones']) : null,
             'detalles' => []
@@ -199,6 +216,12 @@ class CompraController
     {
         if (!$id) {
             return ['success' => false, 'message' => 'ID de compra no válido', 'icon' => 'error'];
+        }
+
+        // La cancelación ya restó el stock: reactivar sin devolverlo lo dejaría descuadrado
+        $compra = $this->modelo->getById($id);
+        if (!$compra || $compra['estado'] != 1) {
+            return ['success' => false, 'message' => 'Una compra cancelada no se puede reactivar', 'icon' => 'error'];
         }
 
         if ($this->modelo->actualizarEstado($id, 1)) {

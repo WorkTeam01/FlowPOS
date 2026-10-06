@@ -217,7 +217,7 @@ include_once '../layouts/header.php';
                                         $precioUnitario = $detalle['precioventa'];
                                         $cantidad = $detalle['cantidad'];
                                         $descuento = $detalle['descuento'];
-                                        $subtotal = ($precioUnitario * $cantidad) - $descuento;
+                                        $subtotal = $cantidad * ($precioUnitario - $descuento);
                                     ?>
                                         <tr>
                                             <td><?= $contador++; ?></td>

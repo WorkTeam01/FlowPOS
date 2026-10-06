@@ -166,7 +166,8 @@ class VentaController
                         'descuento' => $descuento
                     ];
 
-                    $total += ($cantidad * $precioventa) - $descuento;
+                    // El descuento es por unidad, igual que en el formulario, el recibo y los dashboards
+                    $total += $cantidad * ($precioventa - $descuento);
                 }
             }
 
@@ -342,8 +343,8 @@ class VentaController
         $descuento = 0;
 
         foreach ($venta['detalles'] ?? [] as $detalle) {
-            $subtotal += ($detalle['precioventa'] * $detalle['cantidad']) - $detalle['descuento'];
-            $descuento += $detalle['descuento'];
+            $subtotal += $detalle['cantidad'] * ($detalle['precioventa'] - $detalle['descuento']);
+            $descuento += $detalle['cantidad'] * $detalle['descuento'];
         }
 
         return [
@@ -597,7 +598,7 @@ class VentaController
                 'cantidad' => $detalle['cantidad'],
                 'precio' => $detalle['precioventa'],
                 'descuento' => $detalle['descuento'],
-                'subtotal' => ($detalle['cantidad'] * $detalle['precioventa']) - $detalle['descuento']
+                'subtotal' => $detalle['cantidad'] * ($detalle['precioventa'] - $detalle['descuento'])
             ];
         }
 

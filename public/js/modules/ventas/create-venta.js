@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function () {
         seccionPagoUnico.style.display = 'none';
         seccionPagoMixto.style.display = 'block';
         // Si no hay métodos de pago añadidos, agregar uno
-        if (document.querySelectorAll('.metodo-pago-item').length === 0) {
+        if (document.querySelectorAll('#contenedor-pagos .metodo-pago-item').length === 0) {
             agregarMetodoPago();
         }
         calcularTotalPagado(); // Cambiado de actualizarTotalPagado a calcularTotalPagado
@@ -477,7 +477,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         btnEliminar.addEventListener('click', function () {
-            if (document.querySelectorAll('.metodo-pago-item').length > 1) {
+            if (document.querySelectorAll('#contenedor-pagos .metodo-pago-item').length > 1) {
                 nuevoMetodoPago.remove();
                 renumerarMetodosPago();
                 calcularTotalPagado();
@@ -513,7 +513,7 @@ document.addEventListener('DOMContentLoaded', function () {
      * Renumera los títulos "Método de pago #N" de las tarjetas de pago mixto
      */
     function renumerarMetodosPago() {
-        document.querySelectorAll('.metodo-pago-item').forEach((item, index) => {
+        document.querySelectorAll('#contenedor-pagos .metodo-pago-item').forEach((item, index) => {
             item.querySelector('.metodo-pago-titulo').textContent = `Método de pago #${index + 1}`;
         });
     }
@@ -582,7 +582,7 @@ document.addEventListener('DOMContentLoaded', function () {
             total = parseFloat(montoUnico.value) || 0;
         } else {
             // Calcular total de pagos mixtos
-            const metodosItems = document.querySelectorAll('.metodo-pago-item');
+            const metodosItems = document.querySelectorAll('#contenedor-pagos .metodo-pago-item');
             metodosItems.forEach(item => {
                 total += parseFloat(item.querySelector('.monto-pago').value) || 0;
             });
@@ -791,7 +791,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Actualizar montos de los métodos de pago en modo mixto
         const tipoPago = document.querySelector('input[name="tipo_pago"]:checked').value;
         if (tipoPago === 'mixto') {
-            const metodosItems = document.querySelectorAll('.metodo-pago-item');
+            const metodosItems = document.querySelectorAll('#contenedor-pagos .metodo-pago-item');
 
             // Si solo hay un método de pago, actualizar automáticamente su monto
             if (metodosItems.length === 1) {
