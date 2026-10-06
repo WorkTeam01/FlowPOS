@@ -5,6 +5,39 @@ Todos los cambios importantes de este proyecto se documentan en este archivo.
 Este formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
+## [1.2.9] - 2026-10-06
+
+### Security
+
+- **XSS por regresión del doble escape (1.2.8)**: al quitar `htmlspecialchars()` de los atributos `data-*`, el navegador decodificaba la entidad en `dataset` y el valor crudo llegaba al `title` de SweetAlert2 (que es HTML). Un vendedor podía ponerse `<img onerror>` como nombre y ejecutarlo con la sesión de un administrador al cerrar su sesión. Todos los `title` de `Swal.fire` con datos de usuario/producto/cliente/rol pasan a `titleText` (confirmarCambioEstado, sesiones, ventas, categorías, sucursales, roles, empresas).
+- **Impresión de DataTables**: el botón print inyecta las celdas con `innerHTML`; `exportarTextoPlano()` devuelve texto decodificado, así que una celda `&lt;img onerror&gt;` se ejecutaba al imprimir. `common-utils.js` envuelve la acción del botón print para escapar el resultado de `format.body` solo ahí.
+- **`.htaccess` en la raíz**: `.env`, `.git/`, `database/` (esquema y seeds), `docs/`, `.claude/` y los `*.md`/`*.sql`/`*.log` se servían por HTTP (el `.env` expone las credenciales de BD y `.git` permite bajar el repositorio). Ahora responden 403 y se desactiva el listado de directorios.
+- **Permisos en los 9 endpoints AJAX de categorías, empresa y sucursales** (`controllers/{categoria,empresa,sucursal}/*_ajax.php`): solo exigían sesión y CSRF, así que un vendedor podía crear, editar o desactivar con un POST directo. Ahora exigen el permiso del módulo o ser administrador (403 JSON).
+- **Desactivar un usuario cierra sus sesiones** (`motivo_cierre = admin_user`); antes seguía operando por el timeout deslizante.
+
+### Fixed (ventas y compras)
+
+- **Descuento con una sola semántica (por unidad)**: el formulario, el recibo y los dashboards lo trataban por unidad, pero `VentaController` (total), `calcularTotales()`, `show.php` y el ticket lo restaban por línea. Toda venta con cantidad ≥2 y descuento fallaba con "El total de los pagos no coincide". Ahora todo usa `cantidad × (precio − descuento)`, y `Venta::validarDatos()` rechaza descuentos negativos o mayores al precio unitario (POST directo).
+- **Una compra cancelada ya no se puede reactivar** con `accion=completar` (restaba el stock al cancelar y no lo devolvía al reactivar; el ciclo cancelar → completar → cancelar lo restaba dos veces).
+- **`Venta::anular()` y `Compra::cancelar()` bloquean la fila (`SELECT … FOR UPDATE`)**: dos peticiones concurrentes revertían el stock dos veces.
+
+- **Pago mixto**: los conteos de `.metodo-pago-item` en `create-venta.js` incluían la plantilla oculta; ahora se acotan a `#contenedor-pagos` (al pulsar "Mixto" no se agregaba el primer método y se podía borrar el último).
+- **Productos**: `codigo` y `stockmaximo` son opcionales en el formulario pero `NOT NULL` en la tabla (y hay `CHECK stockmaximo >= stockminimo`): crear/editar fallaba con el error SQL crudo. Ahora el código se autogenera (`PRD-NNNNNN`, o se conserva el existente al editar) y el máximo vacío toma el mayor entre mínimo y stock.
+- **Editar un producto ya no pisa el stock**: el formulario envía `stock_original` y el servidor aplica la diferencia (`stock = stock + delta`), así las ventas o compras hechas con el formulario abierto no se pierden.
+- **Logo de empresa**: nunca se guardaba (el controlador leía `$_POST['imagen']`, que no existe, y al editar se borraba). Ahora se sube con `ImagenService` a `public/uploads/empresas/`, se conserva al editar sin archivo y el anterior se borra tras el UPDATE; ya no se acepta un nombre de archivo desde el POST. Documentado el `chmod` del nuevo directorio.
+- **Cambiar el rol de un usuario cierra sus sesiones** (`security`): `$_SESSION['usuario_rol']` se fija al iniciar sesión, así que un supervisor degradado seguía anulando ventas hasta que expirara. La sesión propia se respeta.
+- **Editar usuario valida la clave antes del UPDATE** (antes los datos quedaban guardados y se mostraba un error de confirmación).
+- **Compras**: `preciocompra` negativo y `fechacompra` ilegible se rechazan (la fecha del formulario se normaliza a `Y-m-d H:i:s`).
+- **Cookie de sesión** con `HttpOnly`, `SameSite=Lax` y `Secure` bajo HTTPS (verificado: `httpOnly: true`, `sameSite: Lax`).
+
+### Removed
+
+- `AuthController::verificarSesion()`: código muerto que no validaba el token de revocación.
+
+### Fixed
+
+- Etiqueta "Cambio de contraseña" para `password_change` en el panel de sesiones.
+
 ## [1.2.8] - 2026-09-28
 
 ### Added

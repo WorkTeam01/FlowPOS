@@ -33,8 +33,11 @@ cp .env.example .env   # ajusta DB_USER / DB_PASS según tu instalación
 mysql -u root -e "CREATE DATABASE flowpos CHARACTER SET utf8mb4;"
 mysql -u root flowpos < database/schema.sql
 mysql -u root flowpos < database/seed.sql
+chmod 777 public/uploads/ public/uploads/productos/ public/uploads/usuarios/ public/uploads/empresas/
 sudo /opt/lampp/lampp start
 ```
+
+El `.htaccess` de la raíz bloquea `.env`, `.git/` y `database/`; no lo elimines y, tras desplegar, comprueba que `curl -I http://tu-host/.env` responde 403.
 
 `database/schema.sql` ya incluye el esquema RBAC; sobre una base preexistente aplica en cambio las migraciones de `database/migrations/` en orden.
 
@@ -57,6 +60,8 @@ Se aceptan contribuciones en:
 - No incluyas credenciales, tokens ni datos sensibles.
 - Mantén compatibilidad con el stack actual del proyecto.
 - Mantén accesibilidad WCAG AA: `aria-label` en botones/íconos sin texto visible y en el botón de colapso de panel; mensajes de error enlazados a su campo (`aria-describedby` + `aria-invalid` + `invalid-feedback`); usa los overrides de contraste y de touch targets táctiles (44px) ya centralizados en `common.css` — no dupliques reglas por módulo.
+- Seguridad: los datos de usuario se guardan escapados (`sanitizarDatos()`), por lo que un valor leído de un atributo `data-*` llega decodificado. En SweetAlert2 usa `titleText`/`text` (nunca `title`/`html` con datos de usuario) y evita `.html()`/`innerHTML` con esos valores.
+- Todo endpoint de escritura (incluidos los `*_ajax.php`) debe verificar permiso en el servidor además de sesión y CSRF; ocultar el botón en la vista no basta.
 - Tokens de colores de UI compartidos (SweetAlert2) van en `common.css :root` con `getComputedStyle()` en JS — no hardcodear hex en `Swal.fire()`.
 - Modales con listas de 100+ items: usar lazy render (20 por carga + "Cargar más") en vez de renderizar todo; combinar con debounce en el input de búsqueda.
 
@@ -78,6 +83,8 @@ Checklist mínima:
 - [ ] Documentación actualizada (si aplica): `README.md`, `CLAUDE.md`, `PROMPTS.md`.
 - [ ] `CHANGELOG.md` actualizado y `APP_VERSION` sincronizado (si aplica; obligatorio si tocaste `common.css` o assets versionados).
 - [ ] Cambios de permisos/rol probados con las tres cuentas demo.
+- [ ] Endpoints de escritura nuevos con permiso verificado en el servidor (probado con la cuenta vendedor por POST directo).
+- [ ] Si hay `Swal.fire()` con datos de usuario, usar `titleText`/`text`, no `title`/`html`.
 - [ ] Si hay `Swal.fire()`, usar tokens de `common.css` via `getComputedStyle()` en vez de hex hardcodeados.
 
 ## Reportar issues

@@ -69,6 +69,10 @@ _______________
 - Si un modal carga listas de 100+ items, usar lazy render (20 por carga + "Cargar más") en vez de renderizar todo de una vez; combinar con debounce en el input de búsqueda
 - `LEFT JOIN` + `GROUP BY` en queries de estadísticas puede devolver filas con valores NULL que parecen truthy — usar `!empty()` en vez de solo verificar truthiness del array
 - `(int)` sobre string vacío produce `0`, no `null` — usar `!empty()` para columnas nullable con FK
+- XSS con escape-at-storage: el escape de `sanitizarDatos()` solo vale para nodos de texto. Un valor en un atributo `data-*` que el JS lee llega DECODIFICADO — en SweetAlert2 usar `titleText`/`text` (nunca `title`/`html` con datos de usuario) y nunca `.html()`/`innerHTML` con ese valor; el botón print de DataTables inyecta con `innerHTML` (`common-utils.js` ya escapa el resultado de `format.body`)
+- Todo endpoint `controllers/**/*_ajax.php` y toda acción de escritura verifica permiso (`tienePermisoNombre() || esAdministrador()`) además de `requireLogin()` y `requireCSRF()`: ocultar el botón en la vista no protege del POST directo
+- Operaciones que revierten stock (anular venta, cancelar compra) bloquean la fila (`SELECT … FOR UPDATE`) dentro de la transacción; el stock se ajusta con `stock = stock ± n`, nunca con un valor absoluto leído antes. El descuento de venta es POR UNIDAD (`cantidad × (precio − descuento)`) en formulario, servidor, recibo y dashboards
+- El `.htaccess` de la raíz bloquea `.env`, `.git/`, `database/`, `docs/` y `*.md`/`*.sql`: no quitarlo ni desplegar sin él (verificar con `curl -I .../.env` → 403)
 
 [Formato de salida]
 _______________
@@ -133,6 +137,8 @@ Descripción: [criterios de aceptación]
 - Accesibilidad WCAG AA: callouts `alert-default-*`; usar los overrides de contraste y touch targets táctiles de 44px de `common.css` (`badge-*`, `btn-primary`, `btn-info`, `btn:focus-visible`, pestañas/navbar/pills activos), no duplicarlos por módulo; `aria-label` en botones icon-only; tablists con `<li>` wrapper → `role="presentation"`; `aria-selected` sincronizado globalmente; previews sin `src="#"` y con alt descriptivo; inputs con `invalid-feedback` enlazado (`aria-describedby` + `aria-invalid`)
 - Tocar `common.css` / assets versionados obliga a subir `APP_VERSION` en el mismo cambio (caché del navegador)
 - Si cambia funcionalidad visible: actualizar `CHANGELOG.md` en `Unreleased`
+- XSS con escape-at-storage: el escape de `sanitizarDatos()` solo vale para nodos de texto. Un valor en un atributo `data-*` que el JS lee llega DECODIFICADO — en SweetAlert2 usar `titleText`/`text` (nunca `title`/`html` con datos de usuario) y nunca `.html()`/`innerHTML` con ese valor; el botón print de DataTables inyecta con `innerHTML` (`common-utils.js` ya escapa el resultado de `format.body`)
+- Todo endpoint `controllers/**/*_ajax.php` y toda acción de escritura verifica permiso (`tienePermisoNombre() || esAdministrador()`) además de `requireLogin()` y `requireCSRF()`: ocultar el botón en la vista no protege del POST directo
 
 [Formato de salida]
 Devuelve en este orden:
@@ -218,6 +224,9 @@ Evalúa específicamente:
 - Accesibilidad: contraste WCAG AA (callouts `alert-default-*`, overrides de `common.css` para badges/botones), `aria-label` en botones ícono-only y en el botón de colapso de panel, foco de teclado visible, inputs con feedback enlazado (`aria-describedby` + `aria-invalid`)
 - Tokens SWAL: si hay `Swal.fire()` con colores, verificar que use `getComputedStyle()` en vez de hex hardcodeados
 - FKs nullable: verificar que `(int)` sobre string vacío no produzca `0` que viole la constraint — usar `!empty()`
+- XSS por `data-*`: un `data-nombre` que llega a `Swal.fire({title})`, `.html()` o `innerHTML` se decodifica y ejecuta aunque se haya guardado escapado — exigir `titleText`/`text`; si el diff QUITA un `htmlspecialchars()`, rastrear también los consumidores JS del valor
+- Endpoints de escritura (`*_ajax.php` incluidos): permiso del módulo verificado en el servidor, no solo en la vista
+- Stock y concurrencia: anulaciones/cancelaciones con `FOR UPDATE`, ajustes de stock relativos; descuento por unidad
 - Modales con listas grandes: lazy render en vez de renderizar todo de una vez
 - Si el diff toca `common.css` / assets versionados: verificar que `APP_VERSION` se subió en el mismo cambio
 - Casos edge que podrían fallar en producción
@@ -335,6 +344,8 @@ Criterios de aceptación:
 - Modales con listas grandes (100+ items): lazy render (20 por carga + "Cargar más") + debounce en búsqueda
 - `(int)` sobre string vacío produce `0`, no `null` — usar `!empty()` para columnas nullable con FK
 - Tocar `common.css` / assets versionados obliga a subir `APP_VERSION` en el mismo cambio
+- XSS con escape-at-storage: el escape de `sanitizarDatos()` solo vale para nodos de texto. Un valor en un atributo `data-*` que el JS lee llega DECODIFICADO — en SweetAlert2 usar `titleText`/`text` (nunca `title`/`html` con datos de usuario) y nunca `.html()`/`innerHTML` con ese valor; el botón print de DataTables inyecta con `innerHTML` (`common-utils.js` ya escapa el resultado de `format.body`)
+- Todo endpoint `controllers/**/*_ajax.php` y toda acción de escritura verifica permiso (`tienePermisoNombre() || esAdministrador()`) además de `requireLogin()` y `requireCSRF()`: ocultar el botón en la vista no protege del POST directo
 - Si se agregan cambios funcionales: documentarlos en `CHANGELOG.md` (`Unreleased`)
 
 [Formato de salida]
@@ -352,5 +363,5 @@ Devuelve en este orden:
 
 ---
 
-_Última actualización: 2026-09-20_
+_Última actualización: 2026-10-06_
 _Mantener sincronizado con CLAUDE.md al hacer cambios de arquitectura._
