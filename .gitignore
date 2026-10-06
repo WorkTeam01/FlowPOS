@@ -34,3 +34,5 @@ public/uploads/usuarios/*
 !public/uploads/usuarios/user_default.jpg
 public/uploads/clientes/*
 !public/uploads/clientes/.gitkeep
+public/uploads/empresas/*
+!public/uploads/empresas/.gitkeep

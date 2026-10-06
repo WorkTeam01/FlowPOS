@@ -225,14 +225,14 @@ $(document).ready(function () {
         $('#estado').val(estado);
 
         // Mostrar imagen actual si existe
-        if (imagen) {
-            $('#previewImagen').html(`
-                <img src="${baseUrl}public/img/empresas/${imagen}" 
-                     alt="Logo actual" 
-                     class="img-thumbnail" 
-                     style="max-height: 100px;">
-                <input type="hidden" name="imagen_actual" value="${imagen}">
-            `);
+        if (imagen && imagen !== 'default.png') {
+            $('#previewImagen').empty().append(
+                $('<img>', {
+                    src: `${baseUrl}public/uploads/empresas/${encodeURIComponent(imagen)}`,
+                    alt: 'Logo actual',
+                    'class': 'img-thumbnail'
+                }).css('max-height', '100px')
+            );
         } else {
             $('#previewImagen').html('<p class="text-muted">No hay logo cargado</p>');
         }
@@ -344,7 +344,7 @@ $(document).ready(function () {
         const textoEstadoCapitalizado = textoEstado.charAt(0).toUpperCase() + textoEstado.slice(1);
 
         Swal.fire({
-            title: `¿${textoEstadoCapitalizado} esta empresa?`,
+            titleText: `¿${textoEstadoCapitalizado} esta empresa?`,
             text: `La empresa será ${textoEstado}da.`,
             icon: 'warning',
             showCancelButton: true,

@@ -17,13 +17,21 @@ class EmpresaController
     private $modelo;
 
     /**
+     * Servicio de subida del logo
+     * @var ImagenService
+     */
+    private $imagenService;
+
+    /**
      * Constructor de la clase
      */
     public function __construct()
     {
         // Incluir el modelo de Empresa
         require_once __DIR__ . '/../../models/Empresa.php';
+        require_once __DIR__ . '/../../services/ImagenService.php';
         $this->modelo = new Empresa();
+        $this->imagenService = new ImagenService(__DIR__ . '/../../public/uploads/empresas/');
     }
 
     /**
@@ -58,7 +66,8 @@ class EmpresaController
             'direccion' => isset($post_data['direccion']) ? trim($post_data['direccion']) : '',
             'telefono' => isset($post_data['telefono']) ? trim($post_data['telefono']) : '',
             'email' => isset($post_data['email']) ? trim($post_data['email']) : '',
-            'imagen' => isset($post_data['imagen']) ? trim($post_data['imagen']) : '',
+            // El logo llega como archivo en $_FILES: nunca se acepta un nombre desde el POST
+            'imagen' => '',
             'estado' => isset($post_data['estado']) ? (int)$post_data['estado'] : 1
         ];
     }
@@ -83,6 +92,14 @@ class EmpresaController
 
         if (!empty($errores)) {
             return ['success' => false, 'message' => $errores[0]];
+        }
+
+        if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
+            $logo = $this->imagenService->procesarImagen($_FILES['imagen']);
+            if (!$logo) {
+                return ['success' => false, 'message' => 'Error al procesar el logo. Verifique el formato y tamaño.'];
+            }
+            $datos['imagen'] = $logo;
         }
 
         // Guardar empresa usando el modelo
@@ -168,8 +185,23 @@ class EmpresaController
             ];
         }
 
+        // Conservar el logo actual salvo que se suba uno nuevo
+        $datos['imagen'] = $empresa_actual['imagen'];
+        $logo_nuevo = null;
+        if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
+            $logo_nuevo = $this->imagenService->procesarImagen($_FILES['imagen']);
+            if (!$logo_nuevo) {
+                return ['success' => false, 'message' => 'Error al procesar el logo. Verifique el formato y tamaño.'];
+            }
+            $datos['imagen'] = $logo_nuevo;
+        }
+
         // Actualizar empresa
         if ($this->modelo->actualizar($id, $datos)) {
+            // El logo anterior se borra recién con el UPDATE confirmado
+            if ($logo_nuevo && $empresa_actual['imagen'] && $empresa_actual['imagen'] !== 'default.png') {
+                $this->imagenService->eliminarImagen($empresa_actual['imagen']);
+            }
             return [
                 'success' => true,
                 'message' => 'Empresa actualizada correctamente',
