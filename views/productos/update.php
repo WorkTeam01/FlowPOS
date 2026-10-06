@@ -74,6 +74,7 @@ include_once '../layouts/header.php';
                 <form action="<?= $URL; ?>controllers/productos/actualizar_producto.php" method="POST" enctype="multipart/form-data" id="formEditarProducto">
                     <?= csrfField() ?>
                     <input type="hidden" name="idproducto" value="<?= $producto['idproducto']; ?>">
+                    <input type="hidden" name="stock_original" value="<?= (int) $producto['stock']; ?>">
 
                     <!-- Información Básica -->
                     <div class="card card-outline card-warning mb-3">

@@ -71,12 +71,19 @@ class ProductoController
             'descripcion' => isset($post_data['descripcion']) && !empty($post_data['descripcion']) ? trim($post_data['descripcion']) : null,
             'stock' => isset($post_data['stock']) ? (int)$post_data['stock'] : 0,
             'stockminimo' => isset($post_data['stockminimo']) ? (int)$post_data['stockminimo'] : 0,
-            'stockmaximo' => isset($post_data['stockmaximo']) && !empty($post_data['stockmaximo']) ? (int)$post_data['stockmaximo'] : null,
+            'stockmaximo' => isset($post_data['stockmaximo']) ? max(0, (int)$post_data['stockmaximo']) : 0,
             'precioventa' => isset($post_data['precioventa']) ? (float)$post_data['precioventa'] : 0,
             'preciocompra' => isset($post_data['preciocompra']) ? (float)$post_data['preciocompra'] : 0,
             'estado' => isset($post_data['estado']) ? (int)$post_data['estado'] : 1,
             'imagen' => null // Se establece más tarde
         ];
+
+        // Máximo opcional en el formulario, pero la columna es NOT NULL con
+        // CHECK (stockmaximo >= stockminimo): sin valor se usa el mayor entre
+        // el mínimo y el stock inicial
+        if ($datos['stockmaximo'] <= 0) {
+            $datos['stockmaximo'] = max($datos['stockminimo'], $datos['stock']);
+        }
 
         return $datos;
     }
@@ -99,6 +106,11 @@ class ProductoController
 
         if (!empty($errores)) {
             return ['success' => false, 'message' => $errores[0], 'icon' => 'error', 'redirect' => 'create.php'];
+        }
+
+        // El código es opcional en el formulario pero NOT NULL UNIQUE en la tabla
+        if (empty($datos['codigo'])) {
+            $datos['codigo'] = $this->modelo->generarCodigo();
         }
 
         // Procesar imagen usando el servicio
@@ -199,6 +211,17 @@ class ProductoController
 
         if (!empty($errores)) {
             return ['success' => false, 'message' => $errores[0], 'icon' => 'error', 'redirect' => "update.php?id=$id"];
+        }
+
+        // Código vacío en la edición: conservar el existente en vez de escribir NULL
+        if (empty($datos['codigo'])) {
+            $datos['codigo'] = $producto_actual['codigo'];
+        }
+
+        // El stock se aplica como diferencia respecto al valor con que se abrió el
+        // formulario, para no pisar ventas/compras ocurridas mientras estaba abierto
+        if (isset($_POST['stock_original']) && is_numeric($_POST['stock_original'])) {
+            $datos['stock_delta'] = (int)$datos['stock'] - (int)$_POST['stock_original'];
         }
 
         // Procesar nueva imagen si se subió

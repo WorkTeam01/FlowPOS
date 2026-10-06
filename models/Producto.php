@@ -160,12 +160,15 @@ class Producto
     public function actualizar($id, $datos)
     {
         try {
+            // Con 'stock_delta' el ajuste es relativo y atómico; sin él, valor absoluto
+            $usaDelta = isset($datos['stock_delta']);
+            $expresionStock = $usaDelta ? 'stock + :stock' : ':stock';
             $query = "UPDATE {$this->tabla} SET 
                      idcategoria = :idcategoria, 
                      codigo = :codigo, 
                      nombre = :nombre, 
                      descripcion = :descripcion, 
-                     stock = :stock, 
+                     stock = {$expresionStock}, 
                      stockminimo = :stockminimo, 
                      stockmaximo = :stockmaximo, 
                      precioventa = :precioventa, 
@@ -186,7 +189,7 @@ class Producto
             // Manejar campos opcionales
             $this->bindOptionalParam($stmt, ':codigo', $datos['codigo'] ?? null);
             $this->bindOptionalParam($stmt, ':descripcion', $datos['descripcion'] ?? null);
-            $this->bindOptionalParam($stmt, ':stock', $datos['stock'] ?? 0, PDO::PARAM_INT);
+            $this->bindOptionalParam($stmt, ':stock', $usaDelta ? (int)$datos['stock_delta'] : ($datos['stock'] ?? 0), PDO::PARAM_INT);
             $this->bindOptionalParam($stmt, ':stockminimo', $datos['stockminimo'] ?? 0, PDO::PARAM_INT);
             $this->bindOptionalParam($stmt, ':stockmaximo', $datos['stockmaximo'] ?? null, PDO::PARAM_INT);
             $this->bindOptionalParam($stmt, ':imagen', $datos['imagen'] ?? null);
@@ -260,6 +263,20 @@ class Producto
     public function desactivar($id)
     {
         return $this->actualizarEstado($id, 0);
+    }
+
+    /**
+     * Genera un código PRD-NNNNNN que no exista todavía
+     *
+     * @return string Código único
+     */
+    public function generarCodigo()
+    {
+        do {
+            $codigo = 'PRD-' . str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        } while ($this->existeCodigo($codigo));
+
+        return $codigo;
     }
 
     /**
@@ -362,7 +379,7 @@ class Producto
         }
 
         // Validar stock mínimo y máximo
-        if (isset($datos['stockminimo']) && isset($datos['stockmaximo']) && $datos['stockmaximo'] !== null) {
+        if (isset($datos['stockminimo']) && !empty($datos['stockmaximo'])) {
             if ($datos['stockminimo'] > $datos['stockmaximo']) {
                 $errores[] = "El stock mínimo no puede ser mayor al stock máximo";
             }
