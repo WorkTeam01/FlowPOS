@@ -80,7 +80,7 @@ $(document).ready(function () {
     if (flash) {
         Toast.fire({
             icon: flash.dataset.icono,
-            title: flash.dataset.mensaje
+            titleText: flash.dataset.mensaje
         });
     }
 });

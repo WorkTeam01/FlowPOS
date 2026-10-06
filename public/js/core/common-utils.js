@@ -277,6 +277,24 @@ function formatCurrency(amount, decimals = 2) {
 }
 
 /**
+ * Decodifica las entidades de un texto guardado con escape-at-storage para
+ * asignarlo con `textContent`/`createTextNode`, que no interpretan HTML: sin
+ * esto un nombre como "A &amp; B" se vería con la entidad literal.
+ * Solo para sinks de texto; nunca para `innerHTML`.
+ *
+ * @param {*} valor - Texto tal como llega de la BD
+ * @returns {string} Texto con las entidades decodificadas
+ */
+function textoDesdeBD(valor) {
+    if (valor === null || valor === undefined) {
+        return '';
+    }
+    const decodificador = document.createElement('textarea');
+    decodificador.innerHTML = String(valor);
+    return decodificador.value;
+}
+
+/**
  * Normaliza una celda de DataTables para exportarla (CSV, Excel, PDF, impresión).
  *
  * Al declarar `exportOptions.format.body` en un botón de export se desactiva el
@@ -328,37 +346,6 @@ function exportarTextoPlano(data) {
         return accionOriginal.call(this, e, dt, button, config);
     };
 })();
-
-/**
- * Muestra una notificación toast usando SweetAlert2
- * 
- * @param {string} message - Mensaje a mostrar
- * @param {string} icon - Icono (success, error, warning, info)
- * @param {number} timer - Tiempo en milisegundos (opcional)
- */
-function showToast(message, icon = 'success', timer = 3000) {
-    if (typeof Swal !== 'undefined') {
-        const Toast = Swal.mixin({
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: timer,
-            timerProgressBar: true,
-            didOpen: (toast) => {
-                toast.addEventListener('mouseenter', Swal.stopTimer);
-                toast.addEventListener('mouseleave', Swal.resumeTimer);
-            }
-        });
-
-        Toast.fire({
-            icon: icon,
-            title: message
-        });
-    } else {
-        // Fallback si Swal no está disponible
-        alert(message);
-    }
-}
 
 /**
  * Realiza una solicitud AJAX simplificada
@@ -525,6 +512,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     Toast.fire({
         icon: flash.dataset.icono,
-        title: flash.dataset.mensaje
+        titleText: flash.dataset.mensaje
     });
 });

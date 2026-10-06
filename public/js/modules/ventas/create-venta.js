@@ -154,10 +154,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const infoSpan = document.createElement('span');
             const nombreStrong = document.createElement('strong');
-            nombreStrong.textContent = producto.nombre;
+            nombreStrong.textContent = textoDesdeBD(producto.nombre);
             const detalleSmall = document.createElement('small');
             detalleSmall.className = 'text-muted d-block';
-            detalleSmall.textContent = `Código: ${producto.codigo || 'N/A'} · Stock: ${producto.stock}`;
+            detalleSmall.textContent = `Código: ${textoDesdeBD(producto.codigo) || 'N/A'} · Stock: ${producto.stock}`;
             infoSpan.appendChild(nombreStrong);
             infoSpan.appendChild(detalleSmall);
 
@@ -227,10 +227,10 @@ document.addEventListener('DOMContentLoaded', function () {
             item.className = 'list-group-item list-group-item-action';
 
             const numDoc = document.createElement('strong');
-            numDoc.textContent = cliente.numdocumento;
+            numDoc.textContent = textoDesdeBD(cliente.numdocumento);
             item.appendChild(numDoc);
             item.appendChild(document.createTextNode(
-                ` - ${cliente.nombres} ${cliente.apellidopaterno} ${cliente.apellidomaterno || ''}`
+                ` - ${textoDesdeBD(cliente.nombres)} ${textoDesdeBD(cliente.apellidopaterno)} ${textoDesdeBD(cliente.apellidomaterno)}`
             ));
 
             item.addEventListener('click', () => {
@@ -845,8 +845,8 @@ document.addEventListener('DOMContentLoaded', function () {
     function seleccionarCliente(cliente) {
         document.getElementById('idcliente').value = cliente.idcliente;
         document.getElementById('nombre-cliente').textContent =
-            `${cliente.nombres} ${cliente.apellidopaterno} ${cliente.apellidomaterno || ''}`;
-        document.getElementById('documento-cliente').textContent = cliente.numdocumento;
+            `${textoDesdeBD(cliente.nombres)} ${textoDesdeBD(cliente.apellidopaterno)} ${textoDesdeBD(cliente.apellidomaterno)}`;
+        document.getElementById('documento-cliente').textContent = textoDesdeBD(cliente.numdocumento);
         document.getElementById('sin-cliente-seleccionado').style.display = 'none';
         document.getElementById('info-cliente-seleccionado').style.display = 'block';
         document.getElementById('cliente-feedback').style.setProperty('display', 'none', 'important');

@@ -1,4 +1,8 @@
 <?php
+// Estas vistas solo se incluyen desde index.php; la guarda evita que una petición directa sirva el esqueleto sin sesión
+require_once __DIR__ . '/../layouts/session.php';
+requireLogin();
+
 // Este dashboard se muestra para usuarios que no tienen un rol específico
 // o cuando se necesita mostrar información general del sistema
 

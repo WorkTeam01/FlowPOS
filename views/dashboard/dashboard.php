@@ -1,4 +1,8 @@
 <?php
+// Estas vistas solo se incluyen desde index.php; la guarda evita que una petición directa sirva el esqueleto sin sesión
+require_once __DIR__ . '/../layouts/session.php';
+requireLogin();
+
 // Incluir el controlador del dashboard
 require_once __DIR__ . '/../../controllers/dashboard/DashboardController.php';
 $dashboardController = new DashboardController();

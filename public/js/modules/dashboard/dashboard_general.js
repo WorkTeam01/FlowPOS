@@ -11,12 +11,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return currency + ' ' + parseFloat(valor).toFixed(2);
     }
 
-    function esc(valor) {
-        const div = document.createElement('div');
-        div.textContent = valor ?? '';
-        return div.innerHTML;
-    }
-
     // Función para cargar los datos reales del dashboard vía AJAX
     async function cargarDatosDashboard() {
         try {
@@ -67,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 clientesRecientes.innerHTML = data.clientesRecientes.map(cliente => `
                     <li>
                         <img src="${baseUrl}public/img/user_default.jpg" alt="">
-                        <a class="users-list-name" href="#">${esc(cliente.nombre)}</a>
+                        <a class="users-list-name" href="#">${cliente.nombre}</a>
                         <span class="users-list-date">${formatoFecha(cliente.fecha)}</span>
                     </li>
                 `).join('');

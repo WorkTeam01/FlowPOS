@@ -95,7 +95,7 @@ class SucursalController
                 ]
             ];
         } else {
-            return ['success' => false, 'message' => 'Error al crear la sucursal: ' . $this->modelo->getLastError()];
+            return ['success' => false, 'message' => mensajeErrorSeguro('Error al crear la sucursal', $this->modelo->getLastError())];
         }
     }
 
@@ -152,8 +152,14 @@ class SucursalController
             return ['success' => false, 'message' => $errores[0]];
         }
 
+        // El modal de edición ofrece el estado: se aplica con la misma regla que el botón de desactivar
+        $cambiaEstado = (int) $datos['estado'] !== (int) $sucursal_actual['estado'];
+        if ($cambiaEstado && $datos['estado'] == 0 && $this->modelo->contarUsuarios($id) > 0) {
+            return ['success' => false, 'message' => 'No se puede desactivar la sucursal porque tiene usuarios asociados'];
+        }
+
         // Actualizar sucursal
-        if ($this->modelo->actualizar($id, $datos)) {
+        if ($this->modelo->actualizar($id, $datos) && (!$cambiaEstado || $this->modelo->actualizarEstado($id, (int) $datos['estado']))) {
             return [
                 'success' => true,
                 'message' => 'Sucursal actualizada correctamente',
@@ -166,7 +172,7 @@ class SucursalController
                 ]
             ];
         } else {
-            $error_message = 'Error al actualizar la sucursal: ' . $this->modelo->getLastError();
+            $error_message = mensajeErrorSeguro('Error al actualizar la sucursal', $this->modelo->getLastError());
             return ['success' => false, 'message' => $error_message];
         }
     }
@@ -211,7 +217,7 @@ class SucursalController
         } else {
             return [
                 'success' => false,
-                'message' => 'Error al cambiar el estado de la sucursal: ' . $this->modelo->getLastError()
+                'message' => mensajeErrorSeguro('Error al cambiar el estado de la sucursal', $this->modelo->getLastError())
             ];
         }
     }
