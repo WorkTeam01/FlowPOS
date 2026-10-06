@@ -37,15 +37,6 @@ class AuthController
     }
 
     /**
-     * Muestra la página de login
-     */
-    public function showLoginForm()
-    {
-        // Incluir la vista del formulario de login
-        require_once __DIR__ . '/../../views/login/login.php';
-    }
-
-    /**
      * Procesa el formulario de login
      */
     public function login()
@@ -111,7 +102,7 @@ class AuthController
                     $usuario_id = $this->modelo->obtenerIdPorCorreo($identifier);
                 } else {
                     $rateLimiter->registrarFallo($identificadorNormalizado, $ip);
-                    $_SESSION['mensaje'] = 'El correo electrónico no está registrado en el sistema';
+                    $_SESSION['mensaje'] = 'Credenciales incorrectas';
                     $_SESSION['icono'] = 'error';
                     header('Location: ' . getSafeRedirectBack($URL));
                     exit;
@@ -123,7 +114,7 @@ class AuthController
                     $usuario_id = $this->modelo->obtenerIdPorNumDocumento($identifier);
                 } else {
                     $rateLimiter->registrarFallo($identificadorNormalizado, $ip);
-                    $_SESSION['mensaje'] = 'El número de documento no está registrado en el sistema';
+                    $_SESSION['mensaje'] = 'Credenciales incorrectas';
                     $_SESSION['icono'] = 'error';
                     header('Location: ' . getSafeRedirectBack($URL));
                     exit;
@@ -135,8 +126,13 @@ class AuthController
 
             if ($estado_usuario === 0) {
                 $rateLimiter->registrarFallo($identificadorNormalizado, $ip);
-                $_SESSION['mensaje'] = 'Su cuenta está desactivada. Contacte al administrador.';
-                $_SESSION['icono'] = 'warning';
+                // Solo quien conoce la clave aprende que la cuenta está desactivada;
+                // si no, la respuesta es idéntica a la de un usuario inexistente
+                $claveValida = $this->modelo->verificarClaveUsuario($usuario_id, $clave);
+                $_SESSION['mensaje'] = $claveValida
+                    ? 'Su cuenta está desactivada. Contacte al administrador.'
+                    : 'Credenciales incorrectas';
+                $_SESSION['icono'] = $claveValida ? 'warning' : 'error';
                 header('Location: ' . getSafeRedirectBack($URL));
                 exit;
             }
@@ -165,9 +161,8 @@ class AuthController
                 $_SESSION['icono'] = 'success';
                 header('Location: ../../');
             } else {
-                // Credenciales incorrectas (la contraseña es incorrecta)
                 $rateLimiter->registrarFallo($identificadorNormalizado, $ip);
-                $_SESSION['mensaje'] = 'La contraseña ingresada es incorrecta';
+                $_SESSION['mensaje'] = 'Credenciales incorrectas';
                 $_SESSION['icono'] = 'error';
                 header('Location: ' . getSafeRedirectBack($URL));
             }

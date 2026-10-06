@@ -186,7 +186,7 @@ class UsuarioController
         if ($this->modelo->crear($datos)) {
             return ['success' => true, 'message' => 'Usuario creado correctamente', 'icon' => 'success', 'redirect' => 'index.php'];
         } else {
-            return ['success' => false, 'message' => 'Error al crear el usuario: ' . $this->modelo->getLastError(), 'icon' => 'error', 'redirect' => 'create.php'];
+            return ['success' => false, 'message' => mensajeErrorSeguro('Error al crear el usuario', $this->modelo->getLastError()), 'icon' => 'error', 'redirect' => 'create.php'];
         }
     }
 
@@ -260,6 +260,12 @@ class UsuarioController
         // Solo un administrador puede asignar o conservar un rol con es_admin=1
         if ($this->esRolAdmin($rolSeleccionado['rol']) && !$this->authService->esAdministrador($_SESSION['usuario_id'])) {
             return ['success' => false, 'message' => 'No tiene permisos para asignar un rol de Administrador', 'icon' => 'error', 'redirect' => "update.php?id=$id"];
+        }
+
+        // El sistema no puede quedarse sin administradores activos
+        if ($this->esRolAdmin($rolActual) && !$this->esRolAdmin($rolSeleccionado['rol'])
+            && $this->modelo->contarOtrosAdministradoresActivos($id) === 0) {
+            return ['success' => false, 'message' => 'No se puede quitar el rol al último administrador activo', 'icon' => 'error', 'redirect' => "update.php?id=$id"];
         }
 
         // Guardar imagen actual para posible eliminación posterior
@@ -363,116 +369,12 @@ class UsuarioController
             $error_message = 'Error al actualizar el usuario.';
             if (!$actualizado) {
                 $db_error = $this->modelo->getLastError();
-                $error_message .= ' Problema con datos del usuario: ' . ($db_error ? $db_error : 'Error desconocido.');
+                $error_message .= ' ' . mensajeErrorSeguro('Problema con datos del usuario', $db_error);
             }
             if (!$clave_actualizada) {
                 $error_message .= ' Problema al actualizar contraseña.';
             }
             return ['success' => false, 'message' => $error_message, 'icon' => 'error', 'redirect' => "update.php?id=$id"];
-        }
-    }
-
-    /**
-     * Procesa el formulario para actualizar los datos del perfil del usuario logueado
-     */
-    public function actualizarPerfil()
-    {
-        global $URL;
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-            return ['success' => false, 'message' => 'Acceso no permitido.', 'icon' => 'warning', 'redirect' => 'views/usuarios/perfil.php'];
-        }
-
-        if (!isAuthenticated()) {
-            return ['success' => false, 'message' => 'Sesión no iniciada.', 'icon' => 'error', 'redirect' => 'views/login/login.php'];
-        }
-
-        $id = $_SESSION['usuario_id'];
-
-        // Obtener datos actuales del usuario
-        $usuario_actual = $this->modelo->getById($id);
-        if (!$usuario_actual) {
-            return ['success' => false, 'message' => 'Usuario no encontrado para actualizar', 'icon' => 'error', 'redirect' => 'views/usuarios/perfil.php'];
-        }
-
-        // Guardar imagen actual
-        $imagen_antigua = $usuario_actual['imagen'];
-
-        // Preparar solo los datos que el usuario puede modificar desde el perfil
-        $datos = [
-            'nombre' => isset($_POST['nombre']) ? trim($_POST['nombre']) : $usuario_actual['nombre'],
-            'apellidopaterno' => isset($_POST['apellidopaterno']) ? trim($_POST['apellidopaterno']) : $usuario_actual['apellidopaterno'],
-            'apellidomaterno' => isset($_POST['apellidomaterno']) ? (!empty($_POST['apellidomaterno']) ? trim($_POST['apellidomaterno']) : null) : $usuario_actual['apellidomaterno'],
-            'direccion' => isset($_POST['direccion']) && !empty($_POST['direccion']) ? trim($_POST['direccion']) : $usuario_actual['direccion'],
-            'telefono' => isset($_POST['telefono']) && !empty($_POST['telefono']) ? trim($_POST['telefono']) : $usuario_actual['telefono'],
-            'correo' => isset($_POST['correo']) && !empty($_POST['correo']) ? trim($_POST['correo']) : $usuario_actual['correo'],
-            // Mantener los campos administrativos como estaban
-            'tipodocumento' => $usuario_actual['tipodocumento'],
-            'numdocumento' => $usuario_actual['numdocumento'],
-            'idrol' => $usuario_actual['idrol'],
-            'estado' => $usuario_actual['estado'],
-            'imagen' => $imagen_antigua
-        ];
-
-        // Sanitizar los datos
-        $datos = $this->modelo->sanitizarDatos($datos);
-
-        // Validación básica para el perfil
-        $errores = [];
-
-        // Solo validar los campos que el usuario puede modificar
-        if (empty($datos['nombre'])) {
-            $errores[] = 'El nombre no puede estar vacío.';
-        }
-
-        if (empty($datos['apellidopaterno'])) {
-            $errores[] = 'El apellido paterno no puede estar vacío.';
-        }
-
-        if (empty($datos['correo'])) {
-            $errores[] = 'El correo electrónico no puede estar vacío.';
-        } elseif (!filter_var($datos['correo'], FILTER_VALIDATE_EMAIL)) {
-            $errores[] = 'El formato del correo electrónico no es válido.';
-        } elseif ($datos['correo'] !== $usuario_actual['correo'] && $this->modelo->existeCorreo($datos['correo'], $id)) {
-            $errores[] = 'El correo electrónico ya está registrado para otro usuario.';
-        }
-
-        if (!empty($errores)) {
-            return ['success' => false, 'message' => $errores[0], 'icon' => 'error', 'redirect' => 'views/usuarios/perfil.php'];
-        }
-
-        // Procesar nueva imagen si se subió
-        $nueva_imagen_path = null;
-        if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
-            $nueva_imagen_path = $this->imagenService->procesarImagen($_FILES['imagen']);
-            if ($nueva_imagen_path) {
-                $datos['imagen'] = $nueva_imagen_path;
-            } else {
-                return ['success' => false, 'message' => 'Error al procesar la nueva imagen. Verifique el formato y tamaño.', 'icon' => 'error', 'redirect' => 'views/usuarios/perfil.php'];
-            }
-        }
-
-        if ($this->modelo->actualizar($id, $datos)) {
-            // La imagen anterior se borra solo después de que el UPDATE
-            // confirmó (mismo criterio que en la actualización de usuario):
-            // si falla, el registro sigue apuntando al fichero viejo.
-            if ($nueva_imagen_path && $imagen_antigua && $imagen_antigua !== 'user_default.jpg' && $imagen_antigua !== $nueva_imagen_path) {
-                $this->imagenService->eliminarImagen($imagen_antigua);
-            }
-            // Actualizar datos de sesión
-            $_SESSION['usuario_nombre'] = $datos['nombre'];
-            $_SESSION['usuario_correo'] = $datos['correo'];
-            if (isset($datos['imagen']) && $datos['imagen'] !== $imagen_antigua) {
-                $_SESSION['usuario_imagen'] = $datos['imagen'];
-            }
-            return ['success' => true, 'message' => 'Perfil actualizado correctamente', 'icon' => 'success', 'redirect' => 'views/usuarios/perfil.php'];
-        } else {
-            // El UPDATE no se aplicó: se descarta la recién subida para no
-            // dejarla huérfana en disco.
-            if ($nueva_imagen_path) {
-                $this->imagenService->eliminarImagen($nueva_imagen_path);
-            }
-            $db_error = $this->modelo->getLastError();
-            return ['success' => false, 'message' => 'Error al actualizar el perfil: ' . ($db_error ?: 'Error desconocido.'), 'icon' => 'error', 'redirect' => 'views/usuarios/perfil.php'];
         }
     }
 
@@ -497,6 +399,10 @@ class UsuarioController
 
         $nuevo_estado = $estado_actual == 1 ? 0 : 1; // Cambia el estado
 
+        if ($nuevo_estado == 0 && $this->esRolAdmin($rolObjetivo) && $this->modelo->contarOtrosAdministradoresActivos((int) $id) === 0) {
+            return ['success' => false, 'message' => 'No se puede desactivar al último administrador activo', 'icon' => 'error'];
+        }
+
         if ($this->modelo->actualizarEstado($id, $nuevo_estado)) {
             $accion = $nuevo_estado == 1 ? 'activado' : 'desactivado';
             if ($nuevo_estado == 0) {
@@ -505,7 +411,7 @@ class UsuarioController
             }
             return ['success' => true, 'message' => "Usuario $accion correctamente", 'icon' => 'success'];
         } else {
-            return ['success' => false, 'message' => 'Error al cambiar el estado del usuario: ' . $this->modelo->getLastError(), 'icon' => 'error'];
+            return ['success' => false, 'message' => mensajeErrorSeguro('Error al cambiar el estado del usuario', $this->modelo->getLastError()), 'icon' => 'error'];
         }
     }
 }

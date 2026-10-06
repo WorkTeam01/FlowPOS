@@ -364,27 +364,6 @@ class Usuario
     }
 
     /**
-     * Obtiene el estado de un usuario por su correo
-     * 
-     * @param string $correo Correo del usuario
-     * @return int|null Estado del usuario (1: activo, 0: inactivo) o null si no existe
-     */
-    public function obtenerEstadoPorCorreo($correo)
-    {
-        try {
-            $query = "SELECT estado FROM {$this->tabla} WHERE correo = :correo";
-            $stmt = $this->conexion->prepare($query);
-            $stmt->bindParam(':correo', $correo, PDO::PARAM_STR);
-            $stmt->execute();
-
-            return $stmt->fetchColumn();
-        } catch (PDOException $e) {
-            $this->lastError = $e->getMessage();
-            return null;
-        }
-    }
-
-    /**
      * Verifica si existe un usuario con el número de documento dado
      * 
      * @param string $numDocumento Número de documento a verificar
@@ -465,6 +444,50 @@ class Usuario
         } catch (PDOException $e) {
             $this->lastError = $e->getMessage();
             return null;
+        }
+    }
+
+    /**
+     * Cuenta los usuarios activos con rol administrador, sin contar a uno dado
+     *
+     * @param int $excluirId ID de usuario a excluir del conteo
+     * @return int Cantidad de otros administradores activos
+     */
+    public function contarOtrosAdministradoresActivos($excluirId)
+    {
+        try {
+            $stmt = $this->conexion->prepare(
+                "SELECT COUNT(*) FROM usuarios u
+                 JOIN rol r ON r.idrol = u.idrol
+                 WHERE r.es_admin = 1 AND r.estado = 1 AND u.estado = 1 AND u.idusuario <> :id"
+            );
+            $stmt->bindParam(':id', $excluirId, PDO::PARAM_INT);
+            $stmt->execute();
+            return (int) $stmt->fetchColumn();
+        } catch (PDOException $e) {
+            $this->lastError = $e->getMessage();
+            return 0;
+        }
+    }
+
+    /**
+     * Comprueba la contraseña de un usuario sin importar su estado
+     *
+     * @param int $id ID del usuario
+     * @param string $clave Contraseña en texto plano
+     * @return bool True si coincide con el hash guardado
+     */
+    public function verificarClaveUsuario($id, $clave)
+    {
+        try {
+            $stmt = $this->conexion->prepare("SELECT clave FROM usuarios WHERE idusuario = :id");
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
+            $hash = $stmt->fetchColumn();
+            return $hash && password_verify($clave, $hash);
+        } catch (PDOException $e) {
+            $this->lastError = $e->getMessage();
+            return false;
         }
     }
 
