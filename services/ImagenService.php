@@ -113,6 +113,12 @@ class ImagenService
             return true;
         }
 
+        // El nombre viene de la BD: filas antiguas pudieron guardar texto del POST
+        // (p. ej. '../../.env'), así que solo se acepta un nombre sin directorios
+        if ($nombre_archivo !== basename($nombre_archivo)) {
+            return false;
+        }
+
         $ruta_completa = $this->upload_dir . $nombre_archivo;
         if (file_exists($ruta_completa)) {
             return unlink($ruta_completa);
