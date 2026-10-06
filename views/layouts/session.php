@@ -10,6 +10,13 @@
 
 // Iniciar sesión si no está iniciada
 if (session_status() == PHP_SESSION_NONE) {
+    // Cookie inaccesible desde JS (un XSS no la roba) y no enviada en peticiones
+    // cross-site; 'secure' solo bajo HTTPS para no romper el entorno local
+    session_set_cookie_params([
+        'httponly' => true,
+        'samesite' => 'Lax',
+        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+    ]);
     session_start();
 }
 

@@ -1,0 +1,15 @@
+# Raíz de FlowPOS: ningún archivo de configuración, repositorio o documentación
+
+# interna debe poder descargarse por HTTP (el .env contiene las credenciales de BD).
+
+Options -Indexes
+
+<FilesMatch "(?i)^(\.env._|\.gitignore|\.gitattributes|._\.(sql|md|log|bak|sh|lock|dist))$">
+Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Repositorio, esquema/seeds, documentación y configuración interna de herramientas
+    RewriteRule ^(\.git|\.claude|database|docs|specs)(/|$) - [F,L]
+</IfModule>
