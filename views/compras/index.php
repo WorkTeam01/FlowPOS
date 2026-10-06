@@ -24,7 +24,7 @@ $esAdmin = $authService->esAdministrador($idusuario);
 
 $controller = new CompraController();
 $compras = $controller->index($esAdmin ? null : $idusuario);
-$estadisticas = $controller->getEstadisticas();
+$estadisticas = $controller->getEstadisticas($esAdmin ? null : $idusuario);
 ?>
 
 <!-- Content Header (Page header) -->

@@ -584,9 +584,13 @@ class Venta
      * 
      * @return array Estadísticas de ventas (ventas hoy, cliente que más compró, producto más vendido)
      */
-    public function getEstadisticas()
+    public function getEstadisticas($idusuario = null)
     {
         try {
+            // Con $idusuario las cifras se limitan a lo que ese usuario registró
+            $filtroSimple = $idusuario ? ' AND idusuario = :idu' : '';
+            $filtroAlias = $idusuario ? ' AND v.idusuario = :idu' : '';
+
             $estadisticas = [
                 'ventas_hoy' => 0,
                 'total_hoy' => 0,
@@ -600,9 +604,12 @@ class Venta
             // Ventas hoy (cantidad y monto total)
             $query = "SELECT COUNT(*) as cantidad, SUM(totalventa) as total 
                      FROM {$this->tabla} 
-                     WHERE DATE(fechacreacion) = :hoy AND estado = 1";
+                     WHERE DATE(fechacreacion) = :hoy AND estado = 1{$filtroSimple}";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':hoy', $hoy, PDO::PARAM_STR);
+            if ($idusuario) {
+                $stmt->bindValue(':idu', (int) $idusuario, PDO::PARAM_INT);
+            }
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -614,12 +621,15 @@ class Venta
                      COUNT(v.idventa) as compras, SUM(v.totalventa) as total_gastado
                      FROM {$this->tabla} v
                      LEFT JOIN cliente c ON v.idcliente = c.idcliente
-                     WHERE DATE(v.fechacreacion) = :hoy AND v.estado = 1
+                     WHERE DATE(v.fechacreacion) = :hoy AND v.estado = 1{$filtroAlias}
                      GROUP BY v.idcliente
                      ORDER BY total_gastado DESC
                      LIMIT 1";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':hoy', $hoy, PDO::PARAM_STR);
+            if ($idusuario) {
+                $stmt->bindValue(':idu', (int) $idusuario, PDO::PARAM_INT);
+            }
             $stmt->execute();
             $estadisticas['cliente_mas_compro'] = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -630,12 +640,15 @@ class Venta
                      FROM {$this->tablaDetalle} dv
                      JOIN {$this->tabla} v ON dv.idventa = v.idventa
                      JOIN producto p ON dv.idproducto = p.idproducto
-                     WHERE DATE(v.fechacreacion) = :hoy AND v.estado = 1
+                     WHERE DATE(v.fechacreacion) = :hoy AND v.estado = 1{$filtroAlias}
                      GROUP BY dv.idproducto
                      ORDER BY cantidad_vendida DESC
                      LIMIT 1";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':hoy', $hoy, PDO::PARAM_STR);
+            if ($idusuario) {
+                $stmt->bindValue(':idu', (int) $idusuario, PDO::PARAM_INT);
+            }
             $stmt->execute();
             $estadisticas['producto_mas_vendido'] = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -648,30 +661,6 @@ class Venta
                 'cliente_mas_compro' => null,
                 'producto_mas_vendido' => null
             ];
-        }
-    }
-
-    /**
-     * Verifica si una venta tiene pagos mixtos
-     * 
-     * @param int $idVenta ID de la venta
-     * @return bool True si tiene pagos mixtos, False en caso contrario
-     */
-    public function tienePagosMixtos($idVenta)
-    {
-        try {
-            $query = "SELECT COUNT(DISTINCT metodopago) as num_metodos 
-                     FROM {$this->tablaPago} 
-                     WHERE idventa = :idVenta AND estado = 1";
-            $stmt = $this->conexion->prepare($query);
-            $stmt->bindParam(':idVenta', $idVenta, PDO::PARAM_INT);
-            $stmt->execute();
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            return ($result['num_metodos'] ?? 0) > 1;
-        } catch (PDOException $e) {
-            $this->lastError = $e->getMessage();
-            return false;
         }
     }
 

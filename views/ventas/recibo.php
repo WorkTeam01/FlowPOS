@@ -74,10 +74,8 @@ try {
         }
     }
 
-    // Verificar sesión
-    if (!isAuthenticated()) {
-        die("Error: Sesión no iniciada");
-    }
+    // Verificar sesión (incluye timeout, IP/User-Agent y revocación, no solo la bandera de login)
+    requireLogin();
 
     // Verificar permisos
     $idusuario = $_SESSION['usuario_id'];

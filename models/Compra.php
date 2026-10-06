@@ -141,9 +141,13 @@ class Compra
      *
      * @return array ['compras_hoy', 'total_hoy', 'usuario_mas_compro', 'producto_mas_comprado']
      */
-    public function getEstadisticas()
+    public function getEstadisticas($idusuario = null)
     {
         try {
+            // Con $idusuario las cifras se limitan a lo que ese usuario registró
+            $filtroSimple = $idusuario ? ' AND idusuario = :idu' : '';
+            $filtroAlias = $idusuario ? ' AND c.idusuario = :idu' : '';
+
             $estadisticas = [
                 'compras_hoy' => 0,
                 'total_hoy' => 0,
@@ -156,9 +160,12 @@ class Compra
             // Compras hoy (cantidad y monto total)
             $query = "SELECT COUNT(*) as cantidad, SUM(totalcompra) as total
                      FROM {$this->tabla}
-                     WHERE DATE(fechacompra) = :hoy AND estado = 1";
+                     WHERE DATE(fechacompra) = :hoy AND estado = 1{$filtroSimple}";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':hoy', $hoy, PDO::PARAM_STR);
+            if ($idusuario) {
+                $stmt->bindValue(':idu', (int) $idusuario, PDO::PARAM_INT);
+            }
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -170,12 +177,15 @@ class Compra
                      COUNT(c.idcompra) as compras, SUM(c.totalcompra) as total_gastado
                      FROM {$this->tabla} c
                      JOIN usuarios u ON c.idusuario = u.idusuario
-                     WHERE DATE(c.fechacompra) = :hoy AND c.estado = 1
+                     WHERE DATE(c.fechacompra) = :hoy AND c.estado = 1{$filtroAlias}
                      GROUP BY c.idusuario
                      ORDER BY total_gastado DESC
                      LIMIT 1";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':hoy', $hoy, PDO::PARAM_STR);
+            if ($idusuario) {
+                $stmt->bindValue(':idu', (int) $idusuario, PDO::PARAM_INT);
+            }
             $stmt->execute();
             $estadisticas['usuario_mas_compro'] = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -186,12 +196,15 @@ class Compra
                      FROM {$this->tablaDetalle} dc
                      JOIN {$this->tabla} c ON dc.idcompra = c.idcompra
                      JOIN producto p ON dc.idproducto = p.idproducto
-                     WHERE DATE(c.fechacompra) = :hoy AND c.estado = 1
+                     WHERE DATE(c.fechacompra) = :hoy AND c.estado = 1{$filtroAlias}
                      GROUP BY dc.idproducto
                      ORDER BY cantidad_comprada DESC
                      LIMIT 1";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':hoy', $hoy, PDO::PARAM_STR);
+            if ($idusuario) {
+                $stmt->bindValue(':idu', (int) $idusuario, PDO::PARAM_INT);
+            }
             $stmt->execute();
             $estadisticas['producto_mas_comprado'] = $stmt->fetch(PDO::FETCH_ASSOC);
 

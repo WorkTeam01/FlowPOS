@@ -188,6 +188,9 @@ class VentaController
             if ($metodoPago !== 'efectivo') {
                 $pagoRecibido = $monto;
                 $cambio = 0;
+            } else {
+                // El cambio lo calcula el servidor: el enviado por el cliente no es confiable
+                $cambio = max(0, round($pagoRecibido - $monto, 2));
             }
 
             $datos['pagos'][] = [
@@ -208,6 +211,8 @@ class VentaController
                     if ($metodoPago !== 'efectivo') {
                         $pagoRecibido = $monto;
                         $cambio = 0;
+                    } else {
+                        $cambio = max(0, round($pagoRecibido - $monto, 2));
                     }
 
                     $datos['pagos'][] = [
@@ -221,6 +226,33 @@ class VentaController
         }
 
         return $datos;
+    }
+
+    /**
+     * Comprueba que el cliente exista y que los productos estén activos: el
+     * formulario solo ofrece activos, pero un POST directo puede enviar otros.
+     *
+     * @param array $datos Datos preparados de la venta
+     * @return array Lista de errores (vacía si todo es válido)
+     */
+    private function validarReferencias(array $datos)
+    {
+        require_once __DIR__ . '/../../models/Producto.php';
+        require_once __DIR__ . '/../../models/Cliente.php';
+
+        if (!empty($datos['idcliente']) && !(new Cliente())->getById($datos['idcliente'])) {
+            return ['El cliente seleccionado no existe'];
+        }
+
+        $productoModel = new Producto();
+        foreach ($datos['detalles'] as $detalle) {
+            $producto = $productoModel->getById($detalle['idproducto']);
+            if (!$producto || (int) $producto['estado'] !== 1) {
+                return ['Uno de los productos no está disponible para la venta'];
+            }
+        }
+
+        return [];
     }
 
     /**
@@ -241,6 +273,10 @@ class VentaController
         // Validar datos en el modelo
         $errores = $this->modelo->validarDatos($datos);
 
+        if (empty($errores)) {
+            $errores = $this->validarReferencias($datos);
+        }
+
         if (!empty($errores)) {
             return ['success' => false, 'message' => $errores[0], 'icon' => 'error', 'redirect' => 'create.php'];
         }
@@ -251,39 +287,7 @@ class VentaController
         if ($idVenta) {
             return ['success' => true, 'message' => 'Venta registrada correctamente', 'icon' => 'success', 'redirect' => 'index.php'];
         } else {
-            return ['success' => false, 'message' => 'Error al registrar la venta: ' . $this->modelo->getLastError(), 'icon' => 'error', 'redirect' => 'create.php'];
-        }
-    }
-
-    /**
-     * Procesa el formulario para guardar una nueva venta (desde nueva.php)
-     * 
-     * @return array Resultado de la operación
-     */
-    public function guardara()
-    {
-        // Verificar si se envió el formulario
-        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-            return ['success' => false, 'message' => 'Acceso no permitido.', 'icon' => 'warning', 'redirect' => 'nueva.php'];
-        }
-
-        // Preparar datos de la venta
-        $datos = $this->modelo->sanitizarDatos($this->prepararDatosVenta($_POST));
-
-        // Validar datos en el modelo
-        $errores = $this->modelo->validarDatos($datos);
-
-        if (!empty($errores)) {
-            return ['success' => false, 'message' => $errores[0], 'icon' => 'error', 'redirect' => 'nueva.php'];
-        }
-
-        // Guardar venta usando el modelo
-        $idVenta = $this->modelo->crear($datos);
-
-        if ($idVenta) {
-            return ['success' => true, 'message' => 'Venta registrada correctamente', 'icon' => 'success', 'redirect' => 'nueva.php'];
-        } else {
-            return ['success' => false, 'message' => 'Error al registrar la venta: ' . $this->modelo->getLastError(), 'icon' => 'error', 'redirect' => 'nueva.php'];
+            return ['success' => false, 'message' => mensajeErrorSeguro('Error al registrar la venta', $this->modelo->getLastError()), 'icon' => 'error', 'redirect' => 'create.php'];
         }
     }
 
@@ -472,20 +476,8 @@ class VentaController
         if ($this->modelo->anular($id)) {
             return ['success' => true, 'message' => 'Venta anulada correctamente', 'icon' => 'success'];
         } else {
-            return ['success' => false, 'message' => 'Error al anular la venta: ' . $this->modelo->getLastError(), 'icon' => 'error'];
+            return ['success' => false, 'message' => mensajeErrorSeguro('Error al anular la venta', $this->modelo->getLastError()), 'icon' => 'error'];
         }
-    }
-
-    /**
-     * Obtiene ventas por rango de fechas
-     * 
-     * @param string $fechaInicio Fecha de inicio (YYYY-MM-DD)
-     * @param string $fechaFin Fecha de fin (YYYY-MM-DD)
-     * @return array Lista de ventas en el rango
-     */
-    public function obtenerPorRangoFechas($fechaInicio, $fechaFin)
-    {
-        return $this->modelo->getPorRangoFechas($fechaInicio, $fechaFin);
     }
 
     /**
@@ -533,89 +525,13 @@ class VentaController
     }
 
     /**
-     * Verifica si una venta tiene pagos mixtos
-     * 
-     * @param int $idVenta ID de la venta
-     * @return bool True si tiene pagos mixtos, False en caso contrario
-     */
-    public function tienePagosMixtos($idVenta)
-    {
-        return $this->modelo->tienePagosMixtos($idVenta);
-    }
-
-    /**
      * Obtiene estadísticas de ventas
      * 
      * @return array Estadísticas de ventas
      */
-    public function getEstadisticas()
+    public function getEstadisticas($idusuario = null)
     {
-        return $this->modelo->getEstadisticas();
+        return $this->modelo->getEstadisticas($idusuario);
     }
 
-    /**
-     * Genera un reporte de ventas por fechas
-     * 
-     * @param string $fechaInicio Fecha de inicio (YYYY-MM-DD)
-     * @param string $fechaFin Fecha de fin (YYYY-MM-DD)
-     * @return array Ventas en el rango de fechas
-     */
-    public function reportePorFechas($fechaInicio, $fechaFin)
-    {
-        return $this->modelo->getPorRangoFechas($fechaInicio, $fechaFin);
-    }
-
-    /**
-     * Genera un ticket de venta (para impresión)
-     * 
-     * @param int $idVenta ID de la venta
-     * @return array Datos para el ticket
-     */
-    public function generarTicket($idVenta)
-    {
-        $venta = $this->modelo->getById($idVenta);
-
-        if (!$venta) {
-            return ['success' => false, 'message' => 'Venta no encontrada'];
-        }
-
-        // Formatear datos para el ticket
-        $ticket = [
-            'id' => $venta['idventa'],
-            'fecha' => date('d/m/Y H:i', strtotime($venta['fechacreacion'])),
-            'cliente' => $venta['cliente_nombre'] ?? 'Consumidor Final',
-            'usuario' => $venta['usuario_nombre'],
-            'productos' => [],
-            'pagos' => [],
-            'total' => $venta['totalventa'],
-            'es_pago_mixto' => count($venta['pagos'] ?? []) > 1
-        ];
-
-        // Procesar productos
-        foreach ($venta['detalles'] as $detalle) {
-            $ticket['productos'][] = [
-                'nombre' => $detalle['producto_nombre'],
-                'cantidad' => $detalle['cantidad'],
-                'precio' => $detalle['precioventa'],
-                'descuento' => $detalle['descuento'],
-                'subtotal' => $detalle['cantidad'] * ($detalle['precioventa'] - $detalle['descuento'])
-            ];
-        }
-
-        // Procesar métodos de pago
-        $totalPagado = 0;
-        foreach ($venta['pagos'] as $pago) {
-            $ticket['pagos'][] = [
-                'metodo' => $pago['metodopago'],
-                'monto' => $pago['monto'],
-                'recibido' => $pago['pagorecibido'],
-                'cambio' => $pago['cambio']
-            ];
-            $totalPagado += $pago['monto'];
-        }
-
-        $ticket['total_pagado'] = $totalPagado;
-
-        return ['success' => true, 'data' => $ticket];
-    }
 }

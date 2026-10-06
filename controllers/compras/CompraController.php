@@ -147,7 +147,7 @@ class CompraController
         if ($idCompra) {
             return ['success' => true, 'message' => 'Compra registrada correctamente', 'icon' => 'success', 'redirect' => 'index.php'];
         } else {
-            return ['success' => false, 'message' => 'Error al registrar la compra: ' . $this->modelo->getLastError(), 'icon' => 'error', 'redirect' => 'create.php'];
+            return ['success' => false, 'message' => mensajeErrorSeguro('Error al registrar la compra', $this->modelo->getLastError()), 'icon' => 'error', 'redirect' => 'create.php'];
         }
     }
 
@@ -198,7 +198,7 @@ class CompraController
         if ($this->modelo->cancelar($id)) {
             return ['success' => true, 'message' => 'Compra cancelada correctamente', 'icon' => 'success'];
         } else {
-            return ['success' => false, 'message' => 'Error al cancelar la compra: ' . $this->modelo->getLastError(), 'icon' => 'error'];
+            return ['success' => false, 'message' => mensajeErrorSeguro('Error al cancelar la compra', $this->modelo->getLastError()), 'icon' => 'error'];
         }
     }
 
@@ -227,7 +227,7 @@ class CompraController
         if ($this->modelo->actualizarEstado($id, 1)) {
             return ['success' => true, 'message' => 'Compra marcada como completada', 'icon' => 'success'];
         } else {
-            return ['success' => false, 'message' => 'Error al completar la compra: ' . $this->modelo->getLastError(), 'icon' => 'error'];
+            return ['success' => false, 'message' => mensajeErrorSeguro('Error al completar la compra', $this->modelo->getLastError()), 'icon' => 'error'];
         }
     }
 
@@ -236,21 +236,9 @@ class CompraController
      *
      * @return array ['compras_hoy', 'total_hoy', 'usuario_mas_compro', 'producto_mas_comprado']
      */
-    public function getEstadisticas()
+    public function getEstadisticas($idusuario = null)
     {
-        return $this->modelo->getEstadisticas();
-    }
-
-    /**
-     * Obtiene compras por rango de fechas
-     * 
-     * @param string $fechaInicio Fecha de inicio (YYYY-MM-DD)
-     * @param string $fechaFin Fecha de fin (YYYY-MM-DD)
-     * @return array Lista de compras en el rango
-     */
-    public function obtenerPorRangoFechas($fechaInicio, $fechaFin)
-    {
-        return $this->modelo->getPorRangoFechas($fechaInicio, $fechaFin);
+        return $this->modelo->getEstadisticas($idusuario);
     }
 
     /**
