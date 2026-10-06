@@ -261,40 +261,4 @@ class AuthController
         header('Location: ../../views/login/login.php');
         exit;
     }
-
-    /**
-     * Verifica si la sesión es válida (para uso en middleware)
-     * 
-     * @return bool True si la sesión es válida, False en caso contrario
-     */
-    public function verificarSesion()
-    {
-        // Verificar si el usuario está autenticado
-        if (!isset($_SESSION['autenticado']) || $_SESSION['autenticado'] !== true) {
-            return false;
-        }
-
-        // Verificar tiempo de inactividad
-        $timeout = 3600; // 60 minutos en segundos
-        if (!isset($_SESSION['ultimo_acceso']) || (time() - $_SESSION['ultimo_acceso']) > $timeout) {
-            $this->logout();
-            return false;
-        }
-
-        // Verificar posible session hijacking comparando IP y User Agent
-        if (isset($_SESSION['ip']) && isset($_SESSION['user_agent'])) {
-            if (
-                $_SESSION['ip'] !== $_SERVER['REMOTE_ADDR'] ||
-                $_SESSION['user_agent'] !== $_SERVER['HTTP_USER_AGENT']
-            ) {
-                $this->logout();
-                return false;
-            }
-        }
-
-        // Actualizar tiempo de último acceso
-        $_SESSION['ultimo_acceso'] = time();
-
-        return true;
-    }
 }

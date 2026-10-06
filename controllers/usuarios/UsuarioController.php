@@ -290,6 +290,22 @@ class UsuarioController
             return ['success' => false, 'message' => $errores[0], 'icon' => 'error', 'redirect' => "update.php?id=$id"];
         }
 
+        // Validar la clave antes de tocar la BD: con el UPDATE primero, un error de
+        // confirmación dejaba los datos guardados y al usuario viendo un fallo
+        $clave = isset($_POST['clave']) ? trim($_POST['clave']) : '';
+        $confirmar_clave = isset($_POST['confirmar_clave']) ? trim($_POST['confirmar_clave']) : '';
+        if (!empty($clave) || !empty($confirmar_clave)) {
+            if (empty($clave) || empty($confirmar_clave)) {
+                return ['success' => false, 'message' => 'Para cambiar la contraseña, debe completar ambos campos', 'icon' => 'error', 'redirect' => "update.php?id=$id"];
+            }
+            if ($clave !== $confirmar_clave) {
+                return ['success' => false, 'message' => 'Las contraseñas no coinciden', 'icon' => 'error', 'redirect' => "update.php?id=$id"];
+            }
+            if (strlen($clave) < 6) {
+                return ['success' => false, 'message' => 'La contraseña debe tener al menos 6 caracteres', 'icon' => 'error', 'redirect' => "update.php?id=$id"];
+            }
+        }
+
         // Procesar nueva imagen si se subió
         $nueva_imagen_path = null;
         if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] == 0) {
@@ -303,6 +319,13 @@ class UsuarioController
 
         // Actualizar usuario
         $actualizado = $this->modelo->actualizar($id, $datos);
+
+        // $_SESSION['usuario_rol'] se fija solo al iniciar sesión: sin cerrar sus
+        // sesiones, un rol degradado conservaría los permisos del anterior. La
+        // sesión propia se respeta (el administrador que se edita a sí mismo).
+        if ($actualizado && (int) $usuario_actual['idrol'] !== (int) $datos['idrol'] && (int) $id !== (int) $_SESSION['usuario_id']) {
+            (new SesionTokenService())->cerrarPorUsuario((int) $id, SesionTokenService::MOTIVO_SECURITY);
+        }
 
         // El cambio de imagen recién se concreta acá, no antes: mientras el
         // UPDATE no confirme, el registro sigue apuntando a la imagen vieja y
@@ -318,28 +341,10 @@ class UsuarioController
             }
         }
 
-        // Procesar cambio de contraseña si se proporcionó
-        $clave = isset($_POST['clave']) ? trim($_POST['clave']) : '';
-        $confirmar_clave = isset($_POST['confirmar_clave']) ? trim($_POST['confirmar_clave']) : '';
-
+        // Procesar cambio de contraseña (ya validada antes del UPDATE)
         $clave_actualizada = true; // Por defecto, asumimos que no hay cambio de clave
 
         if (!empty($clave) || !empty($confirmar_clave)) {
-            // Validar que ambos campos estén completos
-            if (empty($clave) || empty($confirmar_clave)) {
-                return ['success' => false, 'message' => 'Para cambiar la contraseña, debe completar ambos campos', 'icon' => 'error', 'redirect' => "update.php?id=$id"];
-            }
-
-            // Validar que las contraseñas coincidan
-            if ($clave !== $confirmar_clave) {
-                return ['success' => false, 'message' => 'Las contraseñas no coinciden', 'icon' => 'error', 'redirect' => "update.php?id=$id"];
-            }
-
-            // Validar longitud mínima
-            if (strlen($clave) < 6) {
-                return ['success' => false, 'message' => 'La contraseña debe tener al menos 6 caracteres', 'icon' => 'error', 'redirect' => "update.php?id=$id"];
-            }
-
             // Actualizar la contraseña
             $clave_actualizada = $this->modelo->actualizarClave($id, $clave);
 
@@ -494,6 +499,10 @@ class UsuarioController
 
         if ($this->modelo->actualizarEstado($id, $nuevo_estado)) {
             $accion = $nuevo_estado == 1 ? 'activado' : 'desactivado';
+            if ($nuevo_estado == 0) {
+                // El timeout deslizante de 24 h dejaría operando a una cuenta ya desactivada
+                (new SesionTokenService())->cerrarPorUsuario((int) $id, SesionTokenService::MOTIVO_ADMIN_USUARIO);
+            }
             return ['success' => true, 'message' => "Usuario $accion correctamente", 'icon' => 'success'];
         } else {
             return ['success' => false, 'message' => 'Error al cambiar el estado del usuario: ' . $this->modelo->getLastError(), 'icon' => 'error'];

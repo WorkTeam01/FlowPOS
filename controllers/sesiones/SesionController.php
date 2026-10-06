@@ -208,6 +208,7 @@ class SesionController
             'admin_row' => 'Cerrada por administrador',
             'admin_user' => 'Todas del usuario',
             'migration' => 'Migración',
+            'password_change' => 'Cambio de contraseña',
         ];
 
         return $etiquetas[$motivo] ?? $motivo;
