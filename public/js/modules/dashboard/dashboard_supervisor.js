@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 cargarDatosDePrueba();
             }
 
-            Core.mostrarError(`${t('errorConexion')}: ${error.message}`);
+            Core.mostrarError(`${t('ticket.errorConexion')}: ${error.message}`);
             console.error('Error cargando datos:', error);
             return false;
         }
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Tabla accesible
             Core.crearTablaAccesibleGrafico('grafico-vendedores', datos,
-                (item) => `<td>${item.nombre}</td><td>${Core.formatoMoneda(item.montoVentas)}</td>`,
+                (item) => `<td>${escapeHtml(item.nombre)}</td><td>${Core.formatoMoneda(item.montoVentas)}</td>`,
                 'Rendimiento de ventas por vendedor'
             );
 
@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <span class="badge ${claseBadge} mr-2">${index + 1}</span>
-                        <span>${vendedor.nombre}</span>
+                        <span>${escapeHtml(vendedor.nombre)}</span>
                     </div>
                     <span class="text-muted">${Core.formatoMoneda(vendedor.montoVentas)}</span>
                 </div>
@@ -444,7 +444,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Tabla accesible
             Core.crearTablaAccesibleGrafico('grafico-categorias', datos,
-                (item) => `<td>${item.categoria}</td><td>${Core.formatoMoneda(item.ventas)}</td><td>${Core.formatoPorcentaje(item.porcentaje)}</td>`,
+                (item) => `<td>${escapeHtml(item.categoria)}</td><td>${Core.formatoMoneda(item.ventas)}</td><td>${Core.formatoPorcentaje(item.porcentaje)}</td>`,
                 'Ventas del equipo por categoría de producto'
             );
 
@@ -567,7 +567,7 @@ document.addEventListener('DOMContentLoaded', function () {
             html += `
             <tr>
                 <td>${index + 1}</td>
-                <td>${vendedor.nombre}</td>
+                <td>${escapeHtml(vendedor.nombre)}</td>
                 <td>${Core.formatoMoneda(vendedor.montoVentas)}</td>
                 <td>${vendedor.clientes}</td>
                 <td>
@@ -604,7 +604,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div class="d-flex justify-content-between align-items-center mb-1">
                         <span class="progress-text">
                             <span class="badge mr-1" style="background-color: ${color}">&nbsp;</span>
-                            ${categoria.categoria}
+                            ${escapeHtml(categoria.categoria)}
                         </span>
                         <span class="float-right text-muted">${Core.formatoMoneda(categoria.ventas)} (${Core.formatoPorcentaje(categoria.porcentaje)})</span>
                     </div>
@@ -639,8 +639,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             html += `
             <tr>
-                <td>${producto.producto}</td>
-                <td>${producto.categoria}</td>
+                <td>${escapeHtml(producto.producto)}</td>
+                <td>${escapeHtml(producto.categoria)}</td>
                 <td class="text-center">${producto.stockActual}</td>
                 <td class="text-center">
                     <span class="badge ${claseBadge}">${estadoTexto}</span>

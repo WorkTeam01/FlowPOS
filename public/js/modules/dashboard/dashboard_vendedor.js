@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 cargarDatosDePrueba();
             }
 
-            Core.mostrarError(`${t('errorConexion')}: ${error.message}`);
+            Core.mostrarError(`${t('ticket.errorConexion')}: ${error.message}`);
             console.error('Error cargando datos:', error);
             return false;
         }
@@ -223,8 +223,8 @@ document.addEventListener('DOMContentLoaded', function () {
         datos.forEach(producto => {
             html += `
             <tr>
-                <td>${producto.producto}</td>
-                <td>${producto.categoria}</td>
+                <td>${escapeHtml(producto.producto)}</td>
+                <td>${escapeHtml(producto.categoria)}</td>
                 <td class="text-right">${Core.formatoMoneda(producto.precio)}</td>
                 <td class="text-right">${producto.unidades}</td>
             </tr>`;
@@ -254,8 +254,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             html += `
             <tr>
-                <td>${producto.producto}</td>
-                <td>${producto.categoria}</td>
+                <td>${escapeHtml(producto.producto)}</td>
+                <td>${escapeHtml(producto.categoria)}</td>
                 <td class="text-center">${producto.stockActual}</td>
                 <td class="text-center">
                     <span class="badge ${claseBadge}">${estadoTexto}</span>
@@ -293,10 +293,10 @@ document.addEventListener('DOMContentLoaded', function () {
             html += `
             <tr>
                 <td>${venta.id}</td>
-                <td>${venta.cliente}</td>
+                <td>${escapeHtml(venta.cliente)}</td>
                 <td>${fechaFormateada}</td>
                 <td>${venta.productos}</td>
-                <td>${venta.metodo}</td>
+                <td>${escapeHtml(venta.metodo)}</td>
                 <td class="text-right">${montoFormateado}</td>
             </tr>`;
         });

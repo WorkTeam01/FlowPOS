@@ -48,7 +48,7 @@
 
 /* Para que los inputs de fecha tengan el mismo alto en todos los navegadores */
 input[type="date"] {
-    height: calc(1.8125rem + 2px);
+    height: calc(2.25rem + 2px);
 }
 
 /* Estilos para KPI de ganancias */

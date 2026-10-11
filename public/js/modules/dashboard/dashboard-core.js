@@ -280,7 +280,7 @@
                     tabla.innerHTML = `
                         <tr>
                             <td colspan="${cols}" class="text-center py-3">
-                                <i class="fas fa-spinner fa-spin mr-2" aria-hidden="true"></i> ${t('cargando')}
+                                <i class="fas fa-spinner fa-spin mr-2" aria-hidden="true"></i> ${t('ticket.cargando')}
                             </td>
                         </tr>
                     `;
@@ -332,7 +332,14 @@
             url = 'controllers/dashboard/' + endpoint;
         }
 
-        const searchParams = new URLSearchParams(params);
+        // URLSearchParams serializa null/undefined como el texto "null": el servidor
+        // lo tomaría como una fecha y rechazaría el período predefinido.
+        const searchParams = new URLSearchParams();
+        Object.entries(params).forEach(([clave, valor]) => {
+            if (valor !== null && valor !== undefined && valor !== '') {
+                searchParams.append(clave, valor);
+            }
+        });
         const response = await fetch(`${url}?${searchParams.toString()}`);
 
         if (!response.ok) {
@@ -512,10 +519,10 @@
         let ticket = `
     <div style="font-family: 'Courier New', monospace; width: 300px; margin: 0 auto; font-size: 12px;">
         <div style="text-align: center; padding-bottom: 10px;">
-            <div style="font-size: 16px; font-weight: bold;">${empresa.nombre}</div>
-            <div>NIT: ${empresa.nit}</div>
-            <div>Dirección: ${empresa.direccion || t('ticket.direccion')}</div>
-            <div>Teléfono: ${empresa.telefono || t('ticket.telefono')}</div>
+            <div style="font-size: 16px; font-weight: bold;">${escapeHtml(empresa.nombre)}</div>
+            <div>NIT: ${escapeHtml(empresa.nit)}</div>
+            <div>Dirección: ${escapeHtml(empresa.direccion || t('ticket.direccion'))}</div>
+            <div>Teléfono: ${escapeHtml(empresa.telefono || t('ticket.telefono'))}</div>
         </div>
 
         <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 10px 0; margin: 10px 0; text-align: center;">
@@ -558,7 +565,7 @@
         <div style="padding: 10px 0;">
             <div style="font-weight: bold;">${t('ticket.topProductos')}:</div>`;
             topProductos.slice(0, 3).forEach((producto, index) => {
-                ticket += `<div>${index + 1}. ${producto.producto} - ${producto.unidades} ${t('ticket.unidades')} (${formatoMoneda(producto.total)})</div>`;
+                ticket += `<div>${index + 1}. ${escapeHtml(producto.producto)} - ${producto.unidades} ${t('ticket.unidades')} (${formatoMoneda(producto.total)})</div>`;
             });
             ticket += `</div>`;
         }
@@ -696,7 +703,7 @@
             placeholder.id = placeholderId;
             placeholder.className = 'text-center text-muted py-4';
             placeholder.style.display = 'none';
-            placeholder.innerHTML = `<p><i class="fas fa-info-circle mr-1"></i> ${messages[index] || t('sinDatos')}</p>`;
+            placeholder.innerHTML = `<p><i class="fas fa-info-circle mr-1"></i> ${messages[index] || t('ticket.sinDatos')}</p>`;
             canvas.parentNode.appendChild(placeholder);
         });
     }

@@ -63,7 +63,7 @@ $module_scripts = ['dashboard/dashboard-core', 'dashboard/dashboard'];
                             <div id="fechas-personalizadas" class="col-md-6 col-sm-12 mb-2 mb-md-0 d-none">
                                 <div class="row">
                                     <div class="col-sm-5 mb-2 mb-sm-0">
-                                        <div class="input-group input-group-sm">
+                                        <div class="input-group">
                                             <div class="input-group-prepend">
                                                 <span class="input-group-text">Desde</span>
                                             </div>
@@ -71,7 +71,7 @@ $module_scripts = ['dashboard/dashboard-core', 'dashboard/dashboard'];
                                         </div>
                                     </div>
                                     <div class="col-sm-5 mb-2 mb-sm-0">
-                                        <div class="input-group input-group-sm">
+                                        <div class="input-group">
                                             <div class="input-group-prepend">
                                                 <span class="input-group-text">Hasta</span>
                                             </div>
@@ -79,7 +79,7 @@ $module_scripts = ['dashboard/dashboard-core', 'dashboard/dashboard'];
                                         </div>
                                     </div>
                                     <div class="col-sm-2">
-                                        <button id="btn-aplicar-fechas" class="btn btn-sm btn-primary w-100">
+                                        <button id="btn-aplicar-fechas" class="btn btn-primary w-100">
                                             <i class="fas fa-check d-sm-none"></i>
                                             <span class="d-none d-sm-inline">Aplicar</span>
                                         </button>

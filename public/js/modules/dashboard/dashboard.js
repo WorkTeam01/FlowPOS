@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 cargarDatosDePrueba();
             }
 
-            Core.mostrarError(`${t('errorConexion')}: ${error.message}`);
+            Core.mostrarError(`${t('ticket.errorConexion')}: ${error.message}`);
             console.error('Error cargando datos:', error);
             return false;
         }
@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Tabla accesible
             Core.crearTablaAccesibleGrafico('grafico-categorias', datos,
-                (item) => `<td>${item.categoria}</td><td>${Core.formatoMoneda(item.ventas)}</td><td>${Core.formatoPorcentaje(item.porcentaje)}</td>`,
+                (item) => `<td>${escapeHtml(item.categoria)}</td><td>${Core.formatoMoneda(item.ventas)}</td><td>${Core.formatoPorcentaje(item.porcentaje)}</td>`,
                 'Ventas por categoría de producto'
             );
 
@@ -311,8 +311,8 @@ document.addEventListener('DOMContentLoaded', function () {
         datos.forEach(producto => {
             html += `
             <tr>
-                <td>${producto.producto}</td>
-                <td>${producto.categoria}</td>
+                <td>${escapeHtml(producto.producto)}</td>
+                <td>${escapeHtml(producto.categoria)}</td>
                 <td class="text-right">${Core.formatoMoneda(producto.precio)}</td>
                 <td class="text-right">${producto.unidades}</td>
                 <td class="text-right">${Core.formatoMoneda(producto.total)}</td>
@@ -343,8 +343,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             html += `
             <tr>
-                <td>${producto.producto}</td>
-                <td>${producto.categoria}</td>
+                <td>${escapeHtml(producto.producto)}</td>
+                <td>${escapeHtml(producto.categoria)}</td>
                 <td class="text-center">${producto.stockActual}</td>
                 <td class="text-center">${producto.stockMinimo}</td>
                 <td class="text-center">
@@ -388,10 +388,10 @@ document.addEventListener('DOMContentLoaded', function () {
             html += `
             <tr>
                 <td>${venta.id}</td>
-                <td>${venta.cliente}</td>
+                <td>${escapeHtml(venta.cliente)}</td>
                 <td>${fechaFormateada}</td>
                 <td>${venta.productos}</td>
-                <td>${venta.metodo}</td>
+                <td>${escapeHtml(venta.metodo)}</td>
                 <td class="text-right">${montoFormateado}</td>
                 <td class="text-right text-success">${gananciaFormateada}</td>
             </tr>`;
@@ -415,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             html += `
             <div class="progress-group">
-                <span class="progress-text">${metodo.metodo}</span>
+                <span class="progress-text">${escapeHtml(metodo.metodo)}</span>
                 <span class="float-right">${Core.formatoMoneda(metodo.monto)} (${Core.formatoPorcentaje(metodo.porcentaje)})</span>
                 <div class="progress progress-sm">
                     <div class="${colorClase}" style="width: ${metodo.porcentaje}%"></div>
