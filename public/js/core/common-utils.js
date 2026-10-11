@@ -277,21 +277,22 @@ function formatCurrency(amount, decimals = 2) {
 }
 
 /**
- * Decodifica las entidades de un texto guardado con escape-at-storage para
- * asignarlo con `textContent`/`createTextNode`, que no interpretan HTML: sin
- * esto un nombre como "A &amp; B" se vería con la entidad literal.
- * Solo para sinks de texto; nunca para `innerHTML`.
+ * Escapa un valor para interpolarlo en HTML (`innerHTML`, `.html()`, templates).
+ * No hace falta con `textContent`, `.text()`, `.val()` ni `titleText`/`text` de Swal.
  *
- * @param {*} valor - Texto tal como llega de la BD
- * @returns {string} Texto con las entidades decodificadas
+ * @param {*} valor
+ * @returns {string}
  */
-function textoDesdeBD(valor) {
+function escapeHtml(valor) {
     if (valor === null || valor === undefined) {
         return '';
     }
-    const decodificador = document.createElement('textarea');
-    decodificador.innerHTML = String(valor);
-    return decodificador.value;
+    return String(valor)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 
 /**
@@ -332,14 +333,13 @@ function exportarTextoPlano(data) {
     }
     const impresion = $.fn.dataTable.ext.buttons.print;
     const accionOriginal = impresion.action;
-    const escaparHtml = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
     impresion.action = function (e, dt, button, config) {
         const formato = config.exportOptions && config.exportOptions.format;
         const bodyOriginal = formato && formato.body;
         if (bodyOriginal && !bodyOriginal.__escapaParaImpresion) {
             formato.body = function () {
-                return escaparHtml(bodyOriginal.apply(this, arguments));
+                return escapeHtml(bodyOriginal.apply(this, arguments));
             };
             formato.body.__escapaParaImpresion = true;
         }

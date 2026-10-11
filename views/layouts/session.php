@@ -43,6 +43,20 @@ function mensajeErrorSeguro($prefijo, $detalle)
     return $prefijo . ': ' . $detalle;
 }
 
+/**
+ * Escapa un valor para imprimirlo en HTML (nodo de texto o atributo).
+ *
+ * Los datos se guardan crudos y se escapan aquí, en el punto de salida; no va
+ * en JSON, SQL, QR ni en sinks de texto de JS (`textContent`, `.val()`).
+ *
+ * @param mixed $valor
+ * @return string
+ */
+function e($valor)
+{
+    return htmlspecialchars((string) ($valor ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
 // Cargar configuración desde .env
 try {
     // Cargar variables de entorno desde .env
