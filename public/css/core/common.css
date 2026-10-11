@@ -206,6 +206,16 @@
 }
 
 /*
+ * Contraste de .text-muted sobre filas rayadas: #6c757d da 4.7:1 sobre blanco
+ * pero ~4.2:1 sobre el gris de .table-striped (#f2f2f2), bajo WCAG AA (1.4.3)
+ * en texto pequeño (IP, notas secundarias). Se oscurece a #5a6268 (~5.5:1)
+ * solo dentro de tablas rayadas. Sin dark mode → sin contraparte.
+ */
+.table-striped .text-muted {
+    color: #5a6268 !important;
+}
+
+/*
  * Contraste del botón primary sólido: AdminLTE deja .btn-primary en #007bff
  * con texto blanco (~4.0:1), falla WCAG AA (1.4.3) para el texto ~14px del
  * botón. Se oscurece a #0056b3 (~7:1) igual que el badge y la paginación,
