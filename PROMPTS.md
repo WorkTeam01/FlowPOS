@@ -69,11 +69,11 @@ _______________
 - Si un modal carga listas de 100+ items, usar lazy render (20 por carga + "Cargar más") en vez de renderizar todo de una vez; combinar con debounce en el input de búsqueda
 - `LEFT JOIN` + `GROUP BY` en queries de estadísticas puede devolver filas con valores NULL que parecen truthy — usar `!empty()` en vez de solo verificar truthiness del array
 - `(int)` sobre string vacío produce `0`, no `null` — usar `!empty()` para columnas nullable con FK
-- XSS con escape-at-storage: el escape de `sanitizarDatos()` solo vale para nodos de texto. Un valor en un atributo `data-*` que el JS lee llega DECODIFICADO — en SweetAlert2 usar `titleText`/`text` (nunca `title`/`html` con datos de usuario) y nunca `.html()`/`innerHTML` con ese valor; el botón print de DataTables inyecta con `innerHTML` (`common-utils.js` ya escapa el resultado de `format.body`)
+- XSS (escape al mostrar): los datos se guardan crudos y toda salida HTML lleva `e()` (PHP) o `escapeHtml()` (JS). Un valor de un atributo `data-*` llega DECODIFICADO al JS — en SweetAlert2 usar `titleText`/`text` (nunca `title`/`html` con datos de usuario) y nunca `.html()`/`innerHTML` con ese valor sin `escapeHtml()`; el botón print de DataTables inyecta con `innerHTML` (`common-utils.js` ya escapa el resultado de `format.body`)
 - Todo endpoint `controllers/**/*_ajax.php` y toda acción de escritura verifica permiso (`tienePermisoNombre() || esAdministrador()`) además de `requireLogin()` y `requireCSRF()`: ocultar el botón en la vista no protege del POST directo
 - Operaciones que revierten stock (anular venta, cancelar compra) bloquean la fila (`SELECT … FOR UPDATE`) dentro de la transacción; el stock se ajusta con `stock = stock ± n`, nunca con un valor absoluto leído antes. El descuento de venta es POR UNIDAD (`cantidad × (precio − descuento)`) en formulario, servidor, recibo y dashboards
 - El `.htaccess` de la raíz bloquea `.env`, `.git/`, `database/`, `docs/` y `*.md`/`*.sql`: no quitarlo ni desplegar sin él (verificar con `curl -I .../.env` → 403)
-- Errores de BD: nunca `'Error …: ' . getLastError()` hacia el usuario — usar `mensajeErrorSeguro('Error al …', $this->modelo->getLastError())` (el detalle técnico va a `error_log`); el login no distingue usuario inexistente de contraseña incorrecta; texto de BD con `textContent` → `textoDesdeBD()`, nunca en `innerHTML`
+- Errores de BD: nunca `'Error …: ' . getLastError()` hacia el usuario — usar `mensajeErrorSeguro('Error al …', $this->modelo->getLastError())` (el detalle técnico va a `error_log`); el login no distingue usuario inexistente de contraseña incorrecta; texto de BD en `textContent` va crudo; en `innerHTML` con `escapeHtml()`
 - Ventas por POST directo: el servidor valida que el cliente exista y los productos estén activos, y calcula él mismo el total, el descuento y el cambio; no confiar en nada que venga del formulario
 - No dejar código muerto: toda función nueva debe tener un llamador, y al reemplazar un flujo se elimina el anterior (`grep` de los llamadores antes de borrar)
 
@@ -127,7 +127,7 @@ Descripción: [criterios de aceptación]
 [Restricciones]
 - Seguir el patrón MVC del módulo de ventas como referencia
 - CSRF en todos los formularios POST: csrfField() en vista, requireCSRF() en controlador; endpoints AJAX vía header X-CSRF-Token (csrfMetaTag() + $.ajaxSetup)
-- Sanitización con htmlspecialchars() al guardar (sanitizarDatos() en el modelo, ver CLAUDE.md) — las vistas NO deben volver a escapar esos campos al mostrarlos (produce doble escape); cualquier INSERT/UPDATE nuevo debe pasar por ese sanitizarDatos()
+- Escape al mostrar (ver CLAUDE.md): `sanitizarDatos()` solo hace trim; toda salida HTML de un dato de usuario lleva `e()` — un `echo` sin `e()` es XSS almacenado; en JSON, SQL con bind, QR y `textContent` va crudo
 - Queries con PDO preparado — nunca concatenar variables en SQL
 - Mensajes flash: $_SESSION['mensaje'] + $_SESSION['icono'] antes de cualquier redirect
 - Subida de archivos: siempre ImagenService — nunca move_uploaded_file() directo
@@ -140,9 +140,9 @@ Descripción: [criterios de aceptación]
 - Accesibilidad WCAG AA: callouts `alert-default-*`; usar los overrides de contraste y touch targets táctiles de 44px de `common.css` (`badge-*`, `btn-primary`, `btn-info`, `btn:focus-visible`, pestañas/navbar/pills activos), no duplicarlos por módulo; `aria-label` en botones icon-only; tablists con `<li>` wrapper → `role="presentation"`; `aria-selected` sincronizado globalmente; previews sin `src="#"` y con alt descriptivo; inputs con `invalid-feedback` enlazado (`aria-describedby` + `aria-invalid`)
 - Tocar `common.css` / assets versionados obliga a subir `APP_VERSION` en el mismo cambio (caché del navegador)
 - Si cambia funcionalidad visible: actualizar `CHANGELOG.md` en `Unreleased`
-- XSS con escape-at-storage: el escape de `sanitizarDatos()` solo vale para nodos de texto. Un valor en un atributo `data-*` que el JS lee llega DECODIFICADO — en SweetAlert2 usar `titleText`/`text` (nunca `title`/`html` con datos de usuario) y nunca `.html()`/`innerHTML` con ese valor; el botón print de DataTables inyecta con `innerHTML` (`common-utils.js` ya escapa el resultado de `format.body`)
+- XSS (escape al mostrar): los datos se guardan crudos y toda salida HTML lleva `e()` (PHP) o `escapeHtml()` (JS). Un valor de un atributo `data-*` llega DECODIFICADO al JS — en SweetAlert2 usar `titleText`/`text` (nunca `title`/`html` con datos de usuario) y nunca `.html()`/`innerHTML` con ese valor sin `escapeHtml()`; el botón print de DataTables inyecta con `innerHTML` (`common-utils.js` ya escapa el resultado de `format.body`)
 - Todo endpoint `controllers/**/*_ajax.php` y toda acción de escritura verifica permiso (`tienePermisoNombre() || esAdministrador()`) además de `requireLogin()` y `requireCSRF()`: ocultar el botón en la vista no protege del POST directo
-- Errores de BD: nunca `'Error …: ' . getLastError()` hacia el usuario — usar `mensajeErrorSeguro('Error al …', $this->modelo->getLastError())` (el detalle técnico va a `error_log`); el login no distingue usuario inexistente de contraseña incorrecta; texto de BD con `textContent` → `textoDesdeBD()`, nunca en `innerHTML`
+- Errores de BD: nunca `'Error …: ' . getLastError()` hacia el usuario — usar `mensajeErrorSeguro('Error al …', $this->modelo->getLastError())` (el detalle técnico va a `error_log`); el login no distingue usuario inexistente de contraseña incorrecta; texto de BD en `textContent` va crudo; en `innerHTML` con `escapeHtml()`
 
 [Formato de salida]
 Devuelve en este orden:
@@ -217,7 +217,7 @@ Revisa el siguiente código antes del merge.
 
 [Restricciones]
 Evalúa específicamente:
-- Seguridad: SQL injection (PDO preparado), XSS (htmlspecialchars() vía sanitizarDatos() del modelo al guardar — no re-escapar en la vista, ver CLAUDE.md),
+- Seguridad: SQL injection (PDO preparado), XSS (los datos se guardan crudos y se escapan al mostrar con `e()`/`escapeHtml()`, ver CLAUDE.md),
   CSRF (requireCSRF() en el controlador + csrfField()/csrfMetaTag() en la vista), sesiones mal validadas,
   mutaciones de estado invocadas por GET en vez de POST
 - Conexión: Conexion::getInstance() usado correctamente — nunca PDO directo
@@ -228,13 +228,14 @@ Evalúa específicamente:
 - Accesibilidad: contraste WCAG AA (callouts `alert-default-*`, overrides de `common.css` para badges/botones), `aria-label` en botones ícono-only y en el botón de colapso de panel, foco de teclado visible, inputs con feedback enlazado (`aria-describedby` + `aria-invalid`)
 - Tokens SWAL: si hay `Swal.fire()` con colores, verificar que use `getComputedStyle()` en vez de hex hardcodeados
 - FKs nullable: verificar que `(int)` sobre string vacío no produzca `0` que viole la constraint — usar `!empty()`
-- XSS por `data-*`: un `data-nombre` que llega a `Swal.fire({title})`, `.html()` o `innerHTML` se decodifica y ejecuta aunque se haya guardado escapado — exigir `titleText`/`text`; si el diff QUITA un `htmlspecialchars()`, rastrear también los consumidores JS del valor
+- XSS por `data-*`: un `data-nombre` que llega a `Swal.fire({title})`, `.html()` o `innerHTML` se decodifica y ejecuta aunque el atributo esté escapado con `e()` — exigir `titleText`/`text` o `escapeHtml()`; si el diff QUITA un escape, rastrear también los consumidores JS del valor
 - Endpoints de escritura (`*_ajax.php` incluidos): permiso del módulo verificado en el servidor, no solo en la vista
 - Stock y concurrencia: anulaciones/cancelaciones con `FOR UPDATE`, ajustes de stock relativos; descuento por unidad
 - Errores de BD hacia el usuario solo vía `mensajeErrorSeguro()`; login sin enumeración de usuarios; no dejar código muerto ni `error_log` de depuración
 - Cuentas: no se puede desactivar ni quitar el rol al último administrador activo
 - Modales con listas grandes: lazy render en vez de renderizar todo de una vez
 - Si el diff toca `common.css` / assets versionados: verificar que `APP_VERSION` se subió en el mismo cambio
+- Si el diff toca vistas o modelos: correr `php scripts/check-escape.php` (un `echo` de dato de usuario sin `e()` es XSS almacenado)
 - Casos edge que podrían fallar en producción
 
 [Formato de salida]
@@ -337,7 +338,7 @@ Criterios de aceptación:
 - Seguir el patrón MVC del módulo ventas como referencia exacta
 - CSRF en todos los formularios POST y endpoints AJAX: csrfField()/csrfMetaTag() en la vista, requireCSRF() en el controlador
 - PDO preparado en todos los queries — sin concatenación de variables
-- htmlspecialchars() vía sanitizarDatos() del modelo al guardar (nunca al mostrar en la vista, ver CLAUDE.md)
+- Escape al mostrar con `e()` (PHP) / `escapeHtml()` (JS); el modelo no escapa al guardar (ver CLAUDE.md)
 - Mensajes flash: $_SESSION['mensaje'] + $_SESSION['icono'] antes de redirect
 - DataTables para listados; SweetAlert2 para confirmaciones y notificaciones
 - Select2 para dropdowns; con dropdownParent si está dentro de un modal
@@ -350,9 +351,9 @@ Criterios de aceptación:
 - Modales con listas grandes (100+ items): lazy render (20 por carga + "Cargar más") + debounce en búsqueda
 - `(int)` sobre string vacío produce `0`, no `null` — usar `!empty()` para columnas nullable con FK
 - Tocar `common.css` / assets versionados obliga a subir `APP_VERSION` en el mismo cambio
-- XSS con escape-at-storage: el escape de `sanitizarDatos()` solo vale para nodos de texto. Un valor en un atributo `data-*` que el JS lee llega DECODIFICADO — en SweetAlert2 usar `titleText`/`text` (nunca `title`/`html` con datos de usuario) y nunca `.html()`/`innerHTML` con ese valor; el botón print de DataTables inyecta con `innerHTML` (`common-utils.js` ya escapa el resultado de `format.body`)
+- XSS (escape al mostrar): los datos se guardan crudos y toda salida HTML lleva `e()` (PHP) o `escapeHtml()` (JS). Un valor de un atributo `data-*` llega DECODIFICADO al JS — en SweetAlert2 usar `titleText`/`text` (nunca `title`/`html` con datos de usuario) y nunca `.html()`/`innerHTML` con ese valor sin `escapeHtml()`; el botón print de DataTables inyecta con `innerHTML` (`common-utils.js` ya escapa el resultado de `format.body`)
 - Todo endpoint `controllers/**/*_ajax.php` y toda acción de escritura verifica permiso (`tienePermisoNombre() || esAdministrador()`) además de `requireLogin()` y `requireCSRF()`: ocultar el botón en la vista no protege del POST directo
-- Errores de BD: nunca `'Error …: ' . getLastError()` hacia el usuario — usar `mensajeErrorSeguro('Error al …', $this->modelo->getLastError())` (el detalle técnico va a `error_log`); el login no distingue usuario inexistente de contraseña incorrecta; texto de BD con `textContent` → `textoDesdeBD()`, nunca en `innerHTML`
+- Errores de BD: nunca `'Error …: ' . getLastError()` hacia el usuario — usar `mensajeErrorSeguro('Error al …', $this->modelo->getLastError())` (el detalle técnico va a `error_log`); el login no distingue usuario inexistente de contraseña incorrecta; texto de BD en `textContent` va crudo; en `innerHTML` con `escapeHtml()`
 - Si se agregan cambios funcionales: documentarlos en `CHANGELOG.md` (`Unreleased`)
 
 [Formato de salida]
@@ -370,5 +371,5 @@ Devuelve en este orden:
 
 ---
 
-_Última actualización: 2026-10-06 (1.2.10)_
+_Última actualización: 2026-10-11 (1.2.11)_
 _Mantener sincronizado con CLAUDE.md al hacer cambios de arquitectura._

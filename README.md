@@ -82,7 +82,7 @@ Variables principales:
 | Variable       | Descripción                      | Ejemplo                     |
 | -------------- | -------------------------------- | --------------------------- |
 | `APP_NAME`     | Nombre visible de la aplicación  | `FlowPOS`                   |
-| `APP_VERSION`  | Versión actual de la aplicación  | `1.2.10`                    |
+| `APP_VERSION`  | Versión actual de la aplicación  | `1.2.11`                    |
 | `APP_CURRENCY` | Símbolo de moneda                | `Bs`, `$`, `€`, `S/`        |
 | `APP_URL`      | URL base (debe terminar con `/`) | `http://localhost/FlowPOS/` |
 | `TIMEZONE`     | Zona horaria PHP                 | `America/La_Paz`            |
@@ -178,6 +178,7 @@ FlowPOS/
 - **Refactor masivo del módulo Dashboard (1.2.5)**: eliminado ~1,200 líneas duplicadas entre `dashboard.js`, `dashboard_supervisor.js`, `dashboard_vendedor.js` extrayendo lógica compartida a `dashboard-core.js` (cache 5 min, fetch con manejo de errores, Chart.js 4+ config, selector de período, impresión de tickets, tablas accesibles para gráficos); autorización consistente vía `AuthorizationService::tienePermisoNombre()` con permisos granulares `dashboard_supervisor`/`dashboard_vendedor`; theming con CSS custom properties `--chart-color-*` y dark mode funcional; paridad de features en vendedor (período "Este año" y "Personalizado"); lazy-load de gráficos con IntersectionObserver; `APP_VERSION` sincronizado a 1.2.5; ver `CHANGELOG.md` [1.2.5].
 
 - **Endurecimiento de seguridad (1.2.8–1.2.10)**: `.htaccess` en la raíz que bloquea `.env`, `.git/`, `database/` y `docs/`; permisos verificados en el servidor en los endpoints AJAX de categorías, empresa y sucursales; XSS por atributos `data-*` y por impresión de DataTables corregido (SweetAlert2 con `titleText`); cookie de sesión `HttpOnly` + `SameSite=Lax`; login sin enumeración de usuarios; errores de BD sin detalle técnico al usuario; sesiones cerradas al desactivar a un usuario o cambiarle el rol; el sistema no puede quedarse sin administradores activos. Tras desplegar, comprueba que `curl -I http://tu-host/.env` responde 403; ver `CHANGELOG.md` [1.2.9] y [1.2.10].
+- **Escape al mostrar y auditoría de sesiones (1.2.11)**: los datos se guardan crudos y se escapan en cada salida (`e()` en PHP, `escapeHtml()` en JS), lo que corrige correos con apóstrofo, contraseñas con símbolos y el doble escape al editar; incluye `scripts/check-escape.php` (guard) y `scripts/decodificar_entidades.php` (migración de datos que se ejecuta una sola vez al desplegar). Sesiones: orden numérico, historial acotado, purga automática de cerradas con más de 180 días y JS compartido. Verificado de punta a punta con Playwright en todos los módulos y roles; ver `CHANGELOG.md` [1.2.11].
 
 ## Changelog
 

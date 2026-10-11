@@ -5,6 +5,40 @@ Todos los cambios importantes de este proyecto se documentan en este archivo.
 Este formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
+## [Unreleased]
+
+## [1.2.11] - 2026-10-11
+
+### Added
+
+- **Purga automática de sesiones cerradas**: `SesionTokenService::purgarCerradas()` elimina las cerradas con más de 180 días (lotes de 500, nunca las activas) en ~1% de los logins, igual que la purga de `intento_login`. La pantalla de sesiones lo indica.
+- **`scripts/check-escape.php`**: guard por CLI que falla si un modelo, controlador o servicio llama `htmlspecialchars()` o si una vista imprime un valor de arreglo u objeto sin `e()`. Las excepciones razonadas van en `scripts/check-escape.allow`.
+- **`scripts/decodificar_entidades.php`**: migración de datos para el cambio de esquema de escape (dry-run por defecto, `--apply` para ejecutar; una sola pasada).
+- Helpers **`e()`** (PHP, `session.php`) y **`escapeHtml()`** (JS, `common-utils.js`).
+
+### Changed
+
+- **Escape al mostrar en lugar de al guardar (requiere migrar datos)**: `sanitizarDatos()` de los nueve modelos (`Categoria`, `Cliente`, `Compra`, `Empresa`, `Producto`, `Rol`, `Sucursal`, `Usuario`, `Venta`) solo hace `trim`; los datos se guardan crudos y toda salida HTML usa `e()` en las vistas (texto y atributos), `escapeHtml()` en los templates JS (dashboards, ticket) y el recibo de TCPDF escapa al asignar cada variable (el texto del QR va crudo). Se eliminó `textoDesdeBD()`. **Al desplegar**: backup (`mysqldump`), publicar el código y ejecutar una sola vez `php scripts/decodificar_entidades.php --apply` (primero sin `--apply`); desplegar el código sin migrar muestra entidades literales en los datos viejos, y migrar sin el código muestra HTML escapado. Las sesiones abiertas conservan nombre y rol escapados hasta el siguiente login.
+- **Sesiones: tablas con clave de orden numérica**: Inicio, Fin y Duración llevan `data-order` (timestamp/segundos); antes se ordenaban como texto (`d/m/Y`, "10 minutos" antes que "9").
+- **Sesiones: historial global limitado a las últimas 1000 filas** (`SesionController::LIMITE_HISTORIAL`, aviso visible al alcanzarlo); la tabla se renderiza completa en el servidor y crecía con cada login. El detalle por usuario y las sesiones activas no se limitan.
+- **Sesiones: acciones sin botones deshabilitados**: la fila sin acción muestra "—" y quien no es administrador ve un único aviso en vez de un candado por fila (el tooltip de un `<button disabled>` nunca se mostraba). Fotos de usuario con `loading="lazy"`.
+- **Sesiones: indicadores neutros y sin redundancias**: las métricas de semana y duración promedio dejan de usar `warning`/`danger` (no son alertas); la columna Fin muestra "—" en sesiones activas (ya lo dice el badge Activa).
+- **Sesiones: JS compartido** en `sesiones-common.js` (configuración de DataTables y confirmaciones de cierre), sin duplicar ~190 líneas entre el índice y el detalle.
+- **Dashboards: filtros de fecha de tamaño normal**: "Desde", "Hasta" y "Aplicar" miden lo mismo que el selector de período (38 px); antes eran `input-group-sm`/`btn-sm` y `dashboard.css` forzaba `input[type="date"]` a la altura reducida (`1.8125rem`).
+- **`.htaccess` de la raíz bloquea `scripts/`** (junto a `.git`, `.claude`, `database`, `docs` y `specs`).
+- **`APP_VERSION` subido a `1.2.11`** (`.env` y `.env.example`).
+
+### Fixed
+
+- **Mensajes del dashboard con la clave de traducción en vez del texto**: `t('errorConexion')`, `t('cargando')` y `t('sinDatos')` no encontraban su clave (viven bajo `i18n.es.ticket`) y mostraban "errorConexion: Las fechas proporcionadas no son válidas"; ahora se piden como `ticket.errorConexion`, `ticket.cargando` y `ticket.sinDatos` en `dashboard.js`, `dashboard_supervisor.js`, `dashboard_vendedor.js` y `dashboard-core.js`.
+- **Contraste de `.text-muted` en tablas rayadas** (`common.css`): la IP y notas secundarias de `sesiones` daban ~4,2:1 sobre `.table-striped`; ahora ~5,5:1 (WCAG AA).
+- **Dashboard del supervisor mostraba "Las fechas proporcionadas no son válidas"** al cargar: el JS enviaba `fecha_inicio=null&fecha_fin=null` como texto y el servidor rechazaba el período predefinido. `Core.cargarDatosDashboard` ya no envía parámetros nulos o vacíos.
+- **No se podía crear un usuario con `& < > " '` en la contraseña**: se escapaba antes de compararla con la confirmación y fallaba con "Las contraseñas no coinciden". La clave ya no pasa por ningún escape.
+- **Correos con apóstrofo rechazados**: se validaban ya escapados (`o&#039;brien@…`) y el login los comparaba crudos contra la BD escapada.
+- **Doble escape al editar**: los campos obligatorios vacíos se rellenaban con el valor ya escapado de la BD y se volvían a escapar al guardar; el `value` del formulario de edición mostraba entidades.
+- **Entidades literales en pantalla**: flash de bienvenida, texto del QR del recibo, etiquetas de los gráficos, búsquedas del carrito y exportaciones.
+- **XSS propio**: el ticket del dashboard escribía con `document.write` la empresa tecleada y los productos sin escapar.
+
 ## [1.2.10] - 2026-10-06
 
 ### Security

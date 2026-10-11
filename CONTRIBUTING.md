@@ -60,7 +60,7 @@ Se aceptan contribuciones en:
 - No incluyas credenciales, tokens ni datos sensibles.
 - Mantén compatibilidad con el stack actual del proyecto.
 - Mantén accesibilidad WCAG AA: `aria-label` en botones/íconos sin texto visible y en el botón de colapso de panel; mensajes de error enlazados a su campo (`aria-describedby` + `aria-invalid` + `invalid-feedback`); usa los overrides de contraste y de touch targets táctiles (44px) ya centralizados en `common.css` — no dupliques reglas por módulo.
-- Seguridad: los datos de usuario se guardan escapados (`sanitizarDatos()`), por lo que un valor leído de un atributo `data-*` llega decodificado. En SweetAlert2 usa `titleText`/`text` (nunca `title`/`html` con datos de usuario) y evita `.html()`/`innerHTML` con esos valores.
+- Seguridad: los datos de usuario se guardan crudos y se escapan al mostrar: `e()` en PHP (nodos de texto y atributos) y `escapeHtml()` en JS. Un valor leído de un atributo `data-*` llega decodificado: en SweetAlert2 usa `titleText`/`text` (nunca `title`/`html` con datos de usuario) y evita `.html()`/`innerHTML` con esos valores sin `escapeHtml()`. Corre `php scripts/check-escape.php` antes de abrir un PR.
 - Todo endpoint de escritura (incluidos los `*_ajax.php`) debe verificar permiso en el servidor además de sesión y CSRF; ocultar el botón en la vista no basta.
 - No muestres errores técnicos al usuario: en los controladores usa `mensajeErrorSeguro()` en vez de concatenar `getLastError()`, y en el login no distingas "usuario inexistente" de "contraseña incorrecta".
 - No dejes código muerto ni `error_log` de depuración: borra lo que reemplazas, previa búsqueda de sus llamadores.
@@ -86,6 +86,7 @@ Checklist mínima:
 - [ ] `CHANGELOG.md` actualizado y `APP_VERSION` sincronizado (si aplica; obligatorio si tocaste `common.css` o assets versionados).
 - [ ] Cambios de permisos/rol probados con las tres cuentas demo.
 - [ ] Endpoints de escritura nuevos con permiso verificado en el servidor (probado con la cuenta vendedor por POST directo).
+- [ ] `php scripts/check-escape.php` sin errores (ningún `echo` de dato de usuario sin `e()`).
 - [ ] Sin errores de BD crudos en mensajes (`mensajeErrorSeguro()`) y sin código muerto nuevo.
 - [ ] Si hay `Swal.fire()` con datos de usuario, usar `titleText`/`text`, no `title`/`html`.
 - [ ] Si hay `Swal.fire()`, usar tokens de `common.css` via `getComputedStyle()` en vez de hex hardcodeados.
