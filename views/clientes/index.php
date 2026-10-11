@@ -81,9 +81,9 @@ $clientes = $controller->index();
                                 ?>
                                     <tr>
                                         <td class="text-center"><?= $contador++; ?></td>
-                                        <td><?= $cliente['nombres'] . ' ' . $cliente['apellidopaterno'] . ' ' . ($cliente['apellidomaterno'] ?? ''); ?></td>
-                                        <td><?= $cliente['tipodocumento']; ?></td>
-                                        <td><?= $cliente['numdocumento']; ?></td>
+                                        <td><?= e($cliente['nombres'] . ' ' . $cliente['apellidopaterno'] . ' ' . ($cliente['apellidomaterno'] ?? '')); ?></td>
+                                        <td><?= e($cliente['tipodocumento']); ?></td>
+                                        <td><?= e($cliente['numdocumento']); ?></td>
                                         <td class="text-center">
                                             <?php if ($estado_actual == 1) : ?>
                                                 <span class="badge badge-success">Activo</span>
@@ -93,17 +93,17 @@ $clientes = $controller->index();
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <a href="<?= $URL; ?>views/clientes/show.php?id=<?= $cliente['idcliente']; ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="Ver detalles" aria-label="Ver detalles de <?= $cliente['nombres']; ?>">
+                                                <a href="<?= $URL; ?>views/clientes/show.php?id=<?= $cliente['idcliente']; ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="Ver detalles" aria-label="Ver detalles de <?= e($cliente['nombres']); ?>">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="<?= $URL; ?>views/clientes/update.php?id=<?= $cliente['idcliente']; ?>" class="btn btn-warning btn-sm" data-toggle="tooltip" title="Editar cliente" aria-label="Editar a <?= $cliente['nombres']; ?>">
+                                                <a href="<?= $URL; ?>views/clientes/update.php?id=<?= $cliente['idcliente']; ?>" class="btn btn-warning btn-sm" data-toggle="tooltip" title="Editar cliente" aria-label="Editar a <?= e($cliente['nombres']); ?>">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                                 <button type="button" class="btn <?= $clase_boton_estado; ?> btn-sm btn-cambiar-estado"
                                                     data-id="<?= $cliente['idcliente']; ?>"
                                                     data-estado="<?= $estado_actual; ?>"
-                                                    data-nombre="<?= $cliente['nombres']; ?>"
-                                                    data-toggle="tooltip" title="<?= $texto_boton_estado; ?>" aria-label="<?= $texto_boton_estado; ?> <?= $cliente['nombres']; ?>">
+                                                    data-nombre="<?= e($cliente['nombres']); ?>"
+                                                    data-toggle="tooltip" title="<?= $texto_boton_estado; ?>" aria-label="<?= $texto_boton_estado; ?> <?= e($cliente['nombres']); ?>">
                                                     <i class="fas <?= $icono_boton_estado; ?>"></i>
                                                 </button>
                                             </div>

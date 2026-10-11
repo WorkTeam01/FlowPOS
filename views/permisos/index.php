@@ -105,13 +105,13 @@ foreach ($matriz['roles'] as $rol) {
                                 ?>
                                     <tr>
                                         <td><?= $contador++; ?></td>
-                                        <td><?= htmlspecialchars($permiso['nombre']); ?></td>
+                                        <td><?= e($permiso['nombre']); ?></td>
                                         <td>
                                             <?php if (empty($ids_roles)) : ?>
                                                 <span class="text-muted">Ningún rol</span>
                                             <?php else : ?>
                                                 <?php foreach ($ids_roles as $idrol) : ?>
-                                                    <span class="badge badge-secondary"><?= $roles_por_id[$idrol] ?? $idrol; ?></span>
+                                                    <span class="badge badge-secondary"><?= e($roles_por_id[$idrol] ?? $idrol); ?></span>
                                                 <?php endforeach; ?>
                                             <?php endif; ?>
                                         </td>

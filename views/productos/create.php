@@ -67,7 +67,7 @@ include_once '../layouts/header.php';
                                                 if ($categoria['estado'] == 1) : // Solo mostrar categorías activas
                                             ?>
                                                     <option value="<?= $categoria['idcategoria']; ?>">
-                                                        <?= $categoria['nombre']; ?>
+                                                        <?= e($categoria['nombre']); ?>
                                                     </option>
                                             <?php
                                                 endif;

@@ -112,8 +112,8 @@ global $URL;
                         <li class="user-header">
                             <img src="<?= $URL; ?>public/uploads/usuarios/<?= $currentUser['imagen']; ?>" loading="eager" class="img-circle elevation-2" alt="User Image">
                             <p>
-                                <?= $currentUser['nombre']; ?>
-                                <small><?= $currentUser['cargo']; ?></small>
+                                <?= e($currentUser['nombre']); ?>
+                                <small><?= e($currentUser['cargo']); ?></small>
                             </p>
                         </li>
                         <!-- Menu Footer-->

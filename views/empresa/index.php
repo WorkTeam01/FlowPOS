@@ -131,8 +131,8 @@ $estadisticas = $controller->getEstadisticas();
                                 ?>
                                     <tr>
                                         <td class="text-center"><?= $contador++; ?></td>
-                                        <td><?= $empresa['nombre']; ?></td>
-                                        <td class="text-center"><?= $empresa['nit']; ?></td>
+                                        <td><?= e($empresa['nombre']); ?></td>
+                                        <td class="text-center"><?= e($empresa['nit']); ?></td>
                                         <td class="text-center">
                                             <span class="badge <?= $clase_sucursales; ?>">
                                                 <?= $total_sucursales; ?> sucursal<?= $total_sucursales != 1 ? 'es' : ''; ?>
@@ -145,12 +145,12 @@ $estadisticas = $controller->getEstadisticas();
                                             <div class="btn-group">
                                                 <button type="button" class="btn btn-warning btn-sm btn-editar"
                                                     data-id="<?= $empresa['idempresa']; ?>"
-                                                    data-nombre="<?= $empresa['nombre']; ?>"
-                                                    data-nit="<?= $empresa['nit']; ?>"
-                                                    data-direccion="<?= $empresa['direccion']; ?>"
-                                                    data-telefono="<?= $empresa['telefono']; ?>"
-                                                    data-email="<?= $empresa['email']; ?>"
-                                                    data-imagen="<?= htmlspecialchars($empresa['imagen']); ?>"
+                                                    data-nombre="<?= e($empresa['nombre']); ?>"
+                                                    data-nit="<?= e($empresa['nit']); ?>"
+                                                    data-direccion="<?= e($empresa['direccion']); ?>"
+                                                    data-telefono="<?= e($empresa['telefono']); ?>"
+                                                    data-email="<?= e($empresa['email']); ?>"
+                                                    data-imagen="<?= e($empresa['imagen']); ?>"
                                                     data-estado="<?= $empresa['estado']; ?>"
                                                     data-toggle="tooltip" title="Editar empresa">
                                                     <i class="fas fa-edit"></i>

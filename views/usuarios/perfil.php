@@ -75,21 +75,21 @@ $module_scripts = ['usuarios/perfil-usuario'];
                                 alt="Foto de perfil"
                                 style="width: 100px; height: 100px; object-fit: cover;">
                         </div>
-                        <h3 class="profile-username text-center"><?= $usuario['nombre'] . ' ' . $usuario['apellidopaterno']; ?></h3>
-                        <p class="text-muted text-center"><?= $usuario['cargo'] ?? 'N/A'; ?></p>
+                        <h3 class="profile-username text-center"><?= e($usuario['nombre'] . ' ' . $usuario['apellidopaterno']); ?></h3>
+                        <p class="text-muted text-center"><?= e($usuario['cargo'] ?? 'N/A'); ?></p>
 
                         <ul class="list-group list-group-unbordered mb-3">
                             <li class="list-group-item">
-                                <b>Correo</b> <span class="float-right"><?= $usuario['correo'] ?? 'N/A'; ?></span>
+                                <b>Correo</b> <span class="float-right"><?= e($usuario['correo'] ?? 'N/A'); ?></span>
                             </li>
                             <li class="list-group-item">
-                                <b>Teléfono</b> <span class="float-right"><?= $usuario['telefono'] ?? 'N/A'; ?></span>
+                                <b>Teléfono</b> <span class="float-right"><?= e($usuario['telefono'] ?? 'N/A'); ?></span>
                             </li>
                             <li class="list-group-item">
-                                <b>Tipo Documento</b> <span class="float-right"><?= $usuario['tipodocumento'] ?? 'N/A'; ?></span>
+                                <b>Tipo Documento</b> <span class="float-right"><?= e($usuario['tipodocumento'] ?? 'N/A'); ?></span>
                             </li>
                             <li class="list-group-item">
-                                <b>Documento</b> <span class="float-right"><?= $usuario['numdocumento'] ?? 'N/A'; ?></span>
+                                <b>Documento</b> <span class="float-right"><?= e($usuario['numdocumento'] ?? 'N/A'); ?></span>
                             </li>
                         </ul>
                     </div>

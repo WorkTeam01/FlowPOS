@@ -108,7 +108,7 @@ $totales = $controller->calcularTotales($compra);
                                 </li>
                                 <li class="list-group-item">
                                     <b><i class="fas fa-user-tag mr-2"></i>Responsable</b>
-                                    <span class="float-right"><?= $compra['usuario_nombre'] ?? 'N/A'; ?></span>
+                                    <span class="float-right"><?= e($compra['usuario_nombre'] ?? 'N/A'); ?></span>
                                 </li>
                                 <li class="list-group-item">
                                     <b><i class="fas fa-toggle-on mr-2"></i>Estado</b>
@@ -165,8 +165,8 @@ $totales = $controller->calcularTotales($compra);
                                         <?php $calculo = $controller->calcularDetalleLinea($detalle); ?>
                                         <tr>
                                             <td><?= $index + 1; ?></td>
-                                            <td><?= $detalle['producto_nombre']; ?></td>
-                                            <td><?= $detalle['producto_codigo'] ?? 'N/A'; ?></td>
+                                            <td><?= e($detalle['producto_nombre']); ?></td>
+                                            <td><?= e($detalle['producto_codigo'] ?? 'N/A'); ?></td>
                                             <td class="text-right"><?= $detalle['cantidad']; ?></td>
                                             <td class="text-right"><?= number_format($detalle['preciocompra'], 2); ?> <?= $appCurrency ?></td>
                                             <td class="text-right"><?= number_format($calculo['subtotal'], 2); ?> <?= $appCurrency ?></td>
@@ -198,7 +198,7 @@ $totales = $controller->calcularTotales($compra);
                                 <div class="form-group mb-0">
                                     <label>Observaciones:</label>
                                     <div class="p-2 bg-light rounded">
-                                        <?= nl2br($compra['observaciones']); ?>
+                                        <?= nl2br(e($compra['observaciones'])); ?>
                                     </div>
                                 </div>
                             <?php endif; ?>

@@ -81,7 +81,7 @@ $grupos = AuthorizationService::agruparPermisosPorCategoria($matriz['permisos'])
                                             <th scope="col" style="min-width: 200px;">Permiso</th>
                                             <?php foreach ($matriz['roles'] as $rol) : ?>
                                                 <th scope="col" class="text-center" style="min-width: 120px;">
-                                                    <?= $rol['nombre']; ?>
+                                                    <?= e($rol['nombre']); ?>
                                                     <?php if ((int) $rol['idrol'] === $rol_actual) : ?>
                                                         <br><small class="text-muted">(su rol)</small>
                                                     <?php endif; ?>
@@ -119,7 +119,7 @@ $grupos = AuthorizationService::agruparPermisosPorCategoria($matriz['permisos'])
                                                                     value="<?= (int) $permiso['idpermiso']; ?>"
                                                                     <?= $marcado ? 'checked' : ''; ?>
                                                                     <?= $es_propio ? 'disabled' : ''; ?>
-                                                                    aria-label="<?= htmlspecialchars($permiso['nombre']); ?> para el rol <?= $rol['nombre']; ?>"
+                                                                    aria-label="<?= e($permiso['nombre']); ?> para el rol <?= e($rol['nombre']); ?>"
                                                                     id="chk_<?= $idrol; ?>_<?= (int) $permiso['idpermiso']; ?>">
                                                                 <label for="chk_<?= $idrol; ?>_<?= (int) $permiso['idpermiso']; ?>"></label>
                                                             </div>

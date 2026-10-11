@@ -55,7 +55,7 @@ class Compra
     }
 
     /**
-     * Sanitiza los datos de entrada para prevenir inyección SQL y XSS
+     * Normaliza los datos de entrada (trim). No escapa HTML: el escape se hace al mostrar con e().
      * 
      * @param array $datos Datos a sanitizar
      * @return array Datos sanitizados
@@ -65,7 +65,7 @@ class Compra
         $sanitized = [];
         foreach ($datos as $key => $value) {
             if (is_string($value)) {
-                $sanitized[$key] = trim(htmlspecialchars($value, ENT_QUOTES, 'UTF-8'));
+                $sanitized[$key] = trim($value);
             } else {
                 $sanitized[$key] = $value;
             }

@@ -84,7 +84,7 @@ if (!$usuario) {
                                     <div class="form-group">
                                         <label for="nombre">Nombre <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="nombre" name="nombre"
-                                            placeholder="Ingrese el nombre" value="<?= $usuario['nombre']; ?>" required>
+                                            placeholder="Ingrese el nombre" value="<?= e($usuario['nombre']); ?>" required>
                                     </div>
                                 </div>
 
@@ -93,7 +93,7 @@ if (!$usuario) {
                                     <div class="form-group">
                                         <label for="apellidopaterno">Apellido Paterno <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="apellidopaterno" name="apellidopaterno"
-                                            placeholder="Ingrese el apellido paterno" value="<?= $usuario['apellidopaterno']; ?>" required>
+                                            placeholder="Ingrese el apellido paterno" value="<?= e($usuario['apellidopaterno']); ?>" required>
                                     </div>
                                 </div>
 
@@ -102,7 +102,7 @@ if (!$usuario) {
                                     <div class="form-group">
                                         <label for="apellidomaterno">Apellido Materno</label>
                                         <input type="text" class="form-control" id="apellidomaterno" name="apellidomaterno"
-                                            placeholder="Ingrese el apellido materno" value="<?= $usuario['apellidomaterno'] ?? ''; ?>">
+                                            placeholder="Ingrese el apellido materno" value="<?= e($usuario['apellidomaterno'] ?? ''); ?>">
                                     </div>
                                 </div>
                             </div>
@@ -128,7 +128,7 @@ if (!$usuario) {
                                     <div class="form-group">
                                         <label for="numdocumento">Número de Documento <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="numdocumento" name="numdocumento"
-                                            placeholder="Ingrese el número de documento" value="<?= $usuario['numdocumento']; ?>"
+                                            placeholder="Ingrese el número de documento" value="<?= e($usuario['numdocumento']); ?>"
                                             maxlength="25" required>
                                     </div>
                                 </div>
@@ -140,7 +140,7 @@ if (!$usuario) {
                                     <div class="form-group">
                                         <label for="direccion">Dirección</label>
                                         <textarea class="form-control" id="direccion" name="direccion" rows="2"
-                                            placeholder="Ingrese la dirección"><?= $usuario['direccion'] ?? ''; ?></textarea>
+                                            placeholder="Ingrese la dirección"><?= e($usuario['direccion'] ?? ''); ?></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -163,7 +163,7 @@ if (!$usuario) {
                                                 <span class="input-group-text"><i class="fas fa-phone"></i></span>
                                             </div>
                                             <input type="tel" class="form-control" id="telefono" name="telefono"
-                                                placeholder="Ingrese el teléfono" value="<?= $usuario['telefono'] ?? ''; ?>"
+                                                placeholder="Ingrese el teléfono" value="<?= e($usuario['telefono'] ?? ''); ?>"
                                                 maxlength="20">
                                         </div>
                                     </div>
@@ -178,7 +178,7 @@ if (!$usuario) {
                                                 <span class="input-group-text"><i class="fas fa-envelope"></i></span>
                                             </div>
                                             <input type="email" class="form-control" id="correo" name="correo"
-                                                placeholder="ejemplo@correo.com" value="<?= $usuario['correo']; ?>"
+                                                placeholder="ejemplo@correo.com" value="<?= e($usuario['correo']); ?>"
                                                 required>
                                         </div>
                                     </div>
@@ -205,7 +205,7 @@ if (!$usuario) {
                                             <?php foreach ($roles as $rol) : ?>
                                                 <option value="<?= $rol['idrol'] ?>"
                                                     <?= ((int) $usuario['idrol'] === (int) $rol['idrol']) ? 'selected' : '' ?>
-                                                    <?= ($rol['es_admin'] && !$puedeAsignarAdmin) ? 'disabled' : '' ?>><?= ucfirst($rol['nombre']) ?></option>
+                                                    <?= ($rol['es_admin'] && !$puedeAsignarAdmin) ? 'disabled' : '' ?>><?= e(ucfirst($rol['nombre'])) ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                         <?php if (!$puedeAsignarAdmin && $rolEsAdminActual): ?>

@@ -134,8 +134,8 @@ $dashboards_disponibles = [
                                 ?>
                                     <tr>
                                         <td class="text-center"><?= $contador++; ?></td>
-                                        <td><?= $rol['nombre']; ?></td>
-                                        <td><?= $rol['descripcion'] ?? ''; ?></td>
+                                        <td><?= e($rol['nombre']); ?></td>
+                                        <td><?= e($rol['descripcion'] ?? ''); ?></td>
                                         <td class="text-center">
                                             <span class="badge <?= $clase_usuarios; ?>">
                                                 <?= $total_usuarios; ?> usuario<?= $total_usuarios != 1 ? 's' : ''; ?>
@@ -157,12 +157,12 @@ $dashboards_disponibles = [
                                             <div class="btn-group">
                                                 <button type="button" class="btn btn-warning btn-sm btn-editar"
                                                     data-id="<?= $rol['idrol']; ?>"
-                                                    data-nombre="<?= $rol['nombre']; ?>"
-                                                    data-descripcion="<?= $rol['descripcion'] ?? ''; ?>"
-                                                    data-dashboard="<?= $rol['dashboard']; ?>"
+                                                    data-nombre="<?= e($rol['nombre']); ?>"
+                                                    data-descripcion="<?= e($rol['descripcion'] ?? ''); ?>"
+                                                    data-dashboard="<?= e($rol['dashboard']); ?>"
                                                     data-es-sistema="<?= $rol['es_sistema']; ?>"
                                                     data-toggle="tooltip" title="Editar rol"
-                                                    aria-label="Editar rol <?= $rol['nombre']; ?>">
+                                                    aria-label="Editar rol <?= e($rol['nombre']); ?>">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
                                                 <?php if ($puede_cambiar_estado) : ?>
@@ -171,17 +171,17 @@ $dashboards_disponibles = [
                                                         data-estado-actual="<?= $estado_actual; ?>"
                                                         data-toggle="tooltip"
                                                         title="<?= $estado_actual == 1 ? 'Desactivar' : 'Activar'; ?>"
-                                                        aria-label="<?= $estado_actual == 1 ? 'Desactivar' : 'Activar'; ?> rol <?= $rol['nombre']; ?>">
+                                                        aria-label="<?= $estado_actual == 1 ? 'Desactivar' : 'Activar'; ?> rol <?= e($rol['nombre']); ?>">
                                                         <i class="fas <?= $estado_actual == 1 ? 'fa-times' : 'fa-check'; ?>"></i>
                                                     </button>
                                                 <?php endif; ?>
                                                 <?php if (!$es_sistema) : ?>
                                                     <button type="button" class="btn btn-outline-danger btn-sm btn-eliminar"
                                                         data-id="<?= $rol['idrol']; ?>"
-                                                        data-nombre="<?= $rol['nombre']; ?>"
+                                                        data-nombre="<?= e($rol['nombre']); ?>"
                                                         data-usuarios="<?= $total_usuarios; ?>"
                                                         data-toggle="tooltip" title="Eliminar rol"
-                                                        aria-label="Eliminar rol <?= $rol['nombre']; ?>">
+                                                        aria-label="Eliminar rol <?= e($rol['nombre']); ?>">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 <?php endif; ?>

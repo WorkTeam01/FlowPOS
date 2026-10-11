@@ -92,7 +92,7 @@ include_once '../layouts/header.php';
                                             <?php foreach ($categorias as $categoria) : ?>
                                                 <option value="<?= $categoria['idcategoria']; ?>"
                                                     <?= $producto['idcategoria'] == $categoria['idcategoria'] ? 'selected' : ''; ?>>
-                                                    <?= $categoria['nombre']; ?>
+                                                    <?= e($categoria['nombre']); ?>
                                                 </option>
                                             <?php endforeach; ?>
                                         </select>
@@ -109,7 +109,7 @@ include_once '../layouts/header.php';
                                                 <span class="input-group-text"><i class="fas fa-barcode"></i></span>
                                             </div>
                                             <input type="text" class="form-control" id="codigo" name="codigo"
-                                                placeholder="Ingrese el código del producto" value="<?= $producto['codigo'] ?? ''; ?>">
+                                                placeholder="Ingrese el código del producto" value="<?= e($producto['codigo'] ?? ''); ?>">
                                         </div>
                                         <small class="form-text text-muted">Opcional - Código único del producto (SKU, código de barras, etc.)</small>
                                     </div>
@@ -127,7 +127,7 @@ include_once '../layouts/header.php';
                                             </div>
                                             <input type="text" class="form-control" id="nombre" name="nombre"
                                                 placeholder="Ingrese el nombre del producto"
-                                                value="<?= $producto['nombre']; ?>" required>
+                                                value="<?= e($producto['nombre']); ?>" required>
                                         </div>
                                         <small class="form-text text-muted">Nombre completo y descriptivo del producto</small>
                                     </div>
@@ -144,7 +144,7 @@ include_once '../layouts/header.php';
                                                 <span class="input-group-text"><i class="fas fa-align-left"></i></span>
                                             </div>
                                             <textarea class="form-control" id="descripcion" name="descripcion" rows="3"
-                                                placeholder="Ingrese una descripción detallada del producto"><?= $producto['descripcion'] ?? ''; ?></textarea>
+                                                placeholder="Ingrese una descripción detallada del producto"><?= e($producto['descripcion'] ?? ''); ?></textarea>
                                         </div>
                                         <small class="form-text text-muted">Características, usos, dimensiones u otra información relevante</small>
                                     </div>
@@ -346,9 +346,9 @@ include_once '../layouts/header.php';
                 <div class="sidebar-sticky">
                     <?php
                     $vistaPreviaImagen = !empty($producto['imagen']) ? $URL . 'public/uploads/productos/' . $producto['imagen'] : $URL . 'public/uploads/productos/producto_default.png';
-                    $vistaPreviaNombre = $producto['nombre'];
-                    $vistaPreviaCategoria = $producto['categoria_nombre'] ?? '—';
-                    $vistaPreviaCodigo = !empty($producto['codigo']) ? $producto['codigo'] : '—';
+                    $vistaPreviaNombre = e($producto['nombre']);
+                    $vistaPreviaCategoria = e($producto['categoria_nombre'] ?? '—');
+                    $vistaPreviaCodigo = e(!empty($producto['codigo']) ? $producto['codigo'] : '—');
                     $vistaPreviaPrecio = $appCurrency . ' ' . number_format($producto['precioventa'], 2);
                     $vistaPreviaStockLabel = 'Stock Actual';
                     $vistaPreviaStock = $producto['stock'] . ' unidades';
@@ -369,7 +369,7 @@ include_once '../layouts/header.php';
                                 <button type="button" class="list-group-item list-group-item-action" id="btnCambiarEstado"
                                     data-id="<?= $producto['idproducto']; ?>"
                                     data-estado="<?= $producto['estado']; ?>"
-                                    data-nombre="<?= $producto['nombre']; ?>">
+                                    data-nombre="<?= e($producto['nombre']); ?>">
                                     <i class="fas <?= $producto['estado'] == 1 ? 'fa-ban' : 'fa-check'; ?> mr-2"></i>
                                     <?= $producto['estado'] == 1 ? 'Desactivar Producto' : 'Activar Producto'; ?>
                                 </button>

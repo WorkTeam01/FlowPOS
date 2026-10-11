@@ -87,18 +87,18 @@ $usuarios = $controller->index();
                                 ?>
                                     <tr>
                                         <td class="text-center"><?= $contador++; ?></td>
-                                        <td><?= $usuario['nombre'] . ' ' . $usuario['apellidopaterno']; ?></td>
-                                        <td><?= $usuario['tipodocumento']; ?></td>
-                                        <td><?= $usuario['numdocumento']; ?></td>
-                                        <td><?= $usuario['correo']; ?></td>
+                                        <td><?= e($usuario['nombre'] . ' ' . $usuario['apellidopaterno']); ?></td>
+                                        <td><?= e($usuario['tipodocumento']); ?></td>
+                                        <td><?= e($usuario['numdocumento']); ?></td>
+                                        <td><?= e($usuario['correo']); ?></td>
                                         <td class="text-center">
                                             <?php if (isset($usuario['imagen'])): ?>
-                                                <img src="<?= $URL; ?>public/uploads/usuarios/<?= $usuario['imagen']; ?>" loading="lazy" alt="Foto de <?= $usuario['nombre'] . ' ' . $usuario['apellidopaterno']; ?>" class="img-thumbnail" width="40">
+                                                <img src="<?= $URL; ?>public/uploads/usuarios/<?= $usuario['imagen']; ?>" loading="lazy" alt="Foto de <?= e($usuario['nombre'] . ' ' . $usuario['apellidopaterno']); ?>" class="img-thumbnail" width="40">
                                             <?php else : ?>
                                                 <img src="<?= $URL; ?>public/uploads/usuarios/user_default.jpg" loading="lazy" alt="Foto por defecto" class="img-thumbnail" width="40">
                                             <?php endif; ?>
                                         </td>
-                                        <td><?= (!empty($usuario['cargo'])) ? $usuario['cargo'] : 'N/A'; ?></td>
+                                        <td><?= (!empty($usuario['cargo'])) ? e($usuario['cargo']) : 'N/A'; ?></td>
                                         <td class="text-center">
                                             <?php if ($estado_actual == 1) : ?>
                                                 <span class="badge badge-success">Activo</span>
@@ -108,19 +108,19 @@ $usuarios = $controller->index();
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group">
-                                                <a href="<?= $URL; ?>views/usuarios/show.php?id=<?= $usuario['idusuario']; ?>" class="btn btn-info btn-sm" title="Ver detalles" data-toggle="tooltip" aria-label="Ver detalles de <?= $usuario['nombre']; ?>">
+                                                <a href="<?= $URL; ?>views/usuarios/show.php?id=<?= $usuario['idusuario']; ?>" class="btn btn-info btn-sm" title="Ver detalles" data-toggle="tooltip" aria-label="Ver detalles de <?= e($usuario['nombre']); ?>">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="<?= $URL; ?>views/usuarios/update.php?id=<?= $usuario['idusuario']; ?>" class="btn btn-warning btn-sm" title="Editar usuario" data-toggle="tooltip" aria-label="Editar usuario <?= $usuario['nombre']; ?>">
+                                                <a href="<?= $URL; ?>views/usuarios/update.php?id=<?= $usuario['idusuario']; ?>" class="btn btn-warning btn-sm" title="Editar usuario" data-toggle="tooltip" aria-label="Editar usuario <?= e($usuario['nombre']); ?>">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                                 <button type="button" class="btn <?= $clase_boton_estado; ?> btn-sm btn-cambiar-estado"
                                                     data-id="<?= $usuario['idusuario']; ?>"
                                                     data-estado="<?= $estado_actual; ?>"
-                                                    data-nombre="<?= $usuario['nombre']; ?>"
+                                                    data-nombre="<?= e($usuario['nombre']); ?>"
                                                     title="<?= $texto_boton_estado; ?>"
                                                     data-toggle="tooltip"
-                                                    aria-label="<?= $texto_boton_estado; ?> <?= $usuario['nombre']; ?>">
+                                                    aria-label="<?= $texto_boton_estado; ?> <?= e($usuario['nombre']); ?>">
                                                     <i class="fas <?= $icono_boton_estado; ?>"></i>
                                                 </button>
                                             </div>

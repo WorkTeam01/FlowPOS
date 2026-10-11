@@ -73,7 +73,7 @@ $estadisticas = $controller->getEstadisticas($esAdmin ? null : $idusuario);
                     <div class="info-box-content">
                         <span class="info-box-text">Responsable Top</span>
                         <span class="info-box-number">
-                            <?= $estadisticas['usuario_mas_compro'] ? $estadisticas['usuario_mas_compro']['nombre_usuario'] : 'N/A'; ?>
+                            <?= $estadisticas['usuario_mas_compro'] ? e($estadisticas['usuario_mas_compro']['nombre_usuario']) : 'N/A'; ?>
                         </span>
                     </div>
                 </div>
@@ -84,7 +84,7 @@ $estadisticas = $controller->getEstadisticas($esAdmin ? null : $idusuario);
                     <div class="info-box-content">
                         <span class="info-box-text">Producto Top</span>
                         <span class="info-box-number">
-                            <?= $estadisticas['producto_mas_comprado'] ? $estadisticas['producto_mas_comprado']['producto_nombre'] : 'N/A'; ?>
+                            <?= $estadisticas['producto_mas_comprado'] ? e($estadisticas['producto_mas_comprado']['producto_nombre']) : 'N/A'; ?>
                         </span>
                     </div>
                 </div>
@@ -130,7 +130,7 @@ $estadisticas = $controller->getEstadisticas($esAdmin ? null : $idusuario);
                                         <td class="text-center"><?= $contador++; ?></td>
                                         <td>COMP-<?= str_pad($compra['idcompra'], 6, '0', STR_PAD_LEFT); ?></td>
                                         <td><?= date('d/m/Y', strtotime($compra['fechacompra'])); ?></td>
-                                        <td><?= $compra['usuario_nombre'] ?? 'N/A'; ?></td>
+                                        <td><?= e($compra['usuario_nombre'] ?? 'N/A'); ?></td>
                                         <td class="text-right"><?= number_format($compra['totalcompra'], 2); ?> <?= $appCurrency ?></td>
                                         <td class="text-center">
                                             <span class="badge badge-<?= $estadoInfo['clase']; ?>"><?= $estadoInfo['texto']; ?></span>

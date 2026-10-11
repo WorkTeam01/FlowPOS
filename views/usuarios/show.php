@@ -96,27 +96,27 @@ $esAdmin = $authService->esAdministrador($usuario['idusuario']);
                             </div>
 
                             <h3 class="profile-username text-center">
-                                <?= $usuario['nombre'] . ' ' . $usuario['apellidopaterno']; ?>
+                                <?= e($usuario['nombre'] . ' ' . $usuario['apellidopaterno']); ?>
                             </h3>
 
                             <p class="text-muted text-center">
-                                <?= $usuario['cargo'] ?? 'Sin cargo asignado'; ?>
+                                <?= e($usuario['cargo'] ?? 'Sin cargo asignado'); ?>
                             </p>
 
                             <ul class="list-group list-group-unbordered mb-4">
                                 <li class="list-group-item">
-                                    <b><i class="fas fa-id-card mr-2"></i><?= $usuario['tipodocumento']; ?></b>
-                                    <span class="float-right"><?= $usuario['numdocumento']; ?></span>
+                                    <b><i class="fas fa-id-card mr-2"></i><?= e($usuario['tipodocumento']); ?></b>
+                                    <span class="float-right"><?= e($usuario['numdocumento']); ?></span>
                                 </li>
                                 <li class="list-group-item">
                                     <b><i class="fas fa-envelope mr-2"></i>Correo</b>
-                                    <span class="float-right text-truncate" style="max-width: 170px;" title="<?= $usuario['correo'] ?? 'No registrado'; ?>">
-                                        <?= $usuario['correo'] ?? 'No registrado'; ?>
+                                    <span class="float-right text-truncate" style="max-width: 170px;" title="<?= e($usuario['correo'] ?? 'No registrado'); ?>">
+                                        <?= e($usuario['correo'] ?? 'No registrado'); ?>
                                     </span>
                                 </li>
                                 <li class="list-group-item">
                                     <b><i class="fas fa-phone mr-2"></i>Teléfono</b>
-                                    <span class="float-right"><?= $usuario['telefono'] ?? 'No registrado'; ?></span>
+                                    <span class="float-right"><?= e($usuario['telefono'] ?? 'No registrado'); ?></span>
                                 </li>
                                 <li class="list-group-item">
                                     <b><i class="fas fa-calendar-alt mr-2"></i>Fecha Registro</b>
@@ -132,7 +132,7 @@ $esAdmin = $authService->esAdministrador($usuario['idusuario']);
                             <button type="button" id="btnCambiarEstado" class="btn <?= $usuario['estado'] == 1 ? 'btn-danger' : 'btn-success'; ?> btn-block"
                                 data-id="<?= $usuario['idusuario']; ?>"
                                 data-estado="<?= $usuario['estado']; ?>"
-                                data-nombre="<?= $usuario['nombre'] . ' ' . $usuario['apellidopaterno']; ?>">
+                                data-nombre="<?= e($usuario['nombre'] . ' ' . $usuario['apellidopaterno']); ?>">
                                 <i class="fas <?= $usuario['estado'] == 1 ? 'fa-user-slash' : 'fa-user-check'; ?> mr-1"></i>
                                 <span id="btnCambiarEstadoTexto"><?= $usuario['estado'] == 1 ? 'Desactivar usuario' : 'Activar usuario'; ?></span>
                             </button>
@@ -182,7 +182,7 @@ $esAdmin = $authService->esAdministrador($usuario['idusuario']);
                                             <div class="info-box-content">
                                                 <h5 class="info-box-text text-center text-muted">Nombre Completo</h5>
                                                 <h6 class="info-box-number text-center text-muted mb-0">
-                                                    <?= $usuario['nombre'] . ' ' . $usuario['apellidopaterno'] . ' ' . $usuario['apellidomaterno']; ?>
+                                                    <?= e($usuario['nombre'] . ' ' . $usuario['apellidopaterno'] . ' ' . $usuario['apellidomaterno']); ?>
                                                 </h6>
                                             </div>
                                         </div>
@@ -194,17 +194,17 @@ $esAdmin = $authService->esAdministrador($usuario['idusuario']);
                                         <tbody>
                                             <tr>
                                                 <th style="width: 30%"><i class="fas fa-id-badge mr-2"></i>Tipo Documento</th>
-                                                <td><?= $usuario['tipodocumento']; ?></td>
+                                                <td><?= e($usuario['tipodocumento']); ?></td>
                                             </tr>
                                             <tr>
                                                 <th><i class="fas fa-hashtag mr-2"></i>Número Documento</th>
-                                                <td><?= $usuario['numdocumento']; ?></td>
+                                                <td><?= e($usuario['numdocumento']); ?></td>
                                             </tr>
                                             <tr>
                                                 <th><i class="fas fa-map-marker-alt mr-2"></i>Dirección</th>
                                                 <td>
                                                     <?php if (!empty($usuario['direccion'])): ?>
-                                                        <?= $usuario['direccion']; ?>
+                                                        <?= e($usuario['direccion']); ?>
                                                     <?php else: ?>
                                                         <span class="text-muted">No registrada</span>
                                                     <?php endif; ?>
@@ -225,8 +225,8 @@ $esAdmin = $authService->esAdministrador($usuario['idusuario']);
                                                 <span class="info-box-text">Correo Electrónico</span>
                                                 <span class="info-box-number">
                                                     <?php if (!empty($usuario['correo'])): ?>
-                                                        <a href="mailto:<?= $usuario['correo']; ?>" class="text-info">
-                                                            <?= $usuario['correo']; ?>
+                                                        <a href="mailto:<?= e($usuario['correo']); ?>" class="text-info">
+                                                            <?= e($usuario['correo']); ?>
                                                         </a>
                                                     <?php else: ?>
                                                         <span class="text-muted">No registrado</span>
@@ -242,8 +242,8 @@ $esAdmin = $authService->esAdministrador($usuario['idusuario']);
                                                 <span class="info-box-text">Teléfono</span>
                                                 <span class="info-box-number">
                                                     <?php if (!empty($usuario['telefono'])): ?>
-                                                        <a href="tel:<?= $usuario['telefono']; ?>" class="text-success">
-                                                            <?= $usuario['telefono']; ?>
+                                                        <a href="tel:<?= e($usuario['telefono']); ?>" class="text-success">
+                                                            <?= e($usuario['telefono']); ?>
                                                         </a>
                                                     <?php else: ?>
                                                         <span class="text-muted">No registrado</span>
@@ -267,7 +267,7 @@ $esAdmin = $authService->esAdministrador($usuario['idusuario']);
                                     <?php else: ?>
                                         <div class="col-12">
                                             <div class="alert alert-secondary mb-3">
-                                                <i class="fas fa-info-circle"></i> Permisos heredados del rol <strong><?= $usuario['cargo'] ?? '' ?></strong>.
+                                                <i class="fas fa-info-circle"></i> Permisos heredados del rol <strong><?= e($usuario['cargo'] ?? '') ?></strong>.
                                             </div>
                                         </div>
                                         <?php foreach ($todosLosPermisos as $permiso): ?>
@@ -335,7 +335,7 @@ $esAdmin = $authService->esAdministrador($usuario['idusuario']);
                                         <div class="timeline-item">
                                             <h3 class="timeline-header"><strong>Cargo en el Sistema</strong></h3>
                                             <div class="timeline-body">
-                                                <span class="badge badge-info"><?= $usuario['cargo'] ?? 'Sin cargo'; ?></span>
+                                                <span class="badge badge-info"><?= e($usuario['cargo'] ?? 'Sin cargo'); ?></span>
                                                 <p class="mt-2">
                                                     <?php if ($esAdmin): ?>
                                                         Usuario con permisos completos para administrar el sistema.

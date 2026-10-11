@@ -79,24 +79,24 @@ include_once '../layouts/header.php';
                         </div>
 
                         <h3 class="profile-username text-center">
-                            <?= $cliente['nombres'] . ' ' . $cliente['apellidopaterno']; ?>
+                            <?= e($cliente['nombres'] . ' ' . $cliente['apellidopaterno']); ?>
                         </h3>
 
                         <p class="text-muted text-center">Cliente desde <?= date('d/m/Y', strtotime($cliente['fechacreacion'])); ?></p>
 
                         <ul class="list-group list-group-unbordered mb-4">
                             <li class="list-group-item">
-                                <b><i class="fas fa-id-card mr-1"></i> <?= $cliente['tipodocumento']; ?></b>
-                                <span class="float-right"><?= $cliente['numdocumento']; ?></span>
+                                <b><i class="fas fa-id-card mr-1"></i> <?= e($cliente['tipodocumento']); ?></b>
+                                <span class="float-right"><?= e($cliente['numdocumento']); ?></span>
                             </li>
                             <li class="list-group-item">
                                 <b><i class="fas fa-phone mr-1"></i> Celular</b>
-                                <span class="float-right"><?= $cliente['celular'] ?? 'No registrado'; ?></span>
+                                <span class="float-right"><?= e($cliente['celular'] ?? 'No registrado'); ?></span>
                             </li>
                             <li class="list-group-item">
                                 <b><i class="fas fa-envelope mr-1"></i> Email</b>
-                                <span class="float-right text-truncate" style="max-width: 150px;" title="<?= $cliente['email'] ?? 'No registrado'; ?>">
-                                    <?= $cliente['email'] ?? 'No registrado'; ?>
+                                <span class="float-right text-truncate" style="max-width: 150px;" title="<?= e($cliente['email'] ?? 'No registrado'); ?>">
+                                    <?= e($cliente['email'] ?? 'No registrado'); ?>
                                 </span>
                             </li>
                             <li class="list-group-item">
@@ -123,7 +123,7 @@ include_once '../layouts/header.php';
                         <button type="button" class="btn btn-block btn-cambiar-estado <?= $cliente['estado'] == 1 ? 'btn-danger' : 'btn-success'; ?>"
                             data-id="<?= $cliente['idcliente']; ?>"
                             data-estado="<?= $cliente['estado']; ?>"
-                            data-nombre="<?= $cliente['nombres'] . ' ' . $cliente['apellidopaterno']; ?>">
+                            data-nombre="<?= e($cliente['nombres'] . ' ' . $cliente['apellidopaterno']); ?>">
                             <i class="fas <?= $cliente['estado'] == 1 ? 'fa-user-slash' : 'fa-user-check'; ?> mr-2"></i>
                             <?= $cliente['estado'] == 1 ? 'Desactivar Cliente' : 'Activar Cliente'; ?>
                         </button>
@@ -166,15 +166,15 @@ include_once '../layouts/header.php';
                                                     <tbody>
                                                         <tr>
                                                             <td><i class="fas fa-signature mr-2"></i>Nombre Completo:</td>
-                                                            <td><?= $cliente['nombres'] . ' ' . $cliente['apellidopaterno'] . ' ' . ($cliente['apellidomaterno'] ?? ''); ?></td>
+                                                            <td><?= e($cliente['nombres'] . ' ' . $cliente['apellidopaterno'] . ' ' . ($cliente['apellidomaterno'] ?? '')); ?></td>
                                                         </tr>
                                                         <tr>
                                                             <td><i class="fas fa-venus-mars mr-2"></i>Género:</td>
-                                                            <td><?= !empty($cliente['genero']) ? $cliente['genero'] : '<span class="text-muted">No especificado</span>'; ?></td>
+                                                            <td><?= !empty($cliente['genero']) ? e($cliente['genero']) : '<span class="text-muted">No especificado</span>'; ?></td>
                                                         </tr>
                                                         <tr>
                                                             <td><i class="fas fa-id-card mr-2"></i>Documento:</td>
-                                                            <td><?= $cliente['tipodocumento']; ?> <?= $cliente['numdocumento']; ?></td>
+                                                            <td><?= e($cliente['tipodocumento']); ?> <?= e($cliente['numdocumento']); ?></td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
@@ -192,13 +192,13 @@ include_once '../layouts/header.php';
                                                     <tbody>
                                                         <tr>
                                                             <td><i class="fas fa-map-marker-alt mr-2"></i>Dirección:</td>
-                                                            <td><?= !empty($cliente['direccion']) ? $cliente['direccion'] : '<span class="text-muted">No registrada</span>'; ?></td>
+                                                            <td><?= !empty($cliente['direccion']) ? e($cliente['direccion']) : '<span class="text-muted">No registrada</span>'; ?></td>
                                                         </tr>
                                                         <tr>
                                                             <td><i class="fas fa-mobile-alt mr-2"></i>Celular:</td>
                                                             <td>
                                                                 <?php if (!empty($cliente['celular'])): ?>
-                                                                    <a href="tel:<?= $cliente['celular']; ?>"><?= $cliente['celular']; ?></a>
+                                                                    <a href="tel:<?= e($cliente['celular']); ?>"><?= e($cliente['celular']); ?></a>
                                                                 <?php else: ?>
                                                                     <span class="text-muted">No registrado</span>
                                                                 <?php endif; ?>
@@ -208,7 +208,7 @@ include_once '../layouts/header.php';
                                                             <td><i class="fas fa-envelope mr-2"></i>Email:</td>
                                                             <td>
                                                                 <?php if (!empty($cliente['email'])): ?>
-                                                                    <a href="mailto:<?= $cliente['email']; ?>"><?= $cliente['email']; ?></a>
+                                                                    <a href="mailto:<?= e($cliente['email']); ?>"><?= e($cliente['email']); ?></a>
                                                                 <?php else: ?>
                                                                     <span class="text-muted">No registrado</span>
                                                                 <?php endif; ?>
@@ -325,7 +325,7 @@ include_once '../layouts/header.php';
                                                                         <span class="badge badge-danger">Anulada</span>
                                                                     <?php endif; ?>
                                                                 </td>
-                                                                <td><?= $venta['usuario_nombre']; ?></td>
+                                                                <td><?= e($venta['usuario_nombre']); ?></td>
                                                                 <td class="text-center">
                                                                     <a href="<?= $URL; ?>views/ventas/show.php?id=<?= $venta['idventa']; ?>" class="btn btn-info btn-sm" data-toggle="tooltip" title="Ver venta">
                                                                         <i class="fas fa-eye"></i>

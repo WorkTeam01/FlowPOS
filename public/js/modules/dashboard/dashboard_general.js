@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 clientesRecientes.innerHTML = data.clientesRecientes.map(cliente => `
                     <li>
                         <img src="${baseUrl}public/img/user_default.jpg" alt="">
-                        <a class="users-list-name" href="#">${cliente.nombre}</a>
+                        <a class="users-list-name" href="#">${escapeHtml(cliente.nombre)}</a>
                         <span class="users-list-date">${formatoFecha(cliente.fecha)}</span>
                     </li>
                 `).join('');

@@ -190,11 +190,11 @@ try {
     }
 
     // Extraer datos principales con validación
-    // Nota: los campos de texto ya vienen escapados con htmlspecialchars() desde el modelo
-    // (sanitizarDatos() se aplica al guardar en Venta/Cliente/Producto/Usuario/Empresa/Sucursal),
-    // por lo que no deben volver a escaparse aquí para evitar mostrar entidades duplicadas (&amp;lt;).
+    // Los datos se guardan crudos: todo texto de usuario se escapa aquí con e() antes del HTML de TCPDF.
+    // El QR usa los valores sin escapar.
     $cliente = $venta['cliente_nombre'] ?? 'Cliente no disponible';
-    $documento_cliente = !empty($venta['numdocumento_cliente']) ? $venta['numdocumento_cliente'] : 'S/N';
+    $clienteHtml = e($cliente);
+    $documento_cliente = e(!empty($venta['numdocumento_cliente']) ? $venta['numdocumento_cliente'] : 'S/N');
 
     $monto_total = $venta['totalventa'] ?? 0;
 
@@ -203,26 +203,26 @@ try {
     $es_pago_mixto = $ventaController->esPagoMixto($pagos);
 
     $estado = $venta['estado'] == 1 ? 'ACTIVA' : 'ANULADA';
-    $observaciones = $venta['observacion'] ?? '';
+    $observaciones = e($venta['observacion'] ?? '');
 
     // Extraer detalles de productos
     $detalles = $venta['detalles'] ?? [];
 
     // Datos de la empresa
     $empresa = [
-        'nombre' => $venta['empresa']['nombre'] ?? 'MI EMPRESA',
-        'nit' => $venta['empresa']['nit'] ?? '000000000',
-        'direccion' => $venta['empresa']['direccion'] ?? 'Ciudad - País',
-        'telefono' => $venta['empresa']['telefono'] ?? '+000 00000000'
+        'nombre' => e($venta['empresa']['nombre'] ?? 'MI EMPRESA'),
+        'nit' => e($venta['empresa']['nit'] ?? '000000000'),
+        'direccion' => e($venta['empresa']['direccion'] ?? 'Ciudad - País'),
+        'telefono' => e($venta['empresa']['telefono'] ?? '+000 00000000')
     ];
 
     // Datos de la sucursal
     $sucursal = [
-        'nombre' => $venta['sucursal']['nombre_sucursal'] ?? 'Principal'
+        'nombre' => e($venta['sucursal']['nombre_sucursal'] ?? 'Principal')
     ];
 
     // Obtener usuario que procesó
-    $usuario_registro = trim(($venta['usuario_nombre'] ?? '') . ' ' . ($venta['usuario_apellido'] ?? '')) ?: trim(($_SESSION['usuario_nombre'] ?? '') . ' ' . ($_SESSION['usuario_apellido'] ?? '')) ?: 'Usuario no disponible';
+    $usuario_registro = e(trim(($venta['usuario_nombre'] ?? '') . ' ' . ($venta['usuario_apellido'] ?? '')) ?: trim(($_SESSION['usuario_nombre'] ?? '') . ' ' . ($_SESSION['usuario_apellido'] ?? '')) ?: 'Usuario no disponible');
 
     // Create PDF
     $is_mobile = isMobile();
@@ -277,7 +277,7 @@ try {
         <td><span class="bold">VENDEDOR:</span><br>{$usuario_registro}</td>
     </tr>
     <tr>
-        <td><span class="bold">CLIENTE:</span> {$cliente}</td>
+        <td><span class="bold">CLIENTE:</span> {$clienteHtml}</td>
         <td><span class="bold">DOC:</span> {$documento_cliente}</td>
     </tr>
 </table>
@@ -301,8 +301,8 @@ EOD;
 
     foreach ($desglose['lineas'] as $index => $detalle) {
         $num = $index + 1;
-        $producto = $detalle['producto_nombre'] ?? 'Producto no disponible';
-        $codigo = $detalle['producto_codigo'] ?? '';
+        $producto = e($detalle['producto_nombre'] ?? 'Producto no disponible');
+        $codigo = e($detalle['producto_codigo'] ?? '');
         $cantidad = $detalle['cantidad'] ?? 0;
         $precio = $detalle['precioventa'] ?? 0;
         $descuento = $detalle['descuento'] ?? 0;
@@ -388,7 +388,7 @@ EOD;
     $total_cambio = $resumenPagos['total_cambio'];
 
     foreach ($pagos as $pago) {
-        $metodo = ucfirst($pago['metodopago'] ?? 'No especificado');
+        $metodo = e(ucfirst($pago['metodopago'] ?? 'No especificado'));
         $monto = formatearMoneda($pago['monto'] ?? 0);
 
         $html .= <<<EOD

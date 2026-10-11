@@ -86,7 +86,7 @@ include_once '../layouts/header.php';
                                                 <span class="input-group-text"><i class="fas fa-user"></i></span>
                                             </div>
                                             <input type="text" class="form-control" id="nombres" name="nombres"
-                                                placeholder="Ingrese los nombres" value="<?= $cliente['nombres']; ?>" required>
+                                                placeholder="Ingrese los nombres" value="<?= e($cliente['nombres']); ?>" required>
                                         </div>
                                     </div>
                                 </div>
@@ -111,7 +111,7 @@ include_once '../layouts/header.php';
                                     <div class="form-group">
                                         <label for="apellidopaterno">Apellido Paterno <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="apellidopaterno" name="apellidopaterno"
-                                            placeholder="Ingrese el apellido paterno" value="<?= $cliente['apellidopaterno']; ?>" required>
+                                            placeholder="Ingrese el apellido paterno" value="<?= e($cliente['apellidopaterno']); ?>" required>
                                     </div>
                                 </div>
 
@@ -120,7 +120,7 @@ include_once '../layouts/header.php';
                                     <div class="form-group">
                                         <label for="apellidomaterno">Apellido Materno</label>
                                         <input type="text" class="form-control" id="apellidomaterno" name="apellidomaterno"
-                                            placeholder="Ingrese el apellido materno" value="<?= $cliente['apellidomaterno'] ?? ''; ?>">
+                                            placeholder="Ingrese el apellido materno" value="<?= e($cliente['apellidomaterno'] ?? ''); ?>">
                                     </div>
                                 </div>
                             </div>
@@ -157,7 +157,7 @@ include_once '../layouts/header.php';
                                                 <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
                                             </div>
                                             <input type="text" class="form-control" id="numdocumento" name="numdocumento"
-                                                placeholder="Ingrese el número de documento" value="<?= $cliente['numdocumento']; ?>"
+                                                placeholder="Ingrese el número de documento" value="<?= e($cliente['numdocumento']); ?>"
                                                 maxlength="25" required>
                                         </div>
                                     </div>
@@ -182,7 +182,7 @@ include_once '../layouts/header.php';
                                                 <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
                                             </div>
                                             <textarea class="form-control" id="direccion" name="direccion" rows="2"
-                                                placeholder="Ingrese la dirección"><?= $cliente['direccion'] ?? ''; ?></textarea>
+                                                placeholder="Ingrese la dirección"><?= e($cliente['direccion'] ?? ''); ?></textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -198,7 +198,7 @@ include_once '../layouts/header.php';
                                                 <span class="input-group-text"><i class="fas fa-mobile-alt"></i></span>
                                             </div>
                                             <input type="tel" class="form-control" id="celular" name="celular"
-                                                placeholder="Ingrese el número de celular" value="<?= $cliente['celular'] ?? ''; ?>"
+                                                placeholder="Ingrese el número de celular" value="<?= e($cliente['celular'] ?? ''); ?>"
                                                 maxlength="20">
                                         </div>
                                     </div>
@@ -213,7 +213,7 @@ include_once '../layouts/header.php';
                                                 <span class="input-group-text"><i class="fas fa-envelope"></i></span>
                                             </div>
                                             <input type="email" class="form-control" id="email" name="email"
-                                                placeholder="Ingrese el correo electrónico" value="<?= $cliente['email'] ?? ''; ?>">
+                                                placeholder="Ingrese el correo electrónico" value="<?= e($cliente['email'] ?? ''); ?>">
                                         </div>
                                     </div>
                                 </div>
