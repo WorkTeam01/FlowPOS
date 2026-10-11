@@ -38,7 +38,7 @@ $mostrarActivas = isset($_GET['activas']) && $_GET['activas'] == '1';
 $puedeCerrar = $authService->esAdministrador($idusuario);
 
 $skip_select2 = true; // Esta vista no usa Select2
-$module_scripts = ['sesiones/usuario-sesiones'];
+$module_scripts = ['sesiones/sesiones-common', 'sesiones/usuario-sesiones'];
 
 include_once '../layouts/header.php';
 
@@ -52,7 +52,7 @@ $totalSesiones = count($todasLasSesiones);
 $totalActivas = count($sesionesActivas);
 $totalCerradas = $totalSesiones - $totalActivas;
 
-$nombreCompleto = trim($usuario['nombre'] . ' ' . $usuario['apellidopaterno'] . ' ' . ($usuario['apellidomaterno'] ?? ''));
+$nombreCompleto = e(trim($usuario['nombre'] . ' ' . $usuario['apellidopaterno'] . ' ' . ($usuario['apellidomaterno'] ?? '')));
 $correo = $usuario['correo'] ?? '';
 $cargo = $usuario['cargo'] ?? '';
 $imagen = $usuario['imagen'] ?? '';
@@ -106,12 +106,12 @@ $estadoUsuario = $usuario['estado'] ?? 1;
                     </div>
                     <div class="card-body" style="display: block;">
                         <div class="user-block">
-                            <img class="img-circle img-bordered-sm" src="<?= $URL; ?>public/uploads/usuarios/<?= $imagen ?: 'user_default.jpg'; ?>" alt="Foto de <?= $nombreCompleto; ?>">
+                            <img class="img-circle img-bordered-sm" loading="lazy" decoding="async" src="<?= $URL; ?>public/uploads/usuarios/<?= $imagen ?: 'user_default.jpg'; ?>" alt="Foto de <?= $nombreCompleto; ?>">
                             <span class="username">
-                                <?= $correo !== '' ? $correo : 'Sin correo registrado'; ?>
+                                <?= $correo !== '' ? e($correo) : 'Sin correo registrado'; ?>
                             </span>
                             <span class="description">
-                                <?= $cargo; ?>
+                                <?= e($cargo); ?>
                                 <span class="badge badge-<?= $estadoUsuario == 1 ? 'success' : 'danger'; ?>">
                                     <?= $estadoUsuario == 1 ? 'Usuario activo' : 'Usuario inactivo'; ?>
                                 </span>
@@ -171,6 +171,11 @@ $estadoUsuario = $usuario['estado'] ?? 1;
                         </div>
                     </div>
                     <div class="card-body" style="display: block;">
+                        <?php if (!$puedeCerrar) : ?>
+                            <div class="alert alert-default-info" role="note">
+                                <i class="fas fa-info-circle"></i> Solo un administrador puede cerrar sesiones.
+                            </div>
+                        <?php endif; ?>
                         <table id="tablaSesionesUsuario" class="table table-bordered table-hover table-striped table-sm">
                             <thead>
                                 <tr>
@@ -192,6 +197,10 @@ $estadoUsuario = $usuario['estado'] ?? 1;
                                     $clase_estado = $estado ? 'badge-success' : 'badge-secondary';
                                     $texto_estado = $estado ? 'Activa' : 'Cerrada';
 
+                                    $segundos = $controller->segundosDuracion(
+                                        $sesion['horaingreso'],
+                                        $estado ? null : $sesion['horasalida']
+                                    );
                                     $duracion = $controller->formatearDuracion(
                                         $sesion['horaingreso'],
                                         $estado ? null : $sesion['horasalida']
@@ -204,11 +213,11 @@ $estadoUsuario = $usuario['estado'] ?? 1;
                                 ?>
                                     <tr>
                                         <td class="text-center"><?= $contador++; ?></td>
-                                        <td><?= date('d/m/Y H:i:s', strtotime($sesion['horaingreso'])); ?></td>
-                                        <td>
-                                            <?= $sesion['horasalida'] ? date('d/m/Y H:i:s', strtotime($sesion['horasalida'])) : '<span class="text-success">Sesión en curso</span>'; ?>
+                                        <td data-order="<?= strtotime($sesion['horaingreso']); ?>"><?= date('d/m/Y H:i:s', strtotime($sesion['horaingreso'])); ?></td>
+                                        <td data-order="<?= $sesion['horasalida'] ? strtotime($sesion['horasalida']) : PHP_INT_MAX; ?>">
+                                            <?= $sesion['horasalida'] ? date('d/m/Y H:i:s', strtotime($sesion['horasalida'])) : '<span class="text-muted">—</span>'; ?>
                                         </td>
-                                        <td><?= $duracion; ?></td>
+                                        <td data-order="<?= $segundos; ?>"><?= $duracion; ?></td>
                                         <td>
                                             <span class="badge badge-info"><?= $dispositivo; ?> - <?= $navegador; ?></span>
                                             <br>
@@ -225,37 +234,16 @@ $estadoUsuario = $usuario['estado'] ?? 1;
                                             <?php endif; ?>
                                         </td>
                                         <td class="text-center">
-                                            <?php if ($estado) : ?>
-                                                <div class="btn-group">
-                                                    <?php if ($puedeCerrar) : ?>
-                                                        <button type="button" class="btn btn-danger btn-sm btn-cerrar-sesion"
-                                                            data-id="<?= $sesion['idsesion']; ?>"
-                                                            data-usuario="<?= $nombreCompleto; ?>"
-                                                            data-toggle="tooltip" title="Cerrar esta sesión"
-                                                            aria-label="Cerrar sesión de <?= $nombreCompleto; ?>">
-                                                            <i class="fas fa-power-off"></i>
-                                                        </button>
-                                                    <?php else : ?>
-                                                        <?php /* El tooltip va en un <span> contenedor: un <button disabled> no
-                                                             dispara eventos de puntero, así que el mensaje nunca se vería. */ ?>
-                                                        <span data-toggle="tooltip" title="Solo un administrador puede cerrar sesiones">
-                                                            <button type="button" class="btn btn-outline-secondary btn-sm" disabled
-                                                                tabindex="-1"
-                                                                aria-label="Solo un administrador puede cerrar sesiones">
-                                                                <i class="fas fa-lock"></i>
-                                                            </button>
-                                                        </span>
-                                                    <?php endif; ?>
-                                                </div>
+                                            <?php if ($estado && $puedeCerrar) : ?>
+                                                <button type="button" class="btn btn-danger btn-sm btn-cerrar-sesion"
+                                                    data-id="<?= $sesion['idsesion']; ?>"
+                                                    data-usuario="<?= $nombreCompleto; ?>"
+                                                    data-toggle="tooltip" title="Cerrar esta sesión"
+                                                    aria-label="Cerrar sesión de <?= $nombreCompleto; ?>">
+                                                    <i class="fas fa-power-off"></i>
+                                                </button>
                                             <?php else : ?>
-                                                <div class="btn-group">
-                                                    <span data-toggle="tooltip" title="Esta sesión ya fue cerrada">
-                                                        <button type="button" class="btn btn-secondary btn-sm" disabled
-                                                            tabindex="-1" aria-label="Sesión ya cerrada">
-                                                            <i class="fas fa-power-off"></i>
-                                                        </button>
-                                                    </span>
-                                                </div>
+                                                <span class="text-muted">—</span>
                                             <?php endif; ?>
                                         </td>
                                     </tr>

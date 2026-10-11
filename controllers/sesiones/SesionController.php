@@ -10,6 +10,9 @@
 
 class SesionController
 {
+    /** Tope de filas del historial global; la tabla se renderiza completa en el servidor */
+    const LIMITE_HISTORIAL = 1000;
+
     /**
      * Modelo de Sesion
      * @var Sesion
@@ -34,7 +37,7 @@ class SesionController
      */
     public function index($activas = false)
     {
-        return $this->modelo->getAll($activas);
+        return $this->modelo->getAll($activas, self::LIMITE_HISTORIAL);
     }
 
     /**
@@ -158,6 +161,18 @@ class SesionController
         $stats['duracion_promedio'] = $this->modelo->getDuracionPromedio();
         $stats['usuarios_top'] = $this->modelo->getUsuariosTopSesiones();
         return $stats;
+    }
+
+    /**
+     * Duración en segundos entre dos fechas (clave de orden numérica para la tabla)
+     * 
+     * @param string $fechaInicio Fecha de inicio
+     * @param string|null $fechaFin Fecha de fin (null si la sesión está activa)
+     * @return int Segundos transcurridos
+     */
+    public function segundosDuracion($fechaInicio, $fechaFin = null)
+    {
+        return max(0, (new DateTime($fechaFin ?? 'now'))->getTimestamp() - (new DateTime($fechaInicio))->getTimestamp());
     }
 
     /**

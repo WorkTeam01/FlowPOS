@@ -187,7 +187,8 @@ class AuthController
         // Registrar la sesión en BD y obtener su token de revocación.
         // Sin fila de auditoría no hay sesión: el login se aborta para no
         // dejar cuentas que ningún panel podrá cerrar.
-        $token = (new SesionTokenService())->registrar(
+        $sesionTokenService = new SesionTokenService();
+        $token = $sesionTokenService->registrar(
             (int) $usuario['idusuario'],
             $_SERVER['REMOTE_ADDR'] ?? '',
             $_SERVER['HTTP_USER_AGENT'] ?? ''
@@ -195,6 +196,11 @@ class AuthController
 
         if ($token === null) {
             return false;
+        }
+
+        // Purga perezosa de sesiones cerradas antiguas (~1% de los logins), sin cron
+        if (random_int(1, 100) === 1) {
+            $sesionTokenService->purgarCerradas();
         }
 
         // El token en claro vive solo en esta sesión PHP; en BD está su SHA-256

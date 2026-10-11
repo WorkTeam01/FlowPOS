@@ -32,6 +32,12 @@ class SesionTokenService
     const MOTIVO_MIGRACION = 'migration';
     const MOTIVO_CAMBIO_CLAVE = 'password_change';
 
+    /** Días que se conserva una sesión cerrada antes de purgarla */
+    const RETENCION_DIAS = 180;
+
+    /** Tope de filas por purga, para no bloquear la tabla en un login */
+    const PURGA_LOTE = 500;
+
     /**
      * Conexión a la base de datos
      * @var PDO
@@ -107,6 +113,32 @@ class SesionTokenService
         } catch (PDOException $e) {
             error_log('Error al registrar la sesión: ' . $e->getMessage());
             return null;
+        }
+    }
+
+    /**
+     * Elimina sesiones cerradas con más de RETENCION_DIAS de antigüedad. Nunca
+     * toca las activas. Un fallo se registra en el log y no interrumpe el login.
+     *
+     * @return int Filas eliminadas
+     */
+    public function purgarCerradas(): int
+    {
+        try {
+            $stmt = $this->conexion->prepare(
+                'DELETE FROM sesionusuario
+                 WHERE estado = 0 AND horaingreso < NOW() - INTERVAL ' . (int) self::RETENCION_DIAS . ' DAY
+                 LIMIT ' . (int) self::PURGA_LOTE
+            );
+            $stmt->execute();
+            $borradas = $stmt->rowCount();
+            if ($borradas > 0) {
+                error_log("Purga de sesiones: {$borradas} cerradas con más de " . self::RETENCION_DIAS . ' días');
+            }
+            return $borradas;
+        } catch (PDOException $e) {
+            error_log('Error al purgar sesiones cerradas: ' . $e->getMessage());
+            return 0;
         }
     }
 

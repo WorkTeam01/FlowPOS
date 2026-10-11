@@ -3,6 +3,8 @@ require_once __DIR__ . '/../../controllers/sesiones/SesionController.php';
 require_once __DIR__ . '/../../services/AuthorizationService.php';
 require_once __DIR__ . '/../layouts/session.php';
 
+require_once __DIR__ . '/../../services/SesionTokenService.php';
+
 $idusuario = $_SESSION['usuario_id'] ?? '';
 
 $authService = new AuthorizationService();
@@ -19,7 +21,7 @@ if (!($authService->tienePermisoNombre($idusuario, 'sesiones')) && !($authServic
 $mostrarActivas = isset($_GET['activas']) && $_GET['activas'] == '1';
 
 $skip_select2 = true; // Esta vista no usa Select2
-$module_scripts = ['sesiones/index-sesiones'];
+$module_scripts = ['sesiones/sesiones-common', 'sesiones/index-sesiones'];
 
 // Incluir el encabezado DESPUÉS de verificar permisos
 include_once '../layouts/header.php';
@@ -72,7 +74,7 @@ $puedeCerrar = $authService->esAdministrador($idusuario);
             </div>
             <div class="col-12 col-sm-6 col-md-3">
                 <div class="info-box">
-                    <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-calendar-week"></i></span>
+                    <span class="info-box-icon bg-info elevation-1"><i class="fas fa-calendar-week"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Sesiones Semana</span>
                         <span class="info-box-number"><?= $estadisticas['sesiones_semana']; ?></span>
@@ -81,7 +83,7 @@ $puedeCerrar = $authService->esAdministrador($idusuario);
             </div>
             <div class="col-12 col-sm-6 col-md-3">
                 <div class="info-box">
-                    <span class="info-box-icon bg-danger elevation-1"><i class="fas fa-hourglass-half"></i></span>
+                    <span class="info-box-icon bg-secondary elevation-1"><i class="fas fa-hourglass-half"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Duración Promedio</span>
                         <span class="info-box-number"><?= round($estadisticas['duracion_promedio']); ?> min</span>
@@ -108,6 +110,17 @@ $puedeCerrar = $authService->esAdministrador($idusuario);
                         </div>
                     </div>
                     <div class="card-body" style="display: block;">
+                        <?php if (!$puedeCerrar) : ?>
+                            <div class="alert alert-default-info" role="note">
+                                <i class="fas fa-info-circle"></i> Solo un administrador puede cerrar sesiones.
+                            </div>
+                        <?php endif; ?>
+                        <p class="text-muted small mb-2">
+                            Las sesiones cerradas se conservan <?= SesionTokenService::RETENCION_DIAS; ?> días.
+                            <?php if (!$mostrarActivas && count($sesiones) >= SesionController::LIMITE_HISTORIAL) : ?>
+                                Se muestran las últimas <?= SesionController::LIMITE_HISTORIAL; ?> sesiones.
+                            <?php endif; ?>
+                        </p>
                         <table id="tablaSesiones" class="table table-bordered table-hover table-striped table-sm">
                             <thead>
                                 <tr>
@@ -130,6 +143,10 @@ $puedeCerrar = $authService->esAdministrador($idusuario);
                                     $clase_estado = $estado ? 'badge-success' : 'badge-secondary';
                                     $texto_estado = $estado ? 'Activa' : 'Cerrada';
 
+                                    $segundos = $controller->segundosDuracion(
+                                        $sesion['horaingreso'],
+                                        $estado ? null : $sesion['horasalida']
+                                    );
                                     $duracion = $controller->formatearDuracion(
                                         $sesion['horaingreso'],
                                         $estado ? null : $sesion['horasalida']
@@ -139,25 +156,25 @@ $puedeCerrar = $authService->esAdministrador($idusuario);
                                     $navegador = $controller->detectarNavegador($sesion['navegador']);
                                     $motivo = $controller->formatearMotivo($sesion['motivo_cierre'] ?? null);
 
-                                    $nombreCompleto = trim($sesion['nombre'] . ' ' . $sesion['apellidopaterno'] . ' ' . ($sesion['apellidomaterno'] ?? ''));
+                                    $nombreCompleto = e(trim($sesion['nombre'] . ' ' . $sesion['apellidopaterno'] . ' ' . ($sesion['apellidomaterno'] ?? '')));
                                     $ipusuario = $sesion['ipusuario'] ?? '';
                                 ?>
                                     <tr>
                                         <td class="text-center"><?= $contador++; ?></td>
                                         <td>
                                             <div class="user-block">
-                                                <img class="img-circle img-bordered-sm" src="<?= $URL; ?>public/uploads/usuarios/<?= $sesion['imagen'] ?: 'user_default.jpg'; ?>" alt="Foto de <?= $nombreCompleto; ?>">
+                                                <img class="img-circle img-bordered-sm" loading="lazy" decoding="async" src="<?= $URL; ?>public/uploads/usuarios/<?= $sesion['imagen'] ?: 'user_default.jpg'; ?>" alt="Foto de <?= $nombreCompleto; ?>">
                                                 <span class="username">
                                                     <a href="<?= $URL; ?>views/sesiones/usuario.php?id=<?= (int) $sesion['idusuario']; ?>"><?= $nombreCompleto; ?></a>
                                                 </span>
-                                                <span class="description"><?= $sesion['cargo']; ?></span>
+                                                <span class="description"><?= e($sesion['cargo']); ?></span>
                                             </div>
                                         </td>
-                                        <td><?= date('d/m/Y H:i:s', strtotime($sesion['horaingreso'])); ?></td>
-                                        <td>
-                                            <?= $sesion['horasalida'] ? date('d/m/Y H:i:s', strtotime($sesion['horasalida'])) : '<span class="text-success">Sesión en curso</span>'; ?>
+                                        <td data-order="<?= strtotime($sesion['horaingreso']); ?>"><?= date('d/m/Y H:i:s', strtotime($sesion['horaingreso'])); ?></td>
+                                        <td data-order="<?= $sesion['horasalida'] ? strtotime($sesion['horasalida']) : PHP_INT_MAX; ?>">
+                                            <?= $sesion['horasalida'] ? date('d/m/Y H:i:s', strtotime($sesion['horasalida'])) : '<span class="text-muted">—</span>'; ?>
                                         </td>
-                                        <td><?= $duracion; ?></td>
+                                        <td data-order="<?= $segundos; ?>"><?= $duracion; ?></td>
                                         <td>
                                             <span class="badge badge-info"><?= $dispositivo; ?> - <?= $navegador; ?></span>
                                             <br>
@@ -174,30 +191,16 @@ $puedeCerrar = $authService->esAdministrador($idusuario);
                                             <?php endif; ?>
                                         </td>
                                         <td class="text-center">
-                                            <?php if ($estado) : ?>
-                                                <div class="btn-group">
-                                                    <?php if ($puedeCerrar) : ?>
-                                                        <button type="button" class="btn btn-danger btn-sm btn-cerrar-sesion"
-                                                            data-id="<?= $sesion['idsesion']; ?>"
-                                                            data-usuario="<?= $nombreCompleto; ?>"
-                                                            data-toggle="tooltip" title="Cerrar sesión"
-                                                            aria-label="Cerrar sesión de <?= $nombreCompleto; ?>">
-                                                            <i class="fas fa-power-off"></i>
-                                                        </button>
-                                                    <?php else : ?>
-                                                        <button type="button" class="btn btn-outline-secondary btn-sm" disabled
-                                                            data-toggle="tooltip" title="Solo un administrador puede cerrar sesiones"
-                                                            aria-label="Solo un administrador puede cerrar sesiones">
-                                                            <i class="fas fa-lock"></i>
-                                                        </button>
-                                                    <?php endif; ?>
-                                                </div>
+                                            <?php if ($estado && $puedeCerrar) : ?>
+                                                <button type="button" class="btn btn-danger btn-sm btn-cerrar-sesion"
+                                                    data-id="<?= $sesion['idsesion']; ?>"
+                                                    data-usuario="<?= $nombreCompleto; ?>"
+                                                    data-toggle="tooltip" title="Cerrar sesión"
+                                                    aria-label="Cerrar sesión de <?= $nombreCompleto; ?>">
+                                                    <i class="fas fa-power-off"></i>
+                                                </button>
                                             <?php else : ?>
-                                                <div class="btn-group">
-                                                    <button type="button" class="btn btn-secondary btn-sm" disabled aria-label="Sesión ya cerrada">
-                                                        <i class="fas fa-power-off"></i>
-                                                    </button>
-                                                </div>
+                                                <span class="text-muted">—</span>
                                             <?php endif; ?>
                                         </td>
                                     </tr>

@@ -58,9 +58,10 @@ class Sesion
      * Obtiene todas las sesiones con información del usuario
      * 
      * @param bool $activas Si es true, obtiene solo las sesiones activas
+     * @param int|null $limite Máximo de filas (las más recientes); null = sin límite
      * @return array Lista de sesiones
      */
-    public function getAll($activas = false)
+    public function getAll($activas = false, $limite = null)
     {
         try {
             $query = "SELECT " . self::COLUMNAS_SESION . ", 
@@ -74,6 +75,10 @@ class Sesion
             }
 
             $query .= " ORDER BY s.horaingreso DESC";
+
+            if ($limite !== null) {
+                $query .= " LIMIT " . (int) $limite;
+            }
 
             $stmt = $this->conexion->prepare($query);
             $stmt->execute();
