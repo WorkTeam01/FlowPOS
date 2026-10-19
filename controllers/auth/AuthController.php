@@ -101,6 +101,7 @@ class AuthController
                 if ($usuario_existe) {
                     $usuario_id = $this->modelo->obtenerIdPorCorreo($identifier);
                 } else {
+                    $this->igualarTiempoDeVerificacion($clave);
                     $rateLimiter->registrarFallo($identificadorNormalizado, $ip);
                     $_SESSION['mensaje'] = 'Credenciales incorrectas';
                     $_SESSION['icono'] = 'error';
@@ -113,6 +114,7 @@ class AuthController
                 if ($usuario_existe) {
                     $usuario_id = $this->modelo->obtenerIdPorNumDocumento($identifier);
                 } else {
+                    $this->igualarTiempoDeVerificacion($clave);
                     $rateLimiter->registrarFallo($identificadorNormalizado, $ip);
                     $_SESSION['mensaje'] = 'Credenciales incorrectas';
                     $_SESSION['icono'] = 'error';
@@ -171,6 +173,17 @@ class AuthController
 
         // Si no se envió el formulario, redirigir al login
         header('Location: ../../views/login/login.php');
+    }
+
+    /**
+     * Gasta el mismo tiempo de bcrypt que una verificación real.
+     *
+     * Sin esto, un usuario inexistente responde más rápido que uno existente
+     * con clave incorrecta y el tiempo de respuesta delata qué cuentas existen.
+     */
+    private function igualarTiempoDeVerificacion($clave)
+    {
+        password_verify($clave, '$2y$10$W8WVwHKHxlor0GZj6KhDouW/m6OBInh99FlwRdzcKbjyB8fegWk8q');
     }
 
     /**

@@ -43,7 +43,7 @@ try {
     $periodo = isset($_GET['periodo']) ? $_GET['periodo'] : 'hoy';
     $fechaInicio = isset($_GET['fecha_inicio']) ? $_GET['fecha_inicio'] : null;
     $fechaFin = isset($_GET['fecha_fin']) ? $_GET['fecha_fin'] : null;
-    $limite = isset($_GET['limite']) ? (int)$_GET['limite'] : 5;
+    $limite = isset($_GET['limite']) ? max(1, min(50, (int)$_GET['limite'])) : 5;
 
     // Validar parámetros básicos
     if (!in_array($periodo, ['hoy', 'semana', 'mes', 'anio', 'personalizado'])) {
