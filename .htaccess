@@ -4,7 +4,7 @@
 
 Options -Indexes
 
-<FilesMatch "(?i)^(\.env._|\.gitignore|\.gitattributes|._\.(sql|md|log|bak|sh|lock|dist))$">
+<FilesMatch "(?i)^(\.env(\..+)?|\.gitignore|\.gitattributes|.+\.(sql|md|log|bak|sh|lock|dist))$">
 Require all denied
 </FilesMatch>
 
