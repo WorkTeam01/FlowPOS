@@ -37,7 +37,7 @@ chmod 777 public/uploads/ public/uploads/productos/ public/uploads/usuarios/ pub
 sudo /opt/lampp/lampp start
 ```
 
-El `.htaccess` de la raíz bloquea `.env`, `.git/` y `database/`; no lo elimines y, tras desplegar, comprueba que `curl -I http://tu-host/.env` responde 403.
+El `.htaccess` de la raíz bloquea `.env`, `.env.example`, los `*.md`/`*.sql`, `.git/` y `database/`; no lo elimines, no uses asteriscos en su regex (un formateador Markdown los convierte en `_` y el bloqueo deja de funcionar) y, tras tocarlo o desplegar, comprueba que `curl -I http://tu-host/.env`, `.env.example` y `README.md` responden 403.
 
 `database/schema.sql` ya incluye el esquema RBAC; sobre una base preexistente aplica en cambio las migraciones de `database/migrations/` en orden.
 

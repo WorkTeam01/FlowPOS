@@ -7,6 +7,18 @@ y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.2.12] - 2026-10-18
+
+### Security
+
+- **`.htaccess` de la raíz volvía a servir `.env`, `.env.example`, `README.md` y demás `*.md`**: los `*` del regex de `FilesMatch` se habían convertido en `_`, el patrón dejaba de coincidir y esos archivos respondían 200 (con `DB_USER`/`DB_PASS` en `.env`). El patrón se reescribe sin asteriscos (`.+`, `(\..+)?`) para que ningún formateador Markdown lo vuelva a romper; verificado con `curl`: `.env`, `.env.example`, `README.md` y `database/schema.sql` responden 403.
+- **Login sin delatar qué cuentas existen por tiempo de respuesta**: cuando el usuario no existe, `AuthController` ejecuta un `password_verify` contra un hash descartable (`igualarTiempoDeVerificacion()`); antes respondía más rápido que un usuario existente con clave incorrecta. Medido por HTTP: ~0,056 s en ambos casos.
+- **`limite` de los dashboards acotado a 1–50** en `get_dashboard_data.php`, `get_supervisor_dashboard_data.php` y `get_vendedor_dashboard_data.php`; un valor negativo o enorme ya no llega a la consulta.
+
+### Changed
+
+- **`APP_VERSION` subido a `1.2.12`** (`.env` y `.env.example`).
+
 ## [1.2.11] - 2026-10-11
 
 ### Added
