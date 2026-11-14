@@ -8,14 +8,10 @@
  * @version 1.0
  */
 
-class DashboardSupervisorController
-{
-    /**
-     * Modelo de Dashboard
-     * @var Dashboard
-     */
-    private $modelo;
+require_once __DIR__ . '/DashboardBase.php';
 
+class DashboardSupervisorController extends DashboardBase
+{
     /**
      * ID del supervisor actual
      * @var int
@@ -27,76 +23,11 @@ class DashboardSupervisorController
      */
     public function __construct()
     {
-        // Incluir el modelo de Dashboard
-        require_once __DIR__ . '/../../models/Dashboard.php';
-        $this->modelo = new Dashboard();
+        parent::__construct();
 
         // Obtener el ID del usuario actual (supervisor)
         $currentUser = getCurrentUser();
         $this->idSupervisor = $currentUser['id'];
-    }
-
-    /**
-     * Obtiene datos del dashboard para el período solicitado
-     * 
-     * @param string $periodo Período predefinido (hoy, semana, mes, anio)
-     * @param string $fechaInicio Fecha de inicio personalizada (opcional)
-     * @param string $fechaFin Fecha de fin personalizada (opcional)
-     * @param int $limite Límite de elementos en las listas
-     * @return array Datos del dashboard
-     */
-    public function getDatosDashboard($periodo = 'hoy', $fechaInicio = null, $fechaFin = null, $limite = 5)
-    {
-        // Si no se proporcionan fechas personalizadas, usar el período predefinido
-        if (!$fechaInicio || !$fechaFin) {
-            $fechas = $this->modelo->getFechasPeriodo($periodo);
-            $fechaInicio = $fechas['fechaInicio'];
-            $fechaFin = $fechas['fechaFin'];
-        }
-
-        // Validar fechas
-        if (!$this->validarFechas($fechaInicio, $fechaFin)) {
-            return [
-                'success' => false,
-                'message' => 'Las fechas proporcionadas no son válidas',
-                'icon' => 'error'
-            ];
-        }
-
-        // Obtener datos específicos para el supervisor
-        $datos = $this->obtenerDatosSupervisor($fechaInicio, $fechaFin, $limite);
-
-        // Verificar si hubo algún error en el modelo
-        if (empty($datos) && $this->modelo->getLastError()) {
-            return [
-                'success' => false,
-                'message' => mensajeErrorSeguro('Error al obtener datos', $this->modelo->getLastError()),
-                'icon' => 'error'
-            ];
-        }
-
-        // Añadir información sobre el período
-        $datos['periodo'] = [
-            'tipo' => $periodo,
-            'fechaInicio' => $fechaInicio,
-            'fechaFin' => $fechaFin,
-            'descripcion' => $this->getDescripcionPeriodo($periodo, $fechaInicio, $fechaFin)
-        ];
-
-        return [
-            'success' => true,
-            'data' => $datos
-        ];
-    }
-
-    /**
-     * Obtiene la conexión a la base de datos del modelo Dashboard
-     * 
-     * @return PDO Objeto de conexión PDO
-     */
-    private function getConnection()
-    {
-        return $this->modelo->getConnection();
     }
 
     /**
@@ -107,7 +38,7 @@ class DashboardSupervisorController
      * @param int $limite Límite de elementos en las listas
      * @return array Datos específicos del supervisor
      */
-    private function obtenerDatosSupervisor($fechaInicio, $fechaFin, $limite = 5)
+    protected function obtenerDatosRol($fechaInicio, $fechaFin, $limite = 5)
     {
         try {
             // Conectar a la base de datos
@@ -129,7 +60,7 @@ class DashboardSupervisorController
                  FROM venta v
                  JOIN usuarios u ON v.idusuario = u.idusuario
                  JOIN rol r ON r.idrol = u.idrol
-                 WHERE DATE(v.fechacreacion) BETWEEN ? AND ?
+                 WHERE v.fechacreacion >= ? AND v.fechacreacion < DATE_ADD(?, INTERVAL 1 DAY)
                  AND v.estado = 1
                  AND r.nombre = 'vendedor'";
 
@@ -165,7 +96,7 @@ class DashboardSupervisorController
                  FROM usuarios u
                  JOIN rol r ON r.idrol = u.idrol
                  LEFT JOIN venta v ON u.idusuario = v.idusuario 
-                    AND DATE(v.fechacreacion) BETWEEN ? AND ?
+                    AND v.fechacreacion >= ? AND v.fechacreacion < DATE_ADD(?, INTERVAL 1 DAY)
                     AND v.estado = 1
                  WHERE r.nombre = 'vendedor' AND u.estado = 1
                  GROUP BY u.idusuario, u.nombre, u.apellidopaterno
@@ -205,7 +136,7 @@ class DashboardSupervisorController
                  FROM venta v
                  JOIN usuarios u ON v.idusuario = u.idusuario
                  JOIN rol r ON r.idrol = u.idrol
-                 WHERE DATE(v.fechacreacion) BETWEEN ? AND ?
+                 WHERE v.fechacreacion >= ? AND v.fechacreacion < DATE_ADD(?, INTERVAL 1 DAY)
                  AND v.estado = 1
                  AND r.nombre = 'vendedor'
                  GROUP BY DATE_FORMAT(v.fechacreacion, '%Y-%m-%d')
@@ -235,7 +166,7 @@ class DashboardSupervisorController
                  FROM venta v
                  JOIN usuarios u ON v.idusuario = u.idusuario
                  JOIN rol r ON r.idrol = u.idrol
-                 WHERE DATE(v.fechacreacion) BETWEEN ? AND ?
+                 WHERE v.fechacreacion >= ? AND v.fechacreacion < DATE_ADD(?, INTERVAL 1 DAY)
                  AND v.estado = 1
                  AND r.nombre = 'vendedor'
                  GROUP BY DATE_FORMAT(v.fechacreacion, '%Y-%m-%d')
@@ -267,7 +198,7 @@ class DashboardSupervisorController
                  LEFT JOIN categoria c ON p.idcategoria = c.idcategoria
                  JOIN usuarios u ON v.idusuario = u.idusuario
                  JOIN rol r ON r.idrol = u.idrol
-                 WHERE DATE(v.fechacreacion) BETWEEN ? AND ?
+                 WHERE v.fechacreacion >= ? AND v.fechacreacion < DATE_ADD(?, INTERVAL 1 DAY)
                  AND v.estado = 1
                  AND r.nombre = 'vendedor'
                  GROUP BY c.nombre
@@ -332,8 +263,8 @@ class DashboardSupervisorController
                         COUNT(DISTINCT c.idcliente) as totalClientes
                      FROM cliente c
                      JOIN venta v1 ON c.idcliente = v1.idcliente 
-                     LEFT JOIN venta v2 ON c.idcliente = v2.idcliente AND DATE(v2.fechacreacion) < ?
-                     WHERE DATE(v1.fechacreacion) BETWEEN ? AND ?
+                     LEFT JOIN venta v2 ON c.idcliente = v2.idcliente AND v2.fechacreacion < ?
+                     WHERE v1.fechacreacion >= ? AND v1.fechacreacion < DATE_ADD(?, INTERVAL 1 DAY)
                      AND v1.estado = 1";
 
                 $stmt = $conexion->prepare($query);
@@ -406,85 +337,6 @@ class DashboardSupervisorController
         } catch (Exception $e) {
             error_log('Excepción general en obtenerDatosSupervisor: ' . $e->getMessage());
             return [];
-        }
-    }
-
-    /**
-     * Verifica si las fechas son válidas
-     * 
-     * @param string $fechaInicio Fecha de inicio
-     * @param string $fechaFin Fecha de fin
-     * @return bool True si las fechas son válidas
-     */
-    private function validarFechas($fechaInicio, $fechaFin)
-    {
-        // Verificar formato de fecha (YYYY-MM-DD)
-        if (
-            !preg_match('/^\d{4}-\d{2}-\d{2}$/', $fechaInicio) ||
-            !preg_match('/^\d{4}-\d{2}-\d{2}$/', $fechaFin)
-        ) {
-            return false;
-        }
-
-        // Convertir a objetos DateTime
-        $inicio = DateTime::createFromFormat('Y-m-d', $fechaInicio);
-        $fin = DateTime::createFromFormat('Y-m-d', $fechaFin);
-
-        // Verificar si son fechas válidas
-        if (!$inicio || !$fin) {
-            return false;
-        }
-
-        // Verificar que la fecha de inicio no sea posterior a la fecha de fin
-        if ($inicio > $fin) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Calcula la diferencia en días entre dos fechas
-     * 
-     * @param string $fechaInicio Fecha de inicio
-     * @param string $fechaFin Fecha de fin
-     * @return int Diferencia en días
-     */
-    private function calcularDiferenciaDias($fechaInicio, $fechaFin)
-    {
-        $datetime1 = new DateTime($fechaInicio);
-        $datetime2 = new DateTime($fechaFin);
-        $interval = $datetime1->diff($datetime2);
-        return $interval->days + 1; // Incluimos el día final
-    }
-
-    /**
-     * Genera una descripción legible del período seleccionado
-     * 
-     * @param string $periodo Tipo de período
-     * @param string $fechaInicio Fecha de inicio
-     * @param string $fechaFin Fecha de fin
-     * @return string Descripción del período
-     */
-    private function getDescripcionPeriodo($periodo, $fechaInicio, $fechaFin)
-    {
-        $formatoFecha = function ($fecha) {
-            return date('d/m/Y', strtotime($fecha));
-        };
-
-        switch ($periodo) {
-            case 'hoy':
-                return 'Hoy, ' . $formatoFecha($fechaInicio);
-            case 'semana':
-                return 'Esta semana (' . $formatoFecha($fechaInicio) . ' - ' . $formatoFecha($fechaFin) . ')';
-            case 'mes':
-                return 'Este mes (' . $formatoFecha($fechaInicio) . ' - ' . $formatoFecha($fechaFin) . ')';
-            case 'anio':
-                return 'Este año (' . $formatoFecha($fechaInicio) . ' - ' . $formatoFecha($fechaFin) . ')';
-            case 'personalizado':
-                return 'Período personalizado (' . $formatoFecha($fechaInicio) . ' - ' . $formatoFecha($fechaFin) . ')';
-            default:
-                return 'Período desconocido';
         }
     }
 
