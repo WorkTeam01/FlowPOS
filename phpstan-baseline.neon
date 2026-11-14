@@ -1,0 +1,511 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: controllers/auth/logout.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: controllers/clientes/actualizar_cliente.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: controllers/clientes/crear_cliente.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: controllers/clientes/desactivar_cliente.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 4
+			path: controllers/compras/cambiar_estado_compra.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: controllers/compras/crear_compra.php
+
+		-
+			message: '#^Undefined variable\: \$datos$#'
+			identifier: variable.undefined
+			count: 4
+			path: controllers/dashboard/DashboardVendedorController.php
+
+		-
+			message: '#^Variable \$datos in isset\(\) is never defined\.$#'
+			identifier: isset.variable
+			count: 2
+			path: controllers/dashboard/DashboardVendedorController.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: controllers/productos/actualizar_producto.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: controllers/productos/crear_producto.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: controllers/productos/desactivar_producto.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: controllers/sesiones/cerrar_sesion.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: controllers/sesiones/cerrar_sesiones_usuario.php
+
+		-
+			message: '#^Variable \$confirmar_clave in empty\(\) always exists and is always falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: controllers/usuarios/UsuarioController.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: controllers/usuarios/actualizar_usuario.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: controllers/usuarios/crear_usuario.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: controllers/usuarios/desactivar_usuario.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: controllers/usuarios/procesar_actualizar_imagen_perfil.php
+
+		-
+			message: '#^Variable \$metodoPago on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: controllers/ventas/VentaController.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 5
+			path: controllers/ventas/anular_venta.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: controllers/ventas/crear_venta.php
+
+		-
+			message: '#^Variable \$pdo might not be defined\.$#'
+			identifier: variable.undefined
+			count: 6
+			path: tests/DashboardConteoTest.php
+
+		-
+			message: '#^Variable \$pdo might not be defined\.$#'
+			identifier: variable.undefined
+			count: 11
+			path: tests/VentaStockTest.php
+
+		-
+			message: '#^Variable \$pdo might not be defined\.$#'
+			identifier: variable.undefined
+			count: 6
+			path: tests/VentaValidacionTest.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: views/categorias/index.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 4
+			path: views/clientes/create.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 5
+			path: views/clientes/index.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 6
+			path: views/clientes/show.php
+
+		-
+			message: '#^Variable \$appCurrency might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: views/clientes/show.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 6
+			path: views/clientes/update.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 4
+			path: views/compras/create.php
+
+		-
+			message: '#^Variable \$appCurrency might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: views/compras/create.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 4
+			path: views/compras/index.php
+
+		-
+			message: '#^Variable \$appCurrency might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: views/compras/index.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: views/compras/show.php
+
+		-
+			message: '#^Variable \$appCurrency might not be defined\.$#'
+			identifier: variable.undefined
+			count: 4
+			path: views/compras/show.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 6
+			path: views/dashboard/dashboard.php
+
+		-
+			message: '#^Variable \$appName might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: views/dashboard/dashboard.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 15
+			path: views/dashboard/dashboard_general.php
+
+		-
+			message: '#^Variable \$appName might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: views/dashboard/dashboard_general.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 9
+			path: views/dashboard/dashboard_supervisor.php
+
+		-
+			message: '#^Variable \$appVersion might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: views/dashboard/dashboard_supervisor.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 7
+			path: views/dashboard/dashboard_vendedor.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: views/empresa/index.php
+
+		-
+			message: '#^Variable \$appCurrency might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: views/layouts/header.php
+
+		-
+			message: '#^Variable \$appName might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: views/layouts/header.php
+
+		-
+			message: '#^Variable \$appVersion might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: views/layouts/header.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 13
+			path: views/login/login.php
+
+		-
+			message: '#^Variable \$appName might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: views/login/login.php
+
+		-
+			message: '#^Variable \$appVersion might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: views/login/login.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: views/permisos/index.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 5
+			path: views/productos/create.php
+
+		-
+			message: '#^Variable \$appCurrency might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: views/productos/create.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 7
+			path: views/productos/index.php
+
+		-
+			message: '#^Variable \$vistaPreviaCategoria might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: views/productos/partials/vista_previa.php
+
+		-
+			message: '#^Variable \$vistaPreviaCodigo might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: views/productos/partials/vista_previa.php
+
+		-
+			message: '#^Variable \$vistaPreviaEstado might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: views/productos/partials/vista_previa.php
+
+		-
+			message: '#^Variable \$vistaPreviaImagen might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: views/productos/partials/vista_previa.php
+
+		-
+			message: '#^Variable \$vistaPreviaNombre might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: views/productos/partials/vista_previa.php
+
+		-
+			message: '#^Variable \$vistaPreviaPrecio might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: views/productos/partials/vista_previa.php
+
+		-
+			message: '#^Variable \$vistaPreviaStock might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: views/productos/partials/vista_previa.php
+
+		-
+			message: '#^Variable \$vistaPreviaStockLabel might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: views/productos/partials/vista_previa.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 7
+			path: views/productos/show.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 10
+			path: views/productos/update.php
+
+		-
+			message: '#^Variable \$appCurrency might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: views/productos/update.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: views/roles/index.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: views/roles/permisos.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 5
+			path: views/sesiones/index.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 8
+			path: views/sesiones/usuario.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: views/sucursales/index.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 5
+			path: views/usuarios/create.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 7
+			path: views/usuarios/index.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 8
+			path: views/usuarios/perfil.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 9
+			path: views/usuarios/show.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 9
+			path: views/usuarios/update.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 4
+			path: views/ventas/create.php
+
+		-
+			message: '#^Variable \$appCurrency might not be defined\.$#'
+			identifier: variable.undefined
+			count: 12
+			path: views/ventas/create.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 5
+			path: views/ventas/index.php
+
+		-
+			message: '#^Variable \$appCurrency might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: views/ventas/index.php
+
+		-
+			message: '#^Constant PDF_CREATOR not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: views/ventas/recibo.php
+
+		-
+			message: '#^Instantiated class TCPDF not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: views/ventas/recibo.php
+
+		-
+			message: '#^Variable \$appCurrency might not be defined\.$#'
+			identifier: variable.undefined
+			count: 8
+			path: views/ventas/recibo.php
+
+		-
+			message: '#^Variable \$appName might not be defined\.$#'
+			identifier: variable.undefined
+			count: 2
+			path: views/ventas/recibo.php
+
+		-
+			message: '#^Variable \$URL might not be defined\.$#'
+			identifier: variable.undefined
+			count: 7
+			path: views/ventas/show.php
+
+		-
+			message: '#^Variable \$appCurrency might not be defined\.$#'
+			identifier: variable.undefined
+			count: 12
+			path: views/ventas/show.php

@@ -1,0 +1,18 @@
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 1
+    paths:
+        - config
+        - controllers
+        - models
+        - services
+        - views
+        - tests
+        - index.php
+    excludePaths:
+        - libs
+        - public
+    scanFiles:
+        - views/layouts/session.php

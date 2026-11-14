@@ -36,3 +36,6 @@ public/uploads/clientes/*
 !public/uploads/clientes/.gitkeep
 public/uploads/empresas/*
 !public/uploads/empresas/.gitkeep
+
+# PHPStan (binario de desarrollo, se descarga aparte)
+tools/phpstan.phar
