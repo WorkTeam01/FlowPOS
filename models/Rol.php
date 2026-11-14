@@ -76,13 +76,16 @@ class Rol
     public function getAll($soloActivos = false)
     {
         try {
-            $query = "SELECT * FROM {$this->tabla}";
+            $query = "SELECT r.*,
+                             (SELECT COUNT(*) FROM usuarios u
+                              WHERE u.idrol = r.idrol AND u.estado = 1) AS total_usuarios
+                      FROM {$this->tabla} r";
 
             if ($soloActivos) {
-                $query .= " WHERE estado = 1";
+                $query .= " WHERE r.estado = 1";
             }
 
-            $query .= " ORDER BY idrol";
+            $query .= " ORDER BY r.idrol";
 
             $stmt = $this->conexion->prepare($query);
             $stmt->execute();

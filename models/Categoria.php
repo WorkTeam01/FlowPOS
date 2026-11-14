@@ -76,13 +76,16 @@ class Categoria
     public function getAll($soloActivas = false)
     {
         try {
-            $query = "SELECT * FROM {$this->tabla}";
+            $query = "SELECT c.*,
+                             (SELECT COUNT(*) FROM producto p
+                              WHERE p.idcategoria = c.idcategoria AND p.estado = 1) AS total_productos
+                      FROM {$this->tabla} c";
 
             if ($soloActivas) {
-                $query .= " WHERE estado = 1";
+                $query .= " WHERE c.estado = 1";
             }
 
-            $query .= " ORDER BY nombre";
+            $query .= " ORDER BY c.nombre";
 
             $stmt = $this->conexion->prepare($query);
             $stmt->execute();

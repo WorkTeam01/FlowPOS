@@ -33,13 +33,7 @@ class RolController
      */
     public function index($soloActivos = false)
     {
-        $roles = $this->modelo->getAll($soloActivos);
-
-        foreach ($roles as &$rol) {
-            $rol['total_usuarios'] = $this->modelo->contarUsuarios($rol['idrol']);
-        }
-
-        return $roles;
+        return $this->modelo->getAll($soloActivos);
     }
 
     /**

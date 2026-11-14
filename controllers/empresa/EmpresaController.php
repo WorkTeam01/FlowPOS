@@ -42,14 +42,7 @@ class EmpresaController
      */
     public function index($soloActivas = false)
     {
-        $empresas = $this->modelo->getAll($soloActivas);
-        
-        // Agregar conteo de sucursales a cada empresa
-        foreach ($empresas as &$empresa) {
-            $empresa['total_sucursales'] = $this->modelo->contarSucursales($empresa['idempresa']);
-        }
-        
-        return $empresas;
+        return $this->modelo->getAll($soloActivas);
     }
 
     /**
@@ -295,7 +288,7 @@ class EmpresaController
         foreach ($empresas as $empresa) {
             $estadisticas['sucursales_por_empresa'][] = [
                 'nombre' => $empresa['nombre'],
-                'total_sucursales' => $this->modelo->contarSucursales($empresa['idempresa'])
+                'total_sucursales' => $empresa['total_sucursales']
             ];
         }
         

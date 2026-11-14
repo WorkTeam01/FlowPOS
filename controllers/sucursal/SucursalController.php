@@ -34,14 +34,7 @@ class SucursalController
      */
     public function index($soloActivas = false)
     {
-        $sucursales = $this->modelo->getAll($soloActivas);
-        
-        // Agregar conteo de usuarios a cada sucursal
-        foreach ($sucursales as &$sucursal) {
-            $sucursal['total_usuarios'] = $this->modelo->contarUsuarios($sucursal['idsucursal']);
-        }
-        
-        return $sucursales;
+        return $this->modelo->getAll($soloActivas);
     }
 
     /**
@@ -242,14 +235,7 @@ class SucursalController
      */
     public function getPorEmpresa($idEmpresa, $soloActivas = true)
     {
-        $sucursales = $this->modelo->getPorEmpresa($idEmpresa, $soloActivas);
-        
-        // Agregar conteo de usuarios a cada sucursal
-        foreach ($sucursales as &$sucursal) {
-            $sucursal['total_usuarios'] = $this->modelo->contarUsuarios($sucursal['idsucursal']);
-        }
-        
-        return $sucursales;
+        return $this->modelo->getPorEmpresa($idEmpresa, $soloActivas);
     }
 
     /**
@@ -268,7 +254,7 @@ class SucursalController
         foreach ($sucursales as $sucursal) {
             $estadisticas['usuarios_por_sucursal'][] = [
                 'nombre' => $sucursal['nombre'],
-                'total_usuarios' => $this->modelo->contarUsuarios($sucursal['idsucursal'])
+                'total_usuarios' => $sucursal['total_usuarios']
             ];
         }
         

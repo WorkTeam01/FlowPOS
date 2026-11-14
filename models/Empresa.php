@@ -76,13 +76,16 @@ class Empresa
     public function getAll($soloActivas = false)
     {
         try {
-            $query = "SELECT * FROM {$this->tabla}";
+            $query = "SELECT e.*,
+                             (SELECT COUNT(*) FROM sucursal s
+                              WHERE s.idempresa = e.idempresa AND s.estado = 1) AS total_sucursales
+                      FROM {$this->tabla} e";
 
             if ($soloActivas) {
-                $query .= " WHERE estado = 1";
+                $query .= " WHERE e.estado = 1";
             }
 
-            $query .= " ORDER BY nombre";
+            $query .= " ORDER BY e.nombre";
 
             $stmt = $this->conexion->prepare($query);
             $stmt->execute();

@@ -34,14 +34,7 @@ class CategoriaController
      */
     public function index($soloActivas = false)
     {
-        $categorias = $this->modelo->getAll($soloActivas);
-        
-        // Agregar conteo de productos a cada categoría
-        foreach ($categorias as &$categoria) {
-            $categoria['total_productos'] = $this->modelo->contarProductos($categoria['idcategoria']);
-        }
-        
-        return $categorias;
+        return $this->modelo->getAll($soloActivas);
     }
 
     /**
@@ -246,7 +239,7 @@ class CategoriaController
         foreach ($categorias as $categoria) {
             $estadisticas['productos_por_categoria'][] = [
                 'nombre' => $categoria['nombre'],
-                'total_productos' => $this->modelo->contarProductos($categoria['idcategoria'])
+                'total_productos' => $categoria['total_productos']
             ];
         }
         

@@ -76,7 +76,9 @@ class Sucursal
     public function getAll($soloActivas = false)
     {
         try {
-            $query = "SELECT s.*, e.nombre as empresa_nombre 
+            $query = "SELECT s.*, e.nombre as empresa_nombre,
+                             (SELECT COUNT(*) FROM usuarios u
+                              WHERE u.idsucursal = s.idsucursal AND u.estado = 1) AS total_usuarios
                       FROM {$this->tabla} s
                       LEFT JOIN empresa e ON s.idempresa = e.idempresa";
 
@@ -365,8 +367,9 @@ class Sucursal
 public function contarUsuarios($idSucursal)
 {
     try {
-        $query = "SELECT COUNT(*) FROM usuarios WHERE estado = 1";
+        $query = "SELECT COUNT(*) FROM usuarios WHERE idsucursal = :id AND estado = 1";
         $stmt = $this->conexion->prepare($query);
+        $stmt->bindParam(':id', $idSucursal, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetchColumn();
     } catch (PDOException $e) {
@@ -385,13 +388,16 @@ public function contarUsuarios($idSucursal)
     public function getPorEmpresa($idEmpresa, $soloActivas = true)
     {
         try {
-            $query = "SELECT * FROM {$this->tabla} WHERE idempresa = :idempresa";
+            $query = "SELECT s.*,
+                             (SELECT COUNT(*) FROM usuarios u
+                              WHERE u.idsucursal = s.idsucursal AND u.estado = 1) AS total_usuarios
+                      FROM {$this->tabla} s WHERE s.idempresa = :idempresa";
 
             if ($soloActivas) {
-                $query .= " AND estado = 1";
+                $query .= " AND s.estado = 1";
             }
 
-            $query .= " ORDER BY nombre";
+            $query .= " ORDER BY s.nombre";
 
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':idempresa', $idEmpresa, PDO::PARAM_INT);
