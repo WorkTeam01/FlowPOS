@@ -367,14 +367,33 @@ class Venta
     private function actualizarStockProducto($idProducto, $cantidad)
     {
         try {
-            $query = "UPDATE producto SET stock = stock + :cantidad WHERE idproducto = :id";
-            $stmt = $this->conexion->prepare($query);
-            $stmt->bindParam(':cantidad', $cantidad, PDO::PARAM_INT);
-            $stmt->bindParam(':id', $idProducto, PDO::PARAM_INT);
-            return $stmt->execute();
+            if ($cantidad < 0) {
+                // La condición va en el UPDATE: si otra venta se llevó el stock entre la
+                // validación y este punto, no se afecta ninguna fila en vez de depender del CHECK.
+                $query = "UPDATE producto SET stock = stock - :cantidad WHERE idproducto = :id AND stock >= :minimo";
+                $stmt = $this->conexion->prepare($query);
+                $salida = -$cantidad;
+                $stmt->bindParam(':cantidad', $salida, PDO::PARAM_INT);
+                $stmt->bindParam(':minimo', $salida, PDO::PARAM_INT);
+                $stmt->bindParam(':id', $idProducto, PDO::PARAM_INT);
+                $stmt->execute();
+                $actualizado = $stmt->rowCount() === 1;
+            } else {
+                $query = "UPDATE producto SET stock = stock + :cantidad WHERE idproducto = :id";
+                $stmt = $this->conexion->prepare($query);
+                $stmt->bindParam(':cantidad', $cantidad, PDO::PARAM_INT);
+                $stmt->bindParam(':id', $idProducto, PDO::PARAM_INT);
+                $actualizado = $stmt->execute();
+            }
         } catch (PDOException $e) {
             throw new PDOException("Error al actualizar el stock del producto: " . $e->getMessage());
         }
+
+        if (!$actualizado) {
+            throw new PDOException("Stock insuficiente para completar la venta");
+        }
+
+        return true;
     }
 
     /**
@@ -393,7 +412,7 @@ class Venta
                       FROM {$this->tabla} v
                       LEFT JOIN cliente c ON v.idcliente = c.idcliente
                       JOIN usuarios u ON v.idusuario = u.idusuario
-                      WHERE DATE(v.fechacreacion) BETWEEN :fechaInicio AND :fechaFin
+                      WHERE v.fechacreacion >= :fechaInicio AND v.fechacreacion < DATE_ADD(:fechaFin, INTERVAL 1 DAY)
                       ORDER BY v.fechacreacion DESC";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':fechaInicio', $fechaInicio, PDO::PARAM_STR);
@@ -604,9 +623,10 @@ class Venta
             // Ventas hoy (cantidad y monto total)
             $query = "SELECT COUNT(*) as cantidad, SUM(totalventa) as total 
                      FROM {$this->tabla} 
-                     WHERE DATE(fechacreacion) = :hoy AND estado = 1{$filtroSimple}";
+                     WHERE fechacreacion >= :hoy AND fechacreacion < :manana AND estado = 1{$filtroSimple}";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':hoy', $hoy, PDO::PARAM_STR);
+            $stmt->bindValue(':manana', date('Y-m-d', strtotime($hoy . ' +1 day')), PDO::PARAM_STR);
             if ($idusuario) {
                 $stmt->bindValue(':idu', (int) $idusuario, PDO::PARAM_INT);
             }
@@ -621,12 +641,13 @@ class Venta
                      COUNT(v.idventa) as compras, SUM(v.totalventa) as total_gastado
                      FROM {$this->tabla} v
                      LEFT JOIN cliente c ON v.idcliente = c.idcliente
-                     WHERE DATE(v.fechacreacion) = :hoy AND v.estado = 1{$filtroAlias}
+                     WHERE v.fechacreacion >= :hoy AND v.fechacreacion < :manana AND v.estado = 1{$filtroAlias}
                      GROUP BY v.idcliente
                      ORDER BY total_gastado DESC
                      LIMIT 1";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':hoy', $hoy, PDO::PARAM_STR);
+            $stmt->bindValue(':manana', date('Y-m-d', strtotime($hoy . ' +1 day')), PDO::PARAM_STR);
             if ($idusuario) {
                 $stmt->bindValue(':idu', (int) $idusuario, PDO::PARAM_INT);
             }
@@ -640,12 +661,13 @@ class Venta
                      FROM {$this->tablaDetalle} dv
                      JOIN {$this->tabla} v ON dv.idventa = v.idventa
                      JOIN producto p ON dv.idproducto = p.idproducto
-                     WHERE DATE(v.fechacreacion) = :hoy AND v.estado = 1{$filtroAlias}
+                     WHERE v.fechacreacion >= :hoy AND v.fechacreacion < :manana AND v.estado = 1{$filtroAlias}
                      GROUP BY dv.idproducto
                      ORDER BY cantidad_vendida DESC
                      LIMIT 1";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':hoy', $hoy, PDO::PARAM_STR);
+            $stmt->bindValue(':manana', date('Y-m-d', strtotime($hoy . ' +1 day')), PDO::PARAM_STR);
             if ($idusuario) {
                 $stmt->bindValue(':idu', (int) $idusuario, PDO::PARAM_INT);
             }

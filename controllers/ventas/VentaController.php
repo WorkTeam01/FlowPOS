@@ -245,10 +245,19 @@ class VentaController
         }
 
         $productoModel = new Producto();
+        $solicitado = [];
         foreach ($datos['detalles'] as $detalle) {
             $producto = $productoModel->getById($detalle['idproducto']);
             if (!$producto || (int) $producto['estado'] !== 1) {
                 return ['Uno de los productos no está disponible para la venta'];
+            }
+
+            // Un mismo producto puede venir en varias líneas: el stock se compara con el total pedido.
+            $id = (int) $detalle['idproducto'];
+            $solicitado[$id] = ($solicitado[$id] ?? 0) + (int) $detalle['cantidad'];
+            if ($solicitado[$id] > (int) $producto['stock']) {
+                return ['Stock insuficiente para «' . $producto['nombre'] . '»: disponible ' . (int) $producto['stock']
+                    . ', solicitado ' . $solicitado[$id]];
             }
         }
 
