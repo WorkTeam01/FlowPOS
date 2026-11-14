@@ -1,29 +1,9 @@
 <?php
 require_once __DIR__ . '/../../views/layouts/session.php';
-require_once __DIR__ . '/../../services/AuthorizationService.php';
 require_once __DIR__ . '/CategoriaController.php';
 
-// Verificar si es una solicitud AJAX
-if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) != 'xmlhttprequest') {
-    http_response_code(403);
-    exit('Acceso no permitido');
-}
-
-// Verificar si el usuario está autenticado
-requireLogin();
-
-requireCSRF();
-
-// El permiso del módulo no se puede delegar a la vista: un POST directo evade el menú.
-$authService = new AuthorizationService();
-if (!$authService->tienePermisoNombre($_SESSION['usuario_id'], 'categorias') && !$authService->esAdministrador($_SESSION['usuario_id'])) {
-    http_response_code(403);
-    header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'message' => 'No tiene permisos para realizar esta acción', 'icon' => 'error']);
-    exit;
-}
-
-header('Content-Type: application/json');
+// El permiso se exige en servidor: un POST directo evade el menú de la vista.
+requireAjaxEndpoint('categorias');
 
 // Instanciar el controlador
 $controller = new CategoriaController();

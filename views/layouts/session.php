@@ -395,6 +395,42 @@ function requireCSRF()
 }
 
 /**
+ * Guard común de los endpoints AJAX de escritura que responden JSON.
+ *
+ * Orden: solicitud XHR, sesión, CSRF y permiso. El permiso se exige aquí y no en la
+ * vista porque un POST directo evade el menú. Con `$permiso` se valida el permiso
+ * granular del módulo (los administradores lo tienen siempre); con `null` el
+ * endpoint es solo para administradores.
+ *
+ * @param string|null $permiso Nombre del permiso del módulo, o null para solo administradores
+ * @param string $mensajeDenegado Mensaje del 403 cuando falta el permiso
+ */
+function requireAjaxEndpoint($permiso = null, $mensajeDenegado = 'No tiene permisos para realizar esta acción')
+{
+    if (!isset($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
+        http_response_code(403);
+        exit('Acceso no permitido');
+    }
+
+    requireLogin();
+    requireCSRF();
+
+    require_once __DIR__ . '/../../services/AuthorizationService.php';
+    $auth = new AuthorizationService();
+    $idusuario = $_SESSION['usuario_id'];
+    $autorizado = $permiso === null
+        ? $auth->esAdministrador($idusuario)
+        : $auth->tienePermisoNombre($idusuario, $permiso);
+
+    header('Content-Type: application/json');
+    if (!$autorizado) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => $mensajeDenegado, 'icon' => 'error']);
+        exit;
+    }
+}
+
+/**
  * Obtener una URL segura a la cual volver tras un error (mismo origen que $URL),
  * usando el referer de la petición si es válido, o $URL como respaldo.
  *
