@@ -43,6 +43,8 @@ El `.htaccess` de la raíz bloquea `.env`, `.env.example`, los `*.md`/`*.sql`, `
 
 Luego abre `http://localhost/FlowPOS/`.
 
+Pruebas y análisis estático (ver la sección "Pruebas y análisis estático" del `README.md`): los tests de `tests/` corren con `php tests/<Archivo>Test.php` contra `flowpos_test`, y PHPStan con `php tools/phpstan.phar analyse`. Si un cambio reduce los hallazgos del baseline, regenéralo (`--generate-baseline phpstan-baseline.neon`); no lo amplíes para tapar código nuevo.
+
 ## Alcance de contribuciones
 
 Se aceptan contribuciones en:
@@ -87,6 +89,7 @@ Checklist mínima:
 - [ ] Cambios de permisos/rol probados con las tres cuentas demo.
 - [ ] Endpoints de escritura nuevos con permiso verificado en el servidor (probado con la cuenta vendedor por POST directo).
 - [ ] `php scripts/check-escape.php` sin errores (ningún `echo` de dato de usuario sin `e()`).
+- [ ] Tests de `tests/` en verde y PHPStan sin errores nuevos (si el cambio toca modelos o controladores).
 - [ ] Sin errores de BD crudos en mensajes (`mensajeErrorSeguro()`) y sin código muerto nuevo.
 - [ ] Si hay `Swal.fire()` con datos de usuario, usar `titleText`/`text`, no `title`/`html`.
 - [ ] Si hay `Swal.fire()`, usar tokens de `common.css` via `getComputedStyle()` en vez de hex hardcodeados.

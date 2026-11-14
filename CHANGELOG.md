@@ -7,6 +7,31 @@ y el versionado sigue [Semantic Versioning](https://semver.org/lang/es/).
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-14
+
+### Added
+
+- **Tests de caracterización con BD de pruebas** (`tests/`): scripts PHP sin dependencias que corren contra `flowpos_test`, clonada la primera vez desde la estructura de `flowpos`; `tests/bootstrap.php` aborta si la conexión no apunta a esa base. Cubren el conteo de transacciones del dashboard (`DashboardConteoTest.php`), la validación de datos de venta (`VentaValidacionTest.php`) y el descuento atómico de stock (`VentaStockTest.php`). Ejecutar con `php tests/<Archivo>Test.php`.
+- **PHPStan nivel 1 con baseline** (`phpstan.neon`, `phpstan-baseline.neon`): análisis estático solo de desarrollo; el binario va en `tools/phpstan.phar` (ignorado por git, se descarga aparte). El baseline congela los 356 hallazgos existentes (327 son variables de vistas) para que solo falle el código nuevo.
+- **`requireAjaxEndpoint($permiso = null, $mensajeDenegado = …)`** en `views/layouts/session.php`: guard único de los endpoints AJAX de escritura (XHR, sesión, CSRF, cabecera JSON y permiso del módulo, con 403 JSON y `icon: error`). Sin permiso indicado, exige administrador.
+- **`controllers/dashboard/DashboardBase.php`**: clase abstracta (Template Method) con el flujo común de los dashboards por rol; cada rol implementa solo `obtenerDatosRol()`.
+- **Migración `database/migrations/2026_11_indices_fechas.sql`** (idempotente): índices `idx_venta_estado_fecha (estado, fechacreacion)`, `idx_compra_estado_fecha (estado, fechacompra)` e `idx_sesionusuario_horaingreso (horaingreso)`; también incluidos en `database/schema.sql`. Sobre una base existente, aplícala una vez.
+- **`.htaccess` en `tests/` y `tools/`** (`Require all denied`) y la extensión `neon` en el bloqueo de la raíz.
+
+### Changed
+
+- **Filtros de fecha sargables**: los 22 `DATE(col) BETWEEN …` de dashboards, ventas, compras y sesiones pasan a `col >= :inicio AND col < DATE_ADD(:fin, INTERVAL 1 DAY)`; el índice por fecha ya se aprovecha (sobre 30 000 ventas sintéticas el plan pasó de `ALL` con ~30 360 filas a `range` con ~45). Los resultados son idénticos a los anteriores.
+- **Los 14 endpoints AJAX de categorías, empresa, sucursales y roles** usan `requireAjaxEndpoint()` en vez de ~20 líneas de guard repetidas; mismos códigos HTTP que antes, con el 403 de roles ahora también con `icon: error`.
+- **Dashboards de vendedor y supervisor** extienden `DashboardBase` (412→263 y 569→421 líneas). El dashboard general no cambia.
+- **Listados de categorías, empresas, sucursales y roles** traen su conteo (productos, sucursales o usuarios activos) en una subconsulta dentro de `getAll()`/`getPorEmpresa()`, en lugar de una consulta por fila (7 consultas N+1 menos). Los `contar*()` individuales se conservan para las validaciones de desactivar.
+- **El stock se descuenta de forma atómica** al vender: `UPDATE … WHERE stock >= :cantidad` y la venta se revierte entera si no alcanza, con el mensaje "Stock insuficiente para completar la venta" en vez del error del `CHECK` de la BD. `VentaController::validarReferencias()` suma las cantidades del mismo producto repetido en varias líneas y responde "Stock insuficiente para «producto»: disponible N, solicitado M".
+- **`APP_VERSION` subido a `1.3.0`** (`.env` y `.env.example`).
+
+### Fixed
+
+- **Dashboard contaba dos veces las ventas con pago mixto**: `getEstadisticasGenerales` y `getDatosPeriodo` hacían `COUNT(*)` sobre el `JOIN` con `pagoventa`, de modo que una venta con dos pagos sumaba dos transacciones y distorsionaba la venta promedio (en los datos demo, 17 transacciones en vez de 15). Ahora `COUNT(DISTINCT v.idventa)`.
+- **Sucursales: el conteo de usuarios ignoraba la sucursal**: `Sucursal::contarUsuarios()` contaba todos los usuarios activos del sistema, así que cada sucursal mostraba el mismo número y ninguna podía desactivarse mientras hubiera un usuario activo. Ahora filtra por `idsucursal`.
+
 ## [1.2.12] - 2026-10-18
 
 ### Security
