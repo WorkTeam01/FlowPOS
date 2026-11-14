@@ -228,7 +228,7 @@ class Sesion
             $stats['sesiones_activas'] = $stmt->fetchColumn();
 
             // Sesiones hoy
-            $query = "SELECT COUNT(*) FROM {$this->tabla} WHERE DATE(horaingreso) = CURDATE()";
+            $query = "SELECT COUNT(*) FROM {$this->tabla} WHERE horaingreso >= CURDATE() AND horaingreso < CURDATE() + INTERVAL 1 DAY";
             $stmt = $this->conexion->prepare($query);
             $stmt->execute();
             $stats['sesiones_hoy'] = $stmt->fetchColumn();

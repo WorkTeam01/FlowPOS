@@ -135,7 +135,8 @@ CREATE TABLE compra (
   fechacreacion DATETIME DEFAULT CURRENT_TIMESTAMP,
   fechaactualizacion DATETIME ON UPDATE CURRENT_TIMESTAMP,
   estado tinyint(1) DEFAULT 1,
-  FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario)
+  FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario),
+  KEY idx_compra_estado_fecha (estado, fechacompra)
 );
 
 CREATE TABLE detallecompra (
@@ -161,7 +162,8 @@ CREATE TABLE venta (
   estado tinyint(1) DEFAULT 1,
   observacion varchar(255) DEFAULT NULL,
   FOREIGN KEY (idcliente) REFERENCES cliente(idcliente),
-  FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario)
+  FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario),
+  KEY idx_venta_estado_fecha (estado, fechacreacion)
 );
 
 CREATE TABLE detalleventa (
@@ -208,7 +210,8 @@ CREATE TABLE sesionusuario (
   motivo_cierre varchar(20) DEFAULT NULL, -- logout|timeout|security|admin_row|admin_user|migration|password_change
   FOREIGN KEY (idusuario) REFERENCES usuarios(idusuario),
   UNIQUE KEY uq_sesionusuario_token (token_hash),
-  KEY idx_sesionusuario_usuario_estado (idusuario, estado)
+  KEY idx_sesionusuario_usuario_estado (idusuario, estado),
+  KEY idx_sesionusuario_horaingreso (horaingreso)
 );
 
 CREATE TABLE intento_login (

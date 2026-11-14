@@ -160,9 +160,10 @@ class Compra
             // Compras hoy (cantidad y monto total)
             $query = "SELECT COUNT(*) as cantidad, SUM(totalcompra) as total
                      FROM {$this->tabla}
-                     WHERE DATE(fechacompra) = :hoy AND estado = 1{$filtroSimple}";
+                     WHERE fechacompra >= :hoy AND fechacompra < :manana AND estado = 1{$filtroSimple}";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':hoy', $hoy, PDO::PARAM_STR);
+            $stmt->bindValue(':manana', date('Y-m-d', strtotime($hoy . ' +1 day')), PDO::PARAM_STR);
             if ($idusuario) {
                 $stmt->bindValue(':idu', (int) $idusuario, PDO::PARAM_INT);
             }
@@ -177,12 +178,13 @@ class Compra
                      COUNT(c.idcompra) as compras, SUM(c.totalcompra) as total_gastado
                      FROM {$this->tabla} c
                      JOIN usuarios u ON c.idusuario = u.idusuario
-                     WHERE DATE(c.fechacompra) = :hoy AND c.estado = 1{$filtroAlias}
+                     WHERE c.fechacompra >= :hoy AND c.fechacompra < :manana AND c.estado = 1{$filtroAlias}
                      GROUP BY c.idusuario
                      ORDER BY total_gastado DESC
                      LIMIT 1";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':hoy', $hoy, PDO::PARAM_STR);
+            $stmt->bindValue(':manana', date('Y-m-d', strtotime($hoy . ' +1 day')), PDO::PARAM_STR);
             if ($idusuario) {
                 $stmt->bindValue(':idu', (int) $idusuario, PDO::PARAM_INT);
             }
@@ -196,12 +198,13 @@ class Compra
                      FROM {$this->tablaDetalle} dc
                      JOIN {$this->tabla} c ON dc.idcompra = c.idcompra
                      JOIN producto p ON dc.idproducto = p.idproducto
-                     WHERE DATE(c.fechacompra) = :hoy AND c.estado = 1{$filtroAlias}
+                     WHERE c.fechacompra >= :hoy AND c.fechacompra < :manana AND c.estado = 1{$filtroAlias}
                      GROUP BY dc.idproducto
                      ORDER BY cantidad_comprada DESC
                      LIMIT 1";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':hoy', $hoy, PDO::PARAM_STR);
+            $stmt->bindValue(':manana', date('Y-m-d', strtotime($hoy . ' +1 day')), PDO::PARAM_STR);
             if ($idusuario) {
                 $stmt->bindValue(':idu', (int) $idusuario, PDO::PARAM_INT);
             }

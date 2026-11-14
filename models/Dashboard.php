@@ -79,10 +79,10 @@ class Dashboard
 
             // Ventas totales y número de transacciones
             // Ahora usamos SUM(pv.monto) en lugar de SUM(v.totalventa) para considerar los pagos efectivos
-            $query = "SELECT COUNT(*) as totalTransacciones, COALESCE(SUM(pv.monto), 0) as ventasTotales 
+            $query = "SELECT COUNT(DISTINCT v.idventa) as totalTransacciones, COALESCE(SUM(pv.monto), 0) as ventasTotales
                  FROM venta v 
                  LEFT JOIN pagoventa pv ON v.idventa = pv.idventa AND pv.estado = 1
-                 WHERE DATE(v.fechacreacion) BETWEEN :fechaInicio AND :fechaFin 
+                 WHERE v.fechacreacion >= :fechaInicio AND v.fechacreacion < DATE_ADD(:fechaFin, INTERVAL 1 DAY) 
                  AND v.estado = 1";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':fechaInicio', $fechaInicio, PDO::PARAM_STR);
@@ -104,7 +104,7 @@ class Dashboard
                  FROM detalleventa dv 
                  JOIN venta v ON dv.idventa = v.idventa 
                  JOIN producto p ON dv.idproducto = p.idproducto 
-                 WHERE DATE(v.fechacreacion) BETWEEN :fechaInicio AND :fechaFin 
+                 WHERE v.fechacreacion >= :fechaInicio AND v.fechacreacion < DATE_ADD(:fechaFin, INTERVAL 1 DAY) 
                  AND v.estado = 1";
             $stmt = $this->conexion->prepare($query);
             $stmt->bindParam(':fechaInicio', $fechaInicio, PDO::PARAM_STR);
@@ -208,10 +208,10 @@ class Dashboard
     {
         // Ventas totales y transacciones
         // Consideramos pagos efectivos en lugar del total de venta
-        $query = "SELECT COUNT(*) as transacciones, COALESCE(SUM(pv.monto), 0) as ventas 
+        $query = "SELECT COUNT(DISTINCT v.idventa) as transacciones, COALESCE(SUM(pv.monto), 0) as ventas
              FROM venta v 
              LEFT JOIN pagoventa pv ON v.idventa = pv.idventa AND pv.estado = 1
-             WHERE DATE(v.fechacreacion) BETWEEN :fechaInicio AND :fechaFin 
+             WHERE v.fechacreacion >= :fechaInicio AND v.fechacreacion < DATE_ADD(:fechaFin, INTERVAL 1 DAY) 
              AND v.estado = 1";
         $stmt = $this->conexion->prepare($query);
         $stmt->bindParam(':fechaInicio', $fechaInicio, PDO::PARAM_STR);
@@ -228,7 +228,7 @@ class Dashboard
              FROM detalleventa dv 
              JOIN venta v ON dv.idventa = v.idventa 
              JOIN producto p ON dv.idproducto = p.idproducto 
-             WHERE DATE(v.fechacreacion) BETWEEN :fechaInicio AND :fechaFin 
+             WHERE v.fechacreacion >= :fechaInicio AND v.fechacreacion < DATE_ADD(:fechaFin, INTERVAL 1 DAY) 
              AND v.estado = 1";
         $stmt = $this->conexion->prepare($query);
         $stmt->bindParam(':fechaInicio', $fechaInicio, PDO::PARAM_STR);
@@ -278,7 +278,7 @@ class Dashboard
                      COALESCE(SUM(pv.monto), 0) as monto 
                      FROM pagoventa pv 
                      JOIN venta v ON pv.idventa = v.idventa 
-                     WHERE DATE(v.fechacreacion) BETWEEN :fechaInicio AND :fechaFin 
+                     WHERE v.fechacreacion >= :fechaInicio AND v.fechacreacion < DATE_ADD(:fechaFin, INTERVAL 1 DAY) 
                      AND v.estado = 1 AND pv.estado = 1 
                      GROUP BY pv.metodopago 
                      ORDER BY monto DESC";
@@ -333,7 +333,7 @@ class Dashboard
                  JOIN venta v ON dv.idventa = v.idventa 
                  JOIN producto p ON dv.idproducto = p.idproducto 
                  LEFT JOIN categoria c ON p.idcategoria = c.idcategoria 
-                 WHERE DATE(v.fechacreacion) BETWEEN :fechaInicio AND :fechaFin 
+                 WHERE v.fechacreacion >= :fechaInicio AND v.fechacreacion < DATE_ADD(:fechaFin, INTERVAL 1 DAY) 
                  AND v.estado = 1 
                  GROUP BY p.idproducto, p.nombre, c.nombre, p.precioventa
                  ORDER BY unidades DESC 
@@ -382,7 +382,7 @@ class Dashboard
                  JOIN venta v ON dv.idventa = v.idventa 
                  JOIN producto p ON dv.idproducto = p.idproducto 
                  LEFT JOIN categoria c ON p.idcategoria = c.idcategoria 
-                 WHERE DATE(v.fechacreacion) BETWEEN :fechaInicio AND :fechaFin 
+                 WHERE v.fechacreacion >= :fechaInicio AND v.fechacreacion < DATE_ADD(:fechaFin, INTERVAL 1 DAY) 
                  AND v.estado = 1 
                  GROUP BY c.nombre 
                  ORDER BY ventas DESC";
@@ -496,7 +496,7 @@ class Dashboard
                   WHERE dv.idventa = v.idventa) as ganancia
                  FROM venta v
                  LEFT JOIN cliente c ON v.idcliente = c.idcliente
-                 WHERE DATE(v.fechacreacion) BETWEEN :fechaInicio AND :fechaFin
+                 WHERE v.fechacreacion >= :fechaInicio AND v.fechacreacion < DATE_ADD(:fechaFin, INTERVAL 1 DAY)
                  AND v.estado = 1
                  ORDER BY v.fechacreacion DESC
                  LIMIT :limite";
